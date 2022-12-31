@@ -1,4 +1,4 @@
-// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh
+// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh, linux compiler compatiblity
 
 
 // OS Dependent
@@ -26,10 +26,11 @@
 #include <iomanip>
 #include <chrono>
 #include <thread>
+#include <string>
 
 // Game headers
-#include <customfunctions.h>
-#include <controls.h>
+#include "customfunctions.h"
+#include "controls.h"
 
 #define br cout << "\n------------------------------------\n"
 
