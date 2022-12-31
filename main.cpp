@@ -1,4 +1,4 @@
-// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh, linux compiler compatiblity
+// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh, linux console compatiblity
 
 
 // OS Dependent
