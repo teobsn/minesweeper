@@ -1,5 +1,4 @@
-// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh, linux console compatiblity
-
+// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh, linux compiler compatiblity
 
 // OS Dependent
 #ifdef _WIN32
@@ -27,17 +26,20 @@
 #include <chrono>
 #include <thread>
 #include <string>
+#include <queue>
+#include <utility>
 
 // Game headers
 #include "customfunctions.h"
 #include "controls.h"
+#include "matrixneighborconsts.h"
 
 #define br cout << "\n------------------------------------\n"
 
 std::string displayMap[101][101];
 bool bombMap[101][101];
-int gameMap[101][101];
-int numberMap[101][101];
+int gameMap[101][101] = {0};
+int numberMap[101][101] = {0};
 
 int sqSize, bombAmount;
 
@@ -72,32 +74,31 @@ void populateMap()
     int p1, p2;
     for (int i = 1; i <= bombAmount; i++)
     {
-        do   // very inefficient
+        do // very inefficient
         {
             p1 = distr(gen);
             p2 = distr(gen);
-        }
-        while (bombMap[p1][p2]);
+        } while (bombMap[p1][p2]);
         bombMap[p1][p2] = true;
     }
 
-
+    /* Replaced with curly brackets {0}
     // populate game map
     for (int i = 1; i <= sqSize; i++)
         for (int j = 1; j <= sqSize; j++)
             gameMap[i][j] = 0;
 
-
     // populate number map
     for (int i = 1; i <= sqSize; i++)
         for (int j = 1; j <= sqSize; j++)
             numberMap[i][j] = 0;
+    */
 
     for (int i = 1; i <= sqSize; i++)
     {
         for (int j = 1; j <= sqSize; j++)
         {
-            if(bombMap[i][j])
+            if (bombMap[i][j])
             {
                 numberMap[i - 1][j - 1]++;
                 numberMap[i - 1][j]++;
@@ -128,9 +129,8 @@ void waitForControls()
     InputMark = false;
     InputHit = false;
 
-
     int key = getch();
-    switch(key)
+    switch (key)
     {
     case KeybindUp:
         InputUp = true;
@@ -190,6 +190,7 @@ void discoverAllBombs()
                 gameMap[i][j] = 3;
 }
 
+/*
 void discoverAdjacentEmpty(int x, int y) // for some reason does not work correctly
 {
     if(!bombMap[y + 1][x] && (numberMap[y + 1][x] == 0 || numberMap[y + 1][x] == 1)  && (y + 1 < sqSize + 1) && gameMap[y + 1][x] != 2)
@@ -216,6 +217,33 @@ void discoverAdjacentEmpty(int x, int y) // for some reason does not work correc
         discoverAdjacentEmpty(y, x - 1);
     }
 }
+*/
+
+void discoverAdjacentEmpty(int istart, int jstart)
+{
+    std::queue<std::pair<int, int>> Q;
+    Q.push(std::make_pair(istart, jstart));
+    // Marking starting coordinates
+    gameMap[istart][jstart] = 2;
+    while (!Q.empty())
+    {
+        int i = Q.front().first, j = Q.front().second; // Queue front element coordinates
+        for (int k = 0; k < 4; k++)
+        {
+            int iv = i + di[k], jv = j + dj[k];                                                 // Neighboring coordinates
+            if (iv >= 1 && iv <= sqSize && jv >= 1 && jv <= sqSize                              // Is it inside the map?
+                && !bombMap[iv][jv] && (numberMap[iv][jv] == 0 || numberMap[iv][jv] == 1)       // No bombs
+                && gameMap[iv][jv] != 2)                                                        // Unmarked
+            {
+                // Mark neighboring element
+                gameMap[iv][jv] = 2;
+                // Add to queue
+                Q.push(std::make_pair(iv, jv));
+            }
+        }
+        Q.pop(); // Remove current element from queue
+    }
+}
 
 bool checkWin() // checks if all non-bomb squares are discovered
 {
@@ -232,7 +260,7 @@ bool checkWin2() // checks if all bombs are marked
     for (int i = 1; i <= sqSize; i++)
         for (int j = 1; j <= sqSize; j++)
             if (bombMap[i][j])
-                if(gameMap[i][j] != 1)
+                if (gameMap[i][j] != 1)
                     return false;
     return true;
 }
@@ -256,11 +284,12 @@ void updateGameMap()
             if (gameMap[cursor.y][cursor.x] == 2)
                 cursor.moved = true;
             gameMap[cursor.y][cursor.x] = 2;
-            if (doAdjacentDiscovery) discoverAdjacentEmpty(cursor.x, cursor.y), cursor.moved = true;
+            if (doAdjacentDiscovery)
+                discoverAdjacentEmpty(cursor.y, cursor.x), cursor.moved = true;
         }
     }
 
-    if((checkWin() && winWithoutMark) || checkWin2())
+    if ((checkWin() && winWithoutMark) || checkWin2())
     {
         discoverAllBombs();
         won = true;
@@ -274,7 +303,7 @@ void updateDisplayMap()
     {
         for (int j = 1; j <= sqSize; j++)
         {
-            switch(gameMap[i][j])
+            switch (gameMap[i][j])
             {
             case 0:
                 displayMap[i][j] = "█";
@@ -308,7 +337,10 @@ void updateDisplayMap()
 void refreshConsole() // to-do: create string stream with full output and display that (instead of incrementally displaying each square separately)
                       //        in order to reduce number of console refreshes, as code execution waits for the console to finish refreshing
 {
-    if (OS == "WINDOWS") std::cout << "\033c"; else std::cout<< u8"\033[2J\033[1;1H"; // https://stackoverflow.com/questions/6486289/how-can-i-clear-console
+    if (OS == "WINDOWS")
+        std::cout << "\033c";
+    else
+        std::cout << u8"\033[2J\033[1;1H"; // https://stackoverflow.com/questions/6486289/how-can-i-clear-console
     std::cout << "\n ";
     for (int i = 1; i <= sqSize; i++)
     {
@@ -356,6 +388,6 @@ int main()
     else
         std::cout << "\nGame over!\n";
 
-    std::this_thread::sleep_for (std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     return 0;
 }
