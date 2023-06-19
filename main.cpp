@@ -1,4 +1,4 @@
-// TO-DO: post game stats, better bomb generation, fix adjacent discovering, better console refresh, linux compiler compatiblity
+// TO-DO: post game stats, better bomb generation, fix neighbor revealing, better console refresh
 
 // OS Dependent
 #ifdef _WIN32
@@ -10,11 +10,14 @@
 
 #ifdef linux
 #define OS "LINUX"
+#include <ncurses.h>
+#define osDependentStart std::cout << "Linux OS detected\n"
 #endif
 
 #ifdef __ANDROID__ // https://stackoverflow.com/questions/6374523/how-to-detect-compilation-by-android-ndk-in-a-c-c-file
 #define OS "ANDROID"
 #include <conio.h> // android c++ compilers can use conio.h (?)
+#define osDependentStart std::cout << "Android detected\n"
 #endif
 
 // C++ Libraries
@@ -129,7 +132,15 @@ void waitForControls()
     InputMark = false;
     InputHit = false;
 
+    #ifdef linux
+    initscr();
+    cbreak();
+    #endif
     int key = getch();
+    #ifdef linux
+    endwin();
+    #endif
+
     switch (key)
     {
     case KeybindUp:
@@ -182,7 +193,7 @@ void processCursor()
     cursor.y = clamp(cursor.y, 1, sqSize);
 }
 
-void discoverAllBombs()
+void revealAllBombs()
 {
     for (int i = 1; i <= sqSize; i++)
         for (int j = 1; j <= sqSize; j++)
@@ -219,7 +230,7 @@ void discoverAdjacentEmpty(int x, int y) // for some reason does not work correc
 }
 */
 
-void discoverAdjacentEmpty(int istart, int jstart)
+void revealNeighbors(int istart, int jstart)
 {
     std::queue<std::pair<int, int>> Q;
     Q.push(std::make_pair(istart, jstart));
@@ -232,8 +243,8 @@ void discoverAdjacentEmpty(int istart, int jstart)
         {
             int iv = i + di[k], jv = j + dj[k];                                                 // Neighboring coordinates
             if (iv >= 1 && iv <= sqSize && jv >= 1 && jv <= sqSize                              // Is it inside the map?
-                && !bombMap[iv][jv] && (numberMap[iv][jv] == 0 || numberMap[iv][jv] == 1)       // No bombs
-                && gameMap[iv][jv] != 2)                                                        // Unmarked
+                && !bombMap[iv][jv] && (numberMap[iv][jv] == 0 || numberMap[iv][jv] == 1)       // Are there no bombs? -- Needs to be changed, real minesweeper reveals differently
+                && gameMap[iv][jv] == 0)                                                        // Is the square not revealed?
             {
                 // Mark neighboring element
                 gameMap[iv][jv] = 2;
@@ -245,7 +256,7 @@ void discoverAdjacentEmpty(int istart, int jstart)
     }
 }
 
-bool checkWin() // checks if all non-bomb squares are discovered
+bool checkWinByReveal() // checks if all non-bomb squares are revealed
 {
     for (int i = 1; i <= sqSize; i++)
         for (int j = 1; j <= sqSize; j++)
@@ -254,9 +265,8 @@ bool checkWin() // checks if all non-bomb squares are discovered
     return true;
 }
 
-bool checkWin2() // checks if all bombs are marked
+bool checkWinByMarking() // checks if all bombs are marked
 {
-    bool wincheck = true;
     for (int i = 1; i <= sqSize; i++)
         for (int j = 1; j <= sqSize; j++)
             if (bombMap[i][j])
@@ -267,7 +277,11 @@ bool checkWin2() // checks if all bombs are marked
 
 void updateGameMap()
 {
-    // number legend: 0 - undiscovered; 1 - marked; 2 - discovered, safe; 3 - discovered, bomb
+    // number legend:
+    // 0 - not revealed (block)
+    // 1 - marked
+    // 2 - revealed, safe
+    // 3 - revealed, bomb
     if (InputMark && gameMap[cursor.y][cursor.x] != 2)
         gameMap[cursor.y][cursor.x] = !gameMap[cursor.y][cursor.x];
 
@@ -277,21 +291,24 @@ void updateGameMap()
         {
             running = false;
             gameMap[cursor.y][cursor.x] = 3;
-            discoverAllBombs();
+            revealAllBombs();
         }
         else
         {
             if (gameMap[cursor.y][cursor.x] == 2)
                 cursor.moved = true;
             gameMap[cursor.y][cursor.x] = 2;
-            if (doAdjacentDiscovery)
-                discoverAdjacentEmpty(cursor.y, cursor.x), cursor.moved = true;
+            if (doRevealNeighbors)
+                revealNeighbors(cursor.y, cursor.x), cursor.moved = true;
         }
     }
 
-    if ((checkWin() && winWithoutMark) || checkWin2())
+    if (
+	(checkWinByReveal() && winByRevealing)
+	 || (checkWinByMarking() && winByMarking)
+    )
     {
-        discoverAllBombs();
+        revealAllBombs();
         won = true;
         running = false;
     }
@@ -309,19 +326,19 @@ void updateDisplayMap()
                 displayMap[i][j] = "█";
                 break;
             case 1:
-                displayMap[i][j] = "☒";
+                displayMap[i][j] = "M"; //old: ☒
                 break;
             case 2:
                 if (numberMap[i][j])
                     displayMap[i][j] = std::to_string(numberMap[i][j]);
                 else
-                    displayMap[i][j] = "☐";
+                    displayMap[i][j] = "O"; //old: ☐
                 break;
             case 3:
-                displayMap[i][j] = "♥";
+                displayMap[i][j] = "B"; // old: ♥
                 break;
             default:
-                displayMap[i][j] = "�";
+                displayMap[i][j] = "?";
                 break;
             }
         }
