@@ -5,7 +5,7 @@
 #define OS "WINDOWS"
 #include <windows.h>
 #include <conio.h>
-#define osDependentStart SetConsoleOutputCP(CP_UTF8) // windows terminal doesn't display characters in UTF-8 format by default, this fixes that (it otherwise displays invalid characters)
+#define osDependentStart SetConsoleOutputCP(CP_UTF8); std::cout << "Windows OS detected\n" // windows terminal doesn't display characters in UTF-8 format by default, this fixes that (it otherwise displays invalid characters)
 #endif
 
 #ifdef linux
@@ -17,7 +17,7 @@
 #ifdef __ANDROID__ // https://stackoverflow.com/questions/6374523/how-to-detect-compilation-by-android-ndk-in-a-c-c-file
 #define OS "ANDROID"
 #include <conio.h> // android c++ compilers can use conio.h (?)
-#define osDependentStart std::cout << "Android detected\n"
+#define osDependentStart std::cout << "Android OS detected\n"
 #endif
 
 // C++ Libraries
