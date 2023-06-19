@@ -12,7 +12,7 @@ const int KeybindMark     =   32;    // Space
 
 
 // Windows specific bindings
-#ifdef win32
+#ifdef _WIN32
 const int KeybindHit      =   13;    // Enter
 #endif
 

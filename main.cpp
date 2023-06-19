@@ -3,7 +3,7 @@
 // OS Dependent
 #ifdef _WIN32
 #define OS "WINDOWS"
-#include <Windows.h>
+#include <windows.h>
 #include <conio.h>
 #define osDependentStart SetConsoleOutputCP(CP_UTF8) // windows terminal doesn't display characters in UTF-8 format by default, this fixes that (it otherwise displays invalid characters)
 #endif
@@ -403,7 +403,7 @@ int main()
     if (won)
         std::cout << "\nCongratulations! You won!\n";
     else
-        std::cout << "\nGame over!\n";
+        std::cout << "\nYou lost! Game over!\n";
 
     std::this_thread::sleep_for(std::chrono::seconds(5));
     return 0;
