@@ -5,19 +5,28 @@
 #define OS "WINDOWS"
 #include <windows.h>
 #include <conio.h>
-#define osDependentStart SetConsoleOutputCP(CP_UTF8); std::cout << "Windows OS detected\n" // windows terminal doesn't display characters in UTF-8 format by default, this fixes that (it otherwise displays invalid characters)
+#define osDependentStart                                \
+    SetConsoleOutputCP(CP_UTF8);                        \
+    HANDLE handleOut = GetStdHandle(STD_OUTPUT_HANDLE); \
+    DWORD consoleMode;                                  \
+    GetConsoleMode(handleOut, &consoleMode);            \
+    consoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;  \
+    consoleMode |= DISABLE_NEWLINE_AUTO_RETURN;         \
+    SetConsoleMode(handleOut, consoleMode);
+// windows terminal doesn't display characters in UTF-8 format by default, this fixes that (it otherwise displays invalid characters)
+// windows terminal doesn't process ansi color escapes by default, this sets the terminal, this fixes that (it otherwise displays the escape sequence plainly)
 #endif
 
 #ifdef linux
 #define OS "LINUX"
 #include <ncurses.h>
-#define osDependentStart std::cout << "Linux OS detected\n"
+#define osDependentStart std::cout << "";
 #endif
 
 #ifdef __ANDROID__ // https://stackoverflow.com/questions/6374523/how-to-detect-compilation-by-android-ndk-in-a-c-c-file
 #define OS "ANDROID"
 #include <conio.h> // android c++ compilers can use conio.h (?)
-#define osDependentStart std::cout << "Android OS detected\n"
+#define osDependentStart std::cout << "";
 #endif
 
 // C++ Libraries
@@ -36,6 +45,7 @@
 #include "customfunctions.h"
 #include "controls.h"
 #include "matrixneighborconsts.h"
+#include "ansicolor.h"
 
 #define br cout << "\n------------------------------------\n"
 
@@ -132,14 +142,14 @@ void waitForControls()
     InputMark = false;
     InputHit = false;
 
-    #ifdef linux
+#ifdef linux
     initscr();
     cbreak();
-    #endif
+#endif
     int key = getch();
-    #ifdef linux
+#ifdef linux
     endwin();
-    #endif
+#endif
 
     switch (key)
     {
@@ -241,10 +251,10 @@ void revealNeighbors(int istart, int jstart)
         int i = Q.front().first, j = Q.front().second; // Queue front element coordinates
         for (int k = 0; k < 4; k++)
         {
-            int iv = i + di[k], jv = j + dj[k];                                                 // Neighboring coordinates
-            if (iv >= 1 && iv <= sqSize && jv >= 1 && jv <= sqSize                              // Is it inside the map?
-                && !bombMap[iv][jv] && (numberMap[iv][jv] == 0 || numberMap[iv][jv] == 1)       // Are there no bombs? -- Needs to be changed, real minesweeper reveals differently
-                && gameMap[iv][jv] == 0)                                                        // Is the square not revealed?
+            int iv = i + di[k], jv = j + dj[k];                                           // Neighboring coordinates
+            if (iv >= 1 && iv <= sqSize && jv >= 1 && jv <= sqSize                        // Is it inside the map?
+                && !bombMap[iv][jv] && (numberMap[iv][jv] == 0 || numberMap[iv][jv] == 1) // Are there no bombs? -- Needs to be changed, real minesweeper reveals differently
+                && gameMap[iv][jv] == 0)                                                  // Is the square not revealed?
             {
                 // Mark neighboring element
                 gameMap[iv][jv] = 2;
@@ -304,9 +314,7 @@ void updateGameMap()
     }
 
     if (
-	(checkWinByReveal() && winByRevealing)
-	 || (checkWinByMarking() && winByMarking)
-    )
+        (checkWinByReveal() && winByRevealing) || (checkWinByMarking() && winByMarking))
     {
         revealAllBombs();
         won = true;
@@ -326,13 +334,13 @@ void updateDisplayMap()
                 displayMap[i][j] = "█";
                 break;
             case 1:
-                displayMap[i][j] = "M"; //old: ☒
+                displayMap[i][j] = "M"; // old: ☒
                 break;
             case 2:
                 if (numberMap[i][j])
-                    displayMap[i][j] = std::to_string(numberMap[i][j]);
+                    displayMap[i][j] = numberMapColor[numberMap[i][j]] + std::to_string(numberMap[i][j]) + ansiReset; // set ansi color escape according to number of bombs
                 else
-                    displayMap[i][j] = "O"; //old: ☐
+                    displayMap[i][j] = ansiDimWhite + "O" + ansiReset; // old: ☐
                 break;
             case 3:
                 displayMap[i][j] = "B"; // old: ♥
@@ -354,17 +362,21 @@ void updateDisplayMap()
 void refreshConsole() // to-do: create string stream with full output and display that (instead of incrementally displaying each square separately)
                       //        in order to reduce number of console refreshes, as code execution waits for the console to finish refreshing
 {
-    if (OS == "WINDOWS")
-        std::cout << "\033c";
-    else
-        std::cout << u8"\033[2J\033[1;1H"; // https://stackoverflow.com/questions/6486289/how-can-i-clear-console
+#ifdef _win32
+    std::cout << "\033c";
+#else
+    std::cout << u8"\033[2J\033[1;1H"; // https://stackoverflow.com/questions/6486289/how-can-i-clear-console
+#endif
+
     std::cout << "\n ";
+
     for (int i = 1; i <= sqSize; i++)
     {
         for (int j = 1; j <= sqSize; j++)
             std::cout << displayMap[i][j];
         std::cout << "\n ";
     }
+
     std::cout << "\n ";
 }
 
