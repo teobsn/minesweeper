@@ -141,7 +141,10 @@ std::ostream &operator<<(std::ostream &os, Map &map)
             else
             {
                 unsigned int adjacentBombs = map.cells[y][x].getAdjacentBombs();
-                os << (adjacentBombs ? adjacentBombs : ' ') << " ";
+                if (adjacentBombs) 
+                    os << adjacentBombs << " ";
+                else // Daca nu are bombe adiacente, afisam un spatiu gol
+                    os << "  ";
             }
         }
         os << std::endl;
