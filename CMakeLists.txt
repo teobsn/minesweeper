@@ -2,17 +2,17 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Minesweeper)
 
-# # Use Clang compiler
-# set(CMAKE_C_COMPILER clang)
-# set(CMAKE_CXX_COMPILER clang++)
+# Use Clang compiler
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
 
-# # Enable LTO
-# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+# Enable LTO
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always -Wall -Wextra -O3 -flto")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always -Wall -Wextra -O3 -flto -march=native")
 
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -27,5 +27,7 @@ set(SOURCES
     src/renderer.cpp
 )
 
-# # Enable parallel builds
-# set(CMAKE_BUILD_PARALLEL_LEVEL 8)
+add_executable(minesweeper ${SOURCES})
+
+# Enable parallel builds
+set(CMAKE_BUILD_PARALLEL_LEVEL 8)
