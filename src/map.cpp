@@ -7,8 +7,8 @@
 #include <iostream>
 
 // External libraries
-#include "lib/pcg32.h"
-#include "lib/pcg32_8.h"
+#include "pcg/pcg32.h"
+#include "pcg/pcg32_8.h"
 
 void Map::generateBombs(const unsigned int bombs)
 {
