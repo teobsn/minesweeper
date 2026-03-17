@@ -10,65 +10,55 @@
 #include "pcg/pcg32.h"
 #include "pcg/pcg32_8.h"
 
-Map::Map() : width(8), height(8), seed(0)
+Map::Map() : width(1), height(1), seed(0), bombs(0)
 {
-    this->bombs = (width * height) >> 3; // 1 / 8 din totalul celulelor vor fi bombe
+    this->bombs = 0;
 
     reserveCells();
-    generateBombs(this->bombs);
-    updateAdjacentBombs();
+    // generateBombs(0);
+    updateAdjacentBombs(false);
 }
 
 Map::Map(const unsigned int width, const unsigned int height, const unsigned long long seed)
     : width(width), height(height), seed(seed)
 {
-    this->bombs = (width * height) >> 3; // 1 / 8 din totalul celulelor vor fi bombe
+    this->bombs = 0;
 
     reserveCells();
-    generateBombs(this->bombs);
-    updateAdjacentBombs();
+    generateBombs((width * height) >> 3); // 1 / 8 din totalul celulelor vor fi bombe
+    updateAdjacentBombs(false);
 }
 
 Map::Map(const unsigned int width, const unsigned int height) : Map(width, height, 0)
 {
 }
 
-Map::Map(const unsigned int width, const unsigned int height, const unsigned long long seed, const unsigned int bombs)
+Map::Map(const unsigned int width, const unsigned int height, const unsigned long long seed, unsigned int bombs)
     : width(width), height(height), seed(seed)
 {
-    this->bombs = bombs;
+    this->bombs = 0;
+    if (bombs > width * height)
+        bombs = width * height;
 
     reserveCells();
     generateBombs(bombs);
-    updateAdjacentBombs();
+    updateAdjacentBombs(false);
 }
 
 Map::Map(const Map &other)
     : width(other.width), height(other.height), seed(other.seed), bombs(other.bombs)
 {
-    reserveCells();
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
+    // Cream o matrice noua
+    cells = std::vector<std::vector<Cell>>(other.height, std::vector<Cell>(other.width));
+
+    // Copiem celulele
+    for (unsigned int y = 0; y < other.height; ++y)
+        for (unsigned int x = 0; x < other.width; ++x)
             cells[y][x] = other.cells[y][x];
 }
 
-/*
-de implementat:
-constructor de +, *
-
-operator []
-operator ==, !=
-
-idee: constructor de + care sa combine doua harti, adica sa puna bombe din ambele harti, iar numarul de bombe adiacente sa fie actualizat corespunzator
-idee: constructor de * care sa combine doua harti, adica sa puna bombe doar acolo unde ambele harti au bombe, iar numarul de bombe adiacente sa fie actualizat corespunzator
-
-operator de >=, verifica daca o harta are mai multe bombe decat cealalta
-eventual spaceship
-*/
-
 Map::~Map()
 {
-    // e ceva de pus aici? vedem...
 }
 
 Map &Map::operator=(const Map &other)
@@ -83,17 +73,12 @@ Map &Map::operator=(const Map &other)
     seed = other.seed;
     bombs = other.bombs;
 
-    // Modificam dimensiunea vectorului de celule daca e necesar
-    if (other.height != height)
-        cells.resize(height);
-
-    if (other.width != width)
-        for (unsigned int i = 0; i < height; ++i)
-            cells[i].resize(width);
+    // Cream o matrice noua
+    cells = std::vector<std::vector<Cell>>(other.height, std::vector<Cell>(other.width));
 
     // Copiem celulele
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
+    for (unsigned int y = 0; y < other.height; ++y)
+        for (unsigned int x = 0; x < other.width; ++x)
             cells[y][x] = other.cells[y][x];
 
     return *this;
@@ -111,7 +96,7 @@ bool Map::operator==(const Map &other) const
         for (unsigned int x = 0; x < width; ++x)
             if (cells[y][x] != other.cells[y][x])
                 return false;
-
+                
     return true;
 }
 
@@ -120,12 +105,74 @@ bool Map::operator!=(const Map &other) const
     return !(*this == other);
 }
 
+bool Map::operator>(const Map &other) const
+{
+    if (width != other.width || height != other.height)
+        return width * height < other.width * other.height;
+
+    return bombs > other.bombs;
+}
+
+bool Map::operator<(const Map &other) const
+{
+    return other > *this;
+}
+
+bool Map::operator>=(const Map &other) const
+{
+    return !(*this < other);
+}
+
+bool Map::operator<=(const Map &other) const
+{
+    return !(*this > other);
+}
+
+Map &Map::operator+(unsigned int newBombs)
+{
+    generateBombs(newBombs);
+    updateAdjacentBombs(true);
+    return *this;
+}
+
+Map &Map::operator*(double factor)
+{
+    unsigned int newBombs = bombs * factor;
+
+    unsigned int bombDiff = newBombs - bombs;
+
+    if (bombDiff > 0)
+        generateBombs(bombDiff);
+    else if (bombDiff < 0)
+        generateBombs(-bombDiff);
+
+    updateAdjacentBombs(true);
+    return *this;
+}
+
+Map &Map::operator++()
+{
+    generateBombs(1);
+    updateAdjacentBombs(true);
+
+    return *this;
+}
+
+Cell Map::operator[](int index)
+{
+    int x = index % width, y = index / width;
+
+    return this->getCell(x, y);
+}
+
 std::ostream &operator<<(std::ostream &os, const Map &map)
 {
     for (unsigned int y = 0; y < map.height; ++y)
     {
         for (unsigned int x = 0; x < map.width; ++x)
         {
+            // os << map.getCell(x, y) << " "; // map e const, mai bine ramane const
+
             if (map.isBombAt(x, y))
                 os << "* ";
             else
@@ -156,8 +203,17 @@ std::istream &operator>>(std::istream &is, Map &map)
     return is;
 }
 
-void Map::generateBombs(const unsigned int bombs)
+void Map::generateBombs(const unsigned int bombs, const bool updateAdjacentBombs)
 {
+    if (bombs == 0)
+        return;
+
+    if (this->bombs + bombs > width * height)
+    {
+        std::cerr << "Nu se pot genera mai multe bombe decat celulele disponibile! (" << this->bombs + bombs << " > " << width * height << ")";
+        return;
+    }
+
     // Impartim seed-ul in doua jumatati pentru a le folosi la initializarea pRNG-ului
     unsigned int seed_init = seed >> 32;
     unsigned int seed_seq = seed & ((1ULL << 32) - 1);
@@ -176,12 +232,16 @@ void Map::generateBombs(const unsigned int bombs)
         if (!cells[y][x].isBomb())
         {
             cells[y][x].setBomb(true);
+            this->bombs++;
             ++i;
+
+            if (updateAdjacentBombs)
+                updateAdjacentBombsAround(x, y);
         }
     }
 }
 
-bool Map::isValidPosition(int x, int y) const
+bool Map::isValidPosition(const int x, const int y) const
 {
     return x >= 0 && y >= 0 &&
            // Folosim static_cast pentru a evita compararea intre tipuri semnate si nesemnate
@@ -190,20 +250,37 @@ bool Map::isValidPosition(int x, int y) const
            y < static_cast<int>(height);
 }
 
-bool Map::isBombAt(int x, int y) const
+bool Map::isBombAt(const int x, const int y) const
 {
     return cells[y][x].isBomb();
 }
 
-int Map::getAdjacentBombsAt(int x, int y) const
+int Map::getAdjacentBombsAt(const int x, const int y) const
 {
     return cells[y][x].getAdjacentBombs();
 }
 
-void Map::updateAdjacentBombs()
+void Map::updateAdjacentBombs(bool reset)
 {
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
+    if (reset)
+        for (unsigned int y = 0; y < height; ++y)
+            for (unsigned int x = 0; x < width; ++x)
+                cells[y][x].setAdjacentBombs(0);
+
+    // Pentru a nu face mereu verificarea isValidPosition,
+    // calculam separat pentru liniile si coloanele marginale
+    for (unsigned int x = 0; x < width; ++x)
+        updateAdjacentBombs(x, 0);
+    for (unsigned int x = 0; x < width; ++x)
+        updateAdjacentBombs(x, height - 1);
+    for (unsigned int y = 1; y < height - 1; ++y)
+        updateAdjacentBombs(0, y);
+    for (unsigned int y = 1; y < height - 1; ++y)
+        updateAdjacentBombs(width - 1, y);
+
+    // Pentru restul celulelor, din interior, nu trebuie sa verificam daca pozitia e valida
+    for (unsigned int y = 1; y < height - 1; ++y)
+        for (unsigned int x = 1; x < width - 1; ++x)
             if (cells[y][x].isBomb())
             {
                 // Incrementam numarul de bombe adiacente pentru celulele din jur
@@ -212,28 +289,47 @@ void Map::updateAdjacentBombs()
                     {
                         int px = x + dx, py = y + dy;
 
-                        if (isValidPosition(px, py) && !cells[py][px].isBomb())
-                            // ++cells[py][px];
-                            cells[py][px].setAdjacentBombs(cells[py][px].getAdjacentBombs() + 1);
+                        if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
+                            ++cells[py][px];
                     }
             }
+}
+
+void Map::updateAdjacentBombs(const int x, const int y)
+{
+    // Actualizam numarul de bombe adiacente pentru celula aflata la x, y
+    cells[y][x].setAdjacentBombs(0);
+    for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+        { // Incrementam pentru fiecare vecin care e bomba
+            int px = x + dx, py = y + dy;
+
+            if (isValidPosition(px, py) && cells[py][px].isBomb())
+                ++cells[y][x];
+        }
+}
+
+void Map::updateAdjacentBombsAround(const int x, const int y)
+{
+    // Actualizam numarul de bombe adiacente pentru celulele din jurul celulei aflata la x, y
+
+    int updateRangeX1 = std::max(x - 1, 0), updateRangeX2 = std::min(x + 1, static_cast<int>(width) - 1);
+    int updateRangeY1 = std::max(y - 1, 0), updateRangeY2 = std::min(y + 1, static_cast<int>(height) - 1);
+
+    for (int py = updateRangeY1; py <= updateRangeY2; ++py)
+        for (int px = updateRangeX1; px <= updateRangeX2; ++px)
+            if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
+                updateAdjacentBombs(px, py);
 }
 
 void Map::reserveCells()
 {
     // Rezervam spatiu in memorie pentru celule
     // pentru a evita realocarea ulterioara
-    cells.resize(height);
-    for (unsigned int i = 0; i < height; ++i)
-        cells[i].resize(width);
-
-    // Initializam celulele
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
-            cells[y].emplace_back(Cell(false));
+    cells.resize(height, std::vector<Cell>(width));
 }
 
-Cell &Map::getCell(int x, int y)
+Cell &Map::getCell(const int x, const int y)
 {
     return cells[y][x];
 }

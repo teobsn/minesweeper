@@ -12,7 +12,7 @@ Cell::Cell(bool bomb) : bomb(bomb), revealed(false), adjacentBombs(0)
 {
 }
 
-Cell::Cell(bool bomb, bool revealed, unsigned int adjacentBombs)
+Cell::Cell(bool bomb, bool revealed, short unsigned int adjacentBombs)
     : bomb(bomb), revealed(revealed), adjacentBombs(adjacentBombs)
 {
 }
@@ -55,13 +55,22 @@ void Cell::setAdjacentBombs(unsigned int value)
     adjacentBombs = value;
 }
 
+bool Cell::isFlagged() const
+{
+    return flagged;
+}
+
+void Cell::toggleFlagged()
+{
+    flagged = !flagged;
+}
+
 Cell &Cell::operator=(const Cell &other)
 {
     this->bomb = other.bomb;
     this->adjacentBombs = other.adjacentBombs;
-
-    // Vrem sa pastram stadiul de afisare
-    // this->revealed = other.revealed;
+    this->revealed = other.revealed;
+    this->flagged = other.flagged;
 
     return *this;
 }
@@ -71,9 +80,10 @@ bool Cell::operator==(const Cell &other) const
     if (this == &other)
         return true;
 
-    // Consideram ca celule sunt egale daca fie ambele sunt bombe sau niciuna nu e bomba
-    // Sau daca au acelasi numar de bombe adiacente
-    return (this->bomb == other.bomb) || (this->adjacentBombs == other.adjacentBombs);
+    return this->bomb == other.bomb &&
+           this->revealed == other.revealed &&
+           this->flagged == other.flagged &&
+           this->adjacentBombs == other.adjacentBombs;
 }
 
 bool Cell::operator!=(const Cell &other) const
@@ -81,19 +91,34 @@ bool Cell::operator!=(const Cell &other) const
     return !(*this == other);
 }
 
+bool Cell::operator<(const Cell &other) const
+{
+    return this->adjacentBombs < other.adjacentBombs;
+}
+
+bool Cell::operator>(const Cell &other) const
+{
+    return other < *this;
+}
+
+bool Cell::operator<=(const Cell &other) const
+{
+    return !(*this > other);
+}
+
+bool Cell::operator>=(const Cell &other) const
+{
+    return !(*this < other);
+}
+
 std::ostream &operator<<(std::ostream &os, const Cell &cell)
-{ // de testat
-    if (cell.revealed)
-    {
-        if (cell.bomb)
-            os << "B";
-        else if (cell.adjacentBombs)
-            os << cell.adjacentBombs;
-        else
-            os << " ";
-    }
+{
+    if (cell.bomb)
+        os << "B";
+    else if (cell.adjacentBombs)
+        os << cell.adjacentBombs;
     else
-        os << "O";
+        os << " ";
 
     return os;
 }
@@ -116,14 +141,47 @@ std::istream &operator>>(std::istream &is, Cell &cell)
     return is;
 }
 
+Cell &Cell::operator+(const Cell &other)
+{
+    adjacentBombs += other.adjacentBombs;
+    return *this;
+}
+
+Cell &Cell::operator-(const Cell &other)
+{
+    adjacentBombs -= other.adjacentBombs;
+    return *this;
+}
+
+Cell &Cell::operator++()
+{
+    ++adjacentBombs;
+    return *this;
+}
+
+Cell Cell::operator++(int)
+{
+    Cell temp = *this;
+    ++*this;
+    return temp;
+}
+
+Cell &Cell::operator--()
+{
+    --adjacentBombs;
+    return *this;
+}
+
+Cell Cell::operator--(int)
+{
+    Cell temp = *this;
+    --*this;
+    return temp;
+}
+
 /*
 de implementat:
-constructor de atribuire
-constructor ++, --, doar facend o copie a celulei, dar cu numarul de bombe adiacente actualizat corespunzator
-constructor de +, -, doar facend o copie a celulei, dar cu numarul de bombe adiacente actualizat corespunzator
 
 operator []
 
-operator de >=, verifica daca celula are mai multe bombe adiacente decat cealalta
-spaceship?
 */

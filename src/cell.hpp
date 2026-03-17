@@ -6,21 +6,37 @@
 class Cell
 {
     bool bomb;
+    bool flagged;
     bool revealed;
-    unsigned int adjacentBombs;
+    short unsigned int adjacentBombs;
 
 public:
     // Constructori
     Cell();
     Cell(bool bomb);
-    Cell(bool bomb, bool revealed, unsigned int adjacentBombs);
+    Cell(bool bomb, bool revealed, short unsigned int adjacentBombs);
+    Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBombs);
     Cell(const Cell &other);
     ~Cell();
 
-    // Operatori
+    // Operatori atribuire
     Cell &operator=(const Cell &other);
+
+    // Operatori comparatie
     bool operator==(const Cell &other) const;
     bool operator!=(const Cell &other) const;
+    bool operator<(const Cell &other) const;
+    bool operator>(const Cell &other) const;
+    bool operator<=(const Cell &other) const;
+    bool operator>=(const Cell &other) const;
+
+    // Operatori aritmetici
+    Cell &operator+(const Cell &other);
+    Cell &operator-(const Cell &other);
+    Cell &operator++();
+    Cell &operator--();
+    Cell operator++(int);
+    Cell operator--(int);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Cell &cell);
@@ -28,14 +44,14 @@ public:
 
     // Metode
     bool isBomb() const;
-
     void setBomb(bool value);
 
     bool isRevealed() const;
-
     void setRevealed(bool value);
 
     unsigned int getAdjacentBombs() const;
-
     void setAdjacentBombs(unsigned int value);
+
+    bool isFlagged() const;
+    void toggleFlagged();
 };
