@@ -17,18 +17,26 @@ using namespace std;
 
 int main()
 {
-    Map map;
+    // Map map;
 
-    Map map2 = map;
+    // Map map2 = map;
 
-    Map map3(16, 16, 1, 32);
-    Map map4(16, 16, 2, 32);
+    // Map map3(16, 16, 1, 32);
+    // Map map4(16, 16, 2, 32);
 
-    Map map5(map3);
+    // Map map5(map3);
 
-    map = map4;
+    // map = map4;
 
-    cout << map << "\n" << map4;
+    // cout << map << "\n" << map4;
+
+    Map gameMap(16, 16, 2, 32);
+
+    Game game(Game::GameState::IN_PROGRESS, gameMap);
+
+    game.fillReveal(5, 6);
+
+    cout << game.getMap();
 
     return 0;
 }
