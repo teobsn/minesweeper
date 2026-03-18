@@ -16,13 +16,6 @@ class Map
 
     void reserveCells();
     void generateBombs(const unsigned int bombs, const bool updateAdjacentBombs = false);
-    void updateAdjacentBombs(const bool reset = true);  // Actualizeaza toata harta
-    void updateAdjacentBombs(const int x, const int y);       // Actualizeaza indicatorul celulei aflate la x, y
-    void updateAdjacentBombsAround(const int x, const int y); // Actualizaza indicatorul celulelor din jurul celei aflate la x, y
-
-    bool isValidPosition(const int x, const int y) const;
-    bool isBombAt(const int x, const int y) const;
-    int getAdjacentBombsAt(const int x, const int y) const;
 
     Cell &getCell(const int x, const int y);
 
@@ -39,8 +32,10 @@ public:
     // Destructor
     ~Map();
 
-    // Operatori de comparatie
+    // Operator de atribuire
     Map &operator=(const Map &other);
+
+    // Operatori de comparatie
     bool operator==(const Map &other) const;
     bool operator!=(const Map &other) const;
 
@@ -54,12 +49,37 @@ public:
     Map &operator*(double factor);
     Map &operator++();
 
+    // Friend pentru +, *
+    friend unsigned int &operator+(Map &map);
+    friend double &operator*(Map &map);
+
     // Operator []
     Cell operator[](int index);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
     friend std::istream &operator>>(std::istream &os, Map &map);
+
+    // Alte metode
+    unsigned int getWidth() const;
+    unsigned int getHeight() const;
+    unsigned int getBombs() const;
+    bool isValidPosition(const int x, const int y) const;
+
+    bool isBombAt(const int x, const int y) const;
+    int getAdjacentBombsAt(const int x, const int y) const;
+    bool isRevealedAt(const int x, const int y) const;
+    bool isFlaggedAt(const int x, const int y) const;
+
+    void updateAdjacentBombs(const bool reset = true);  // Actualizeaza toata harta
+    void updateAdjacentBombs(const int x, const int y);       // Actualizeaza indicatorul celulei aflate la x, y
+    void updateAdjacentBombsAround(const int x, const int y); // Actualizaza indicatorul celulelor din jurul celei aflate la x, y
+
+    void toggleFlagAt(const int x, const int y);
+    void setFlagAt(const int x, const int y, const bool value);
+    void revealAt(const int x, const int y);
+
+    void revealAll();
 };
 
 std::ostream &operator<<(std::ostream &os, const Map &map);

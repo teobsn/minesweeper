@@ -96,7 +96,7 @@ bool Map::operator==(const Map &other) const
         for (unsigned int x = 0; x < width; ++x)
             if (cells[y][x] != other.cells[y][x])
                 return false;
-                
+
     return true;
 }
 
@@ -167,21 +167,46 @@ Cell Map::operator[](int index)
 
 std::ostream &operator<<(std::ostream &os, const Map &map)
 {
+    std::string defaultColor = "\e[0;97m"; // White
+    std::string bombColor = "\e[41m";      // Red Background
+
+    std::string colorEscape[] = {
+        "\e[0;30m", // 0 -> Black
+        "\e[0;94m", // 1 -> Blue
+        "\e[0;92m", // 2 -> Green
+        "\e[0;91m", // 3 -> Red
+        "\e[0;35m", // 4 -> Purple
+        "\e[0;31m", // 5 -> Dark Red
+        "\e[0;96m", // 6 -> Cyan
+        "\e[0;32m", // 7 -> Dark Green
+        "\e[0;93m"  // 8 -> Yellow
+    };
+
     for (unsigned int y = 0; y < map.height; ++y)
     {
         for (unsigned int x = 0; x < map.width; ++x)
         {
             // os << map.getCell(x, y) << " "; // map e const, mai bine ramane const
 
-            if (map.isBombAt(x, y))
-                os << "* ";
+            if (map.isRevealedAt(x, y))
+            {
+                if (map.isBombAt(x, y))
+                    os << bombColor << "*" << defaultColor << " ";
+                else
+                {
+                    unsigned int adjacentBombs = map.getAdjacentBombsAt(x, y);
+                    if (adjacentBombs)
+                        os << colorEscape[adjacentBombs] << adjacentBombs << defaultColor << " ";
+                    else // Daca nu are bombe adiacente, afisam un spatiu gol
+                        os << defaultColor << "  ";
+                }
+            }
             else
             {
-                unsigned int adjacentBombs = map.getAdjacentBombsAt(x, y);
-                if (adjacentBombs)
-                    os << adjacentBombs << " ";
-                else // Daca nu are bombe adiacente, afisam un spatiu gol
-                    os << "  ";
+                if (map.isFlaggedAt(x, y))
+                    os << defaultColor << "P" << defaultColor << " ";
+                else
+                    os << defaultColor << "■" << defaultColor << " ";
             }
         }
         os << std::endl;
@@ -241,6 +266,21 @@ void Map::generateBombs(const unsigned int bombs, const bool updateAdjacentBombs
     }
 }
 
+unsigned int Map::getWidth() const
+{
+    return width;
+}
+
+unsigned int Map::getHeight() const
+{
+    return height;
+}
+
+unsigned int Map::getBombs() const
+{
+    return bombs;
+}
+
 bool Map::isValidPosition(const int x, const int y) const
 {
     return x >= 0 && y >= 0 &&
@@ -260,23 +300,22 @@ int Map::getAdjacentBombsAt(const int x, const int y) const
     return cells[y][x].getAdjacentBombs();
 }
 
+bool Map::isRevealedAt(const int x, const int y) const
+{
+    return cells[y][x].isRevealed();
+}
+
+bool Map::isFlaggedAt(const int x, const int y) const
+{
+    return cells[y][x].isFlagged();
+}
+
 void Map::updateAdjacentBombs(bool reset)
 {
     if (reset)
         for (unsigned int y = 0; y < height; ++y)
             for (unsigned int x = 0; x < width; ++x)
                 cells[y][x].setAdjacentBombs(0);
-
-    // Pentru a nu face mereu verificarea isValidPosition,
-    // calculam separat pentru liniile si coloanele marginale
-    for (unsigned int x = 0; x < width; ++x)
-        updateAdjacentBombs(x, 0);
-    for (unsigned int x = 0; x < width; ++x)
-        updateAdjacentBombs(x, height - 1);
-    for (unsigned int y = 1; y < height - 1; ++y)
-        updateAdjacentBombs(0, y);
-    for (unsigned int y = 1; y < height - 1; ++y)
-        updateAdjacentBombs(width - 1, y);
 
     // Pentru restul celulelor, din interior, nu trebuie sa verificam daca pozitia e valida
     for (unsigned int y = 1; y < height - 1; ++y)
@@ -293,6 +332,17 @@ void Map::updateAdjacentBombs(bool reset)
                             ++cells[py][px];
                     }
             }
+
+    // Pentru a nu face mereu verificarea isValidPosition,
+    // calculam separat pentru liniile si coloanele marginale
+    for (unsigned int x = 0; x < width; ++x)
+        updateAdjacentBombs(x, 0);
+    for (unsigned int x = 0; x < width; ++x)
+        updateAdjacentBombs(x, height - 1);
+    for (unsigned int y = 1; y < height - 1; ++y)
+        updateAdjacentBombs(0, y);
+    for (unsigned int y = 1; y < height - 1; ++y)
+        updateAdjacentBombs(width - 1, y);
 }
 
 void Map::updateAdjacentBombs(const int x, const int y)
@@ -332,4 +382,26 @@ void Map::reserveCells()
 Cell &Map::getCell(const int x, const int y)
 {
     return cells[y][x];
+}
+
+void Map::toggleFlagAt(const int x, const int y)
+{
+    cells[y][x].toggleFlagged();
+}
+
+void Map::setFlagAt(const int x, const int y, const bool value)
+{
+    cells[y][x].setFlagged(value);
+}
+
+void Map::revealAt(const int x, const int y)
+{
+    cells[y][x].setRevealed(true);
+}
+
+void Map::revealAll()
+{
+    for (unsigned int y = 0; y < height; ++y)
+        for (unsigned int x = 0; x < width; ++x)
+            cells[y][x].setRevealed(true);
 }

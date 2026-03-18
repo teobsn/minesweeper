@@ -54,4 +54,5 @@ public:
 
     bool isFlagged() const;
     void toggleFlagged();
+    void setFlagged(bool value);
 };

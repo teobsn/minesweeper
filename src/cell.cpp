@@ -65,6 +65,11 @@ void Cell::toggleFlagged()
     flagged = !flagged;
 }
 
+void Cell::setFlagged(bool value)
+{
+    flagged = value;
+}
+
 Cell &Cell::operator=(const Cell &other)
 {
     this->bomb = other.bomb;
