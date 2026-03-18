@@ -6,6 +6,7 @@
 
 // C++ standard library
 #include <chrono>
+#include <queue>
 
 class Game
 {
@@ -29,16 +30,18 @@ public:
     void startGame();
 
     void revealCell(int x, int y);
+    void fillReveal(int x, int y);
     void adjacentReveal(int x, int y);
-    void implicitReveal(int x, int y);
     void toggleFlag(int x, int y);
 
     GameState getCurrentState() const;
     const Map &getMap() const;
     std::chrono::duration<int, std::milli> getElapsedTime() const;
 
-    // Operatori de comparatie
+    // Operator de atribuire
     Game &operator=(const Game &other);
+
+    // Operatori de comparatie
     bool operator==(const Game &other) const;
     bool operator!=(const Game &other) const;
 
