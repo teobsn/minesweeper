@@ -24,6 +24,7 @@ set(SOURCES-CLI
     src/cell.cpp
     src/game.cpp
     src/map.cpp
+    src/stats.cpp
     src/cli.cpp
 )
 
