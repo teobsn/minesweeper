@@ -4,16 +4,16 @@
 // C++ standard library
 #include <iostream>
 
-Cell::Cell() : bomb(false), revealed(false), adjacentBombs(0)
+Cell::Cell() : bomb(false), flagged(false), revealed(false), adjacentBombs(0)
 {
 }
 
-Cell::Cell(bool bomb) : bomb(bomb), revealed(false), adjacentBombs(0)
+Cell::Cell(bool bomb) : bomb(bomb), flagged(false), revealed(false), adjacentBombs(0)
 {
 }
 
 Cell::Cell(bool bomb, bool revealed, short unsigned int adjacentBombs)
-    : bomb(bomb), revealed(revealed), adjacentBombs(adjacentBombs)
+    : bomb(bomb), flagged(false), revealed(revealed), adjacentBombs(adjacentBombs)
 {
 }
 
