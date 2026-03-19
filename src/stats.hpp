@@ -49,6 +49,9 @@ public:
     bool getWinState() const;
     void setWinState(bool won);
 
+    bool isFinished() const;
+    void setFinished(bool finished);
+
     // Operator de atribuire
     Match &operator=(const Match &other);
 
@@ -93,10 +96,12 @@ public:
     PlayerStats(const PlayerStats &stats);
 
     char *getPlayerName();
+    const char *getPlayerName() const;
     void setPlayerName(const char *newName);
 
     void addMatch(Match match);
     Match *getMatches();
+    const Match *getMatches() const;
 
     float getWinRate() const;
     int getMatchesNumber() const;
@@ -137,10 +142,4 @@ private:
 public:
     Leaderboard();
     ~Leaderboard();
-
-    char *getBestPlayer();
-    char *getPlayers();
-
-    void addPlayer();
-    void removePlayer();
 };

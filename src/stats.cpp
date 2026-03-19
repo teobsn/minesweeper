@@ -117,6 +117,16 @@ void Match::setWinState(bool won)
     this->won = won;
 }
 
+bool Match::isFinished() const
+{
+    return finished;
+}
+
+void Match::setFinished(bool finished)
+{
+    this->finished = finished;
+}
+
 Match &Match::operator=(const Match &other)
 {
     if (this == &other)
@@ -193,9 +203,14 @@ Cell Match::operator[](int index) { return Cell(); }
 
 std::ostream &operator<<(std::ostream &os, const Match &match)
 {
-    // os << match.mapWidth << " " << match.mapHeight << " " << match.mapSeed << " " << match.mapBombs << "\n"
-    //    << match.revealedCells << " " << match.clicks << " " << match.finished << " " << match.won << "\n"
-    //    << match.timePlayed.count();
+    os << "Match Details:\n"
+       << "  Map: " << match.mapWidth << "x" << match.mapHeight << "\n"
+       << "  Seed: " << match.mapSeed << " | Bombs: " << match.mapBombs << "\n"
+       << "  Status: " << (match.finished ? (match.won ? "Won" : "Lost") : "In Progress") << "\n"
+       << "  Cells Revealed: " << match.revealedCells << "\n"
+       << "  Clicks: " << match.clicks << "\n"
+       << "  Time Played: " << (match.timePlayed.count() / 1000.0) << "s\n";
+
     return os;
 }
 
@@ -254,6 +269,11 @@ char *PlayerStats::getPlayerName()
     return playerName;
 }
 
+const char *PlayerStats::getPlayerName() const
+{
+    return playerName;
+}
+
 void PlayerStats::setPlayerName(const char *newName)
 {
     if (playerName)
@@ -300,6 +320,11 @@ void PlayerStats::addMatch(Match match)
 }
 
 Match *PlayerStats::getMatches()
+{
+    return games;
+}
+
+const Match *PlayerStats::getMatches() const
 {
     return games;
 }
@@ -405,7 +430,7 @@ Cell PlayerStats::operator[](int index)
 
 std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats)
 {
-    os << "Statistics for " << (plrStats.playerName ? plrStats.playerName : "Unknown") << "\n";
+    os << "Statistics for " << (plrStats.playerName ? plrStats.playerName : "Unknown Player") << "\n";
 
     os << "Games played: " << plrStats.numberOfGames << "\n";
     os << "Win Rate: " << plrStats.winRate << "\n";
@@ -447,26 +472,4 @@ Leaderboard::Leaderboard()
 }
 Leaderboard::~Leaderboard()
 {
-}
-
-char *Leaderboard::getBestPlayer()
-{
-    return nullptr;
-    // de impl
-}
-
-char *Leaderboard::getPlayers()
-{
-    return nullptr;
-    // de impl
-}
-
-void Leaderboard::addPlayer()
-{
-    // de impl
-}
-
-void Leaderboard::removePlayer()
-{
-    // de impl
 }
