@@ -276,7 +276,7 @@ void Commandline::displayGameStatus(const Game &game, bool withControls) const
     std::cout << "Bombs: " << game.getMap().getBombs() << " | Time: " << game.getElapsedTime().count() / 1000 << "s\n";
 
     if (withControls)
-        std::cout << "WASD: Move | ENTER: Reveal | SPACE: Mark/Flag | Q: Quit\n";
+        std::cout << "WASD: Move | ENTER: Reveal | SPACE: Mark/Flag | E: Chording | Q: Quit\n";
 }
 
 void Commandline::startNewGame()
@@ -361,6 +361,10 @@ void Commandline::processGameInput(Game &game)
         case 'd':
         case 'D':
             cursorX = std::min(static_cast<int>(game.getMap().getWidth()) - 1, cursorX + 1);
+            break;
+        case 'e':
+        case 'E':
+            game.adjacentReveal(cursorX, cursorY); // Chording
             break;
         case '\n':
         case '\r': // Enter
