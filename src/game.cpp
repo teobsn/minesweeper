@@ -56,6 +56,11 @@ void Game::startGame()
     startTime = std::chrono::steady_clock::now();
 }
 
+void Game::setMap(const Map &map)
+{
+    this->gameMap = map;
+}
+
 void Game::revealCell(int x, int y)
 {
     if (!gameMap.isValidPosition(x, y) || gameMap.isRevealedAt(x, y) || gameMap.isFlaggedAt(x, y))
@@ -200,6 +205,12 @@ void Game::adjacentReveal(int x, int y)
         }
 }
 
+void Game::revealFullMap()
+{
+    gameMap.revealAll();
+}
+
+
 void Game::toggleFlag(int x, int y)
 {
     if (!gameMap.isValidPosition(x, y) || gameMap.isRevealedAt(x, y))
@@ -227,12 +238,20 @@ const Map &Game::getMap() const
 std::chrono::duration<int, std::milli> Game::getElapsedTime() const
 {
     if (gameState == GameState::NOT_STARTED || gameState == GameState::MENU)
-    {
         return std::chrono::duration<int, std::milli>(0);
-    }
 
     auto now = std::chrono::steady_clock::now();
     return std::chrono::duration_cast<std::chrono::duration<int, std::milli>>(now - startTime);
+}
+
+unsigned int Game::getClicks() const
+{
+    return clicks;
+}
+
+unsigned int Game::getCellsRevealed() const
+{
+    return cellsRevealed;
 }
 
 Game &Game::operator=(const Game &other)
@@ -312,11 +331,12 @@ Cell Game::operator[](int index)
 
 void Game::checkWinCondition()
 {
-    unsigned int totalSafeCells = (gameMap.getWidth() * gameMap.getHeight()) - gameMap.getBombs();
-    if (cellsRevealed == totalSafeCells)
-    {
-        gameState = GameState::WON;
-    }
+    for (unsigned int y = 0; y < gameMap.getHeight(); ++y)
+        for (unsigned int x = 0; x < gameMap.getWidth(); ++x)
+            if (!gameMap.isBombAt(x, y) && !gameMap.isRevealedAt(x, y))
+                return;
+
+    gameState = GameState::WON;
 }
 
 void Game::loseGame()

@@ -29,14 +29,20 @@ public:
 
     void startGame();
 
+    void setMap(const Map& map);
+
     void revealCell(int x, int y);
     void fillReveal(int x, int y);
     void adjacentReveal(int x, int y);
+    void revealFullMap();
     void toggleFlag(int x, int y);
 
     GameState getCurrentState() const;
     const Map &getMap() const;
     std::chrono::duration<int, std::milli> getElapsedTime() const;
+    
+    unsigned int getClicks() const;
+    unsigned int getCellsRevealed() const;
 
     // Operator de atribuire
     Game &operator=(const Game &other);
