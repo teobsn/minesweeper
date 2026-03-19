@@ -28,15 +28,15 @@ class Commandline
 public:
     enum class MenuOption
     {   
-        START_GAME = 1, // Pentru ca lista sa inceapa de la "1." in meniu
+        START_GAME = 1,
         CHANGE_SETTINGS,
         VIEW_STATS,
+        VIEW_ALL_PLAYERS,
         EXIT
     };
 
 private:
     MapSettings settings;
-    PlayerStats currentPlayer;
     Leaderboard leaderboard;
 
     void printMainMenu() const;
@@ -53,6 +53,7 @@ private:
 
     Match saveGameRecord(const Game &game, bool won);
     void displayStatistics() const;
+    void displayAllPlayersStatistics() const;
 
     int readIntInput(const char *prompt, int min, int max);
     unsigned long long readULLInput(const char *prompt);
