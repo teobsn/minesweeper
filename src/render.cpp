@@ -13,9 +13,9 @@
 #include <iostream>
 #include <chrono>
 #include <cstring>
+#include <cstdlib>
 
-
-Render::Render(Game game)
+Render::Render()
 {
     // mapWidthText[5] = "16";
     // mapHeightText[5] = "16";
@@ -27,32 +27,45 @@ Render::Render(Game game)
     strcpy(mapBombsText, "32");
     strcpy(mapSeedText, "");
 
-    this->game = game;
+    // this->game = game;
 }
 
 Render::~Render()
 {
 }
 
+void Render::InitializeGame(unsigned int width, unsigned int height, unsigned int bombs, unsigned long long seed)
+{
+    std::cout << "Generating map with attributes:\n";
+    std::cout << "Width: " << width << "\n";
+    std::cout << "Height: " << height << "\n";
+    std::cout << "Number of bombs: " << bombs << "\n";
+    std::cout << "Seed: " << seed << "\n";
+
+    game.setMap(Map(width, height, bombs, seed));
+
+    std::cout << game.getMap();
+}
+
 void Render::StartRender()
 {
+    game = Game(Game::GameState::MENU);
+
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
 
     const int screenWidth = 500;
     const int screenHeight = 600;
 
-    Font AdwaitaSans = LoadFont("resources/fonts/AdwaitaSans-Regular.ttf");
-    Font AdwaitaMono = LoadFont("resources/fonts/AdwaitaMono-Regular.ttf");
-
     // Initialize window
     InitWindow(screenWidth, screenHeight, "Minesweeper");
 
     // Load font
-
-    Game::GameState gameState = game.getCurrentState();
+    Font AdwaitaSans = LoadFont("resources/fonts/AdwaitaSans-Regular.ttf");
+    Font AdwaitaMono = LoadFont("resources/fonts/AdwaitaMono-Regular.ttf");
 
     while (!WindowShouldClose())
     {
+        Game::GameState gameState = game.getCurrentState();
         if (gameState == Game::GameState::MENU)
         {
             BeginDrawing();
@@ -90,7 +103,10 @@ void Render::StartRender()
             DrawRectangleRec(textBoxMapSeed, rectColor);
             DrawTextEx(AdwaitaMono, mapSeedText, {textBoxMapSeed.x + textSize / 16, textBoxMapSeed.y + textSize / 8}, textSize, 0, textColor);
 
-            renderPosX = 16, renderPosY = 16;
+            renderPosX = (screenWidth - sizeX) / 2, renderPosY = (screenHeight - rectSize) / 2;
+            Rectangle startButton = {renderPosX, renderPosY, sizeX, rectSize};
+            DrawRectangleRec(startButton, rectColor);
+            DrawTextEx(AdwaitaMono, "Start", {startButton.x + sizeX / 2 - textSize * strlen("Start") / 4, startButton.y + textSize / 8}, textSize, 0, textColor);
 
             if (CheckCollisionPointRec(GetMousePosition(), textBoxMapWidth))
             {
@@ -183,6 +199,28 @@ void Render::StartRender()
                 if (IsKeyPressed(KEY_BACKSPACE))
                     if (strlen(mapSeedText) > 0)
                         mapSeedText[strlen(mapSeedText) - 1] = '\0';
+            }
+            else if (CheckCollisionPointRec(GetMousePosition(), startButton))
+            {
+                DrawRectangleLines((int)startButton.x, (int)startButton.y, (int)startButton.width, (int)startButton.height, textColor);
+
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    unsigned int height = atoi(mapHeightText);
+                    unsigned int width = atoi(mapWidthText);
+                    unsigned int bombs = atoi(mapBombsText);
+                    unsigned long long seed;
+
+                    if (strcmp(mapSeedText, ""))
+                        seed = atoi(mapHeightText);
+                    else
+                    {
+                        seed = rand();
+                        std::cout << "Generating random seed " << seed << "\n";
+                    }
+
+                    InitializeGame(width, height, bombs, seed);
+                }
             }
             else
             {

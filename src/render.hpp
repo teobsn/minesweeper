@@ -19,8 +19,10 @@ private:
     Game game;
 
 public:
-    Render(Game game);
+    Render();
+    // Render(Game game);
     ~Render();
 
     void StartRender();
+    void InitializeGame(unsigned int width, unsigned int height, unsigned int bombs, unsigned long long seed);
 };

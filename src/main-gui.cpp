@@ -17,8 +17,7 @@ using namespace std;
 
 int main()
 {
-    Game mainGame;
-    Render RenderContext(mainGame);
+    Render RenderContext;
 
     RenderContext.StartRender();
 
