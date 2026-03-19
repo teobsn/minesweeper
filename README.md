@@ -2,7 +2,7 @@
 
 A C++ implementation of the classic Minesweeper game with both CLI and GUI interfaces.
 
-![Gameplay GIF](./docs/readme/anim1.mkv)
+![Animation Demo](./docs/readme/anim1.mkv)
 
 ## Features
 
