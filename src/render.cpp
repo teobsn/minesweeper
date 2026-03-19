@@ -60,8 +60,8 @@ void Render::StartRender()
     InitWindow(screenWidth, screenHeight, "Minesweeper");
 
     // Load font
-    Font AdwaitaSans = LoadFont("resources/fonts/AdwaitaSans-Regular.ttf");
-    Font AdwaitaMono = LoadFont("resources/fonts/AdwaitaMono-Regular.ttf");
+    Font AdwaitaSans = LoadFont("resources/fonts/adw/AdwaitaSans-Regular.ttf");
+    Font AdwaitaMono = LoadFont("resources/fonts/adw/AdwaitaMono-Regular.ttf");
 
     while (!WindowShouldClose())
     {
