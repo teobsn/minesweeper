@@ -184,9 +184,25 @@ Cell Cell::operator--(int)
     return temp;
 }
 
-/*
-de implementat:
-
-operator []
-
-*/
+Cell Cell::operator[](char c)
+{
+    switch (c)
+    {
+        case 'b':
+        case 0:
+            return this->bomb;
+            break;
+        case 'a':
+        case 1:
+            return this->adjacentBombs;
+            break;
+        case 'f':
+        case 2:
+            return this->flagged;
+            break;
+        case 'r':
+        case 3:
+            return this->revealed;
+            break;
+    }
+}

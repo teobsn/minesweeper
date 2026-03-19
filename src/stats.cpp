@@ -199,7 +199,26 @@ Match &Match::operator++()
     return *this;
 }
 
-Cell Match::operator[](int index) { return Cell(); }
+unsigned int Match::operator[](char c)
+{
+    switch (c)
+    {
+        case 'w':
+        case 0:
+            return won;
+            break;
+        case 'r':
+        case 1:
+            return revealedCells;
+            break;
+        case 't':
+        case 2:
+            return timePlayed.count();
+            break;
+        default:
+            return 0;
+    }
+}
 
 std::ostream &operator<<(std::ostream &os, const Match &match)
 {
@@ -347,7 +366,7 @@ void PlayerStats::updateWinRate()
     for (int i = 0; i < numberOfGames; ++i)
         if (games[i].getWinState())
             wins++;
-    
+
     setWinRate((float)wins / numberOfGames);
 }
 
@@ -362,7 +381,7 @@ void PlayerStats::updateWins()
     for (int i = 0; i < numberOfGames; ++i)
         if (games[i].getWinState())
             wins++;
-    
+
     numberOfWins = wins;
 }
 

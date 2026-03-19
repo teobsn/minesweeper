@@ -37,6 +37,7 @@ public:
     Cell &operator--();
     Cell operator++(int);
     Cell operator--(int);
+    Cell operator[](char c);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Cell &cell);

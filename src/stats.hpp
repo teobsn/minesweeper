@@ -70,7 +70,7 @@ public:
     Match &operator++();
 
     // Operator []
-    Cell operator[](int index);
+    unsigned int operator[](char c);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Match &match);
