@@ -17,7 +17,7 @@ Cell::Cell(bool bomb, bool revealed, short unsigned int adjacentBombs)
 {
 }
 
-Cell::Cell(const Cell &other) : bomb(other.bomb), revealed(other.revealed), adjacentBombs(other.adjacentBombs)
+Cell::Cell(const Cell &other) : bomb(other.bomb), flagged(other.flagged), revealed(other.revealed), adjacentBombs(other.adjacentBombs)
 {
 }
 
