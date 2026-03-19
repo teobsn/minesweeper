@@ -66,8 +66,9 @@ int main()
     cout << "Average time per map:   " << duration_mt.count() / totalMaps << " ms" << endl;
     cout << "\n";
 
-    cout << "Single-threaded Score:  " << (int)st_score << " (Maps/sec)" << endl;
-    cout << "Multi-threaded Score:   " << (int)mt_score << " (Maps/sec)" << endl;
+    cout << setprecision(2);
+    cout << "Single-threaded Score:  " << static_cast<int>(st_score) << " (Maps/sec)" << endl;
+    cout << "Multi-threaded Score:   " << static_cast<int>(mt_score) << " (Maps/sec)" << endl;
     cout << "MP Ratio:               " << scaling_ratio << "x" << endl;
     cout << "\n";
 
