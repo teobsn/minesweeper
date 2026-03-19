@@ -167,6 +167,9 @@ Cell Map::operator[](int index)
 
 std::ostream &operator<<(std::ostream &os, const Map &map)
 {
+    // Clear screen
+    os << "\033[2J\033[1;1H";
+
     std::string defaultColor = "\e[0;97m"; // White
     std::string bombColor = "\e[41m";      // Red Background
 
@@ -186,8 +189,6 @@ std::ostream &operator<<(std::ostream &os, const Map &map)
     {
         for (unsigned int x = 0; x < map.width; ++x)
         {
-            // os << map.getCell(x, y) << " "; // map e const, mai bine ramane const
-
             if (map.isRevealedAt(x, y))
             {
                 if (map.isBombAt(x, y))
@@ -317,9 +318,35 @@ void Map::updateAdjacentBombs(bool reset)
             for (unsigned int x = 0; x < width; ++x)
                 cells[y][x].setAdjacentBombs(0);
 
-    // Pentru restul celulelor, din interior, nu trebuie sa verificam daca pozitia e valida
-    for (unsigned int y = 1; y < height - 1; ++y)
-        for (unsigned int x = 1; x < width - 1; ++x)
+    // // Pentru restul celulelor, din interior, nu trebuie sa verificam daca pozitia e valida
+    // for (unsigned int y = 1; y < height - 1; ++y)
+    //     for (unsigned int x = 1; x < width - 1; ++x)
+    //         if (cells[y][x].isBomb())
+    //         {
+    //             // Incrementam numarul de bombe adiacente pentru celulele din jur
+    //             for (int dy = -1; dy <= 1; ++dy)
+    //                 for (int dx = -1; dx <= 1; ++dx)
+    //                 {
+    //                     int px = x + dx, py = y + dy;
+
+    //                     if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
+    //                         ++cells[py][px];
+    //                 }
+    //         }
+
+    // // Pentru a nu face mereu verificarea isValidPosition,
+    // // calculam separat pentru liniile si coloanele marginale
+    // for (unsigned int x = 0; x < width; ++x)
+    //     updateAdjacentBombs(x, 0);
+    // for (unsigned int x = 0; x < width; ++x)
+    //     updateAdjacentBombs(x, height - 1);
+    // for (unsigned int y = 1; y < height - 1; ++y)
+    //     updateAdjacentBombs(0, y);
+    // for (unsigned int y = 1; y < height - 1; ++y)
+    //     updateAdjacentBombs(width - 1, y);
+
+    for (unsigned int y = 0; y < height; ++y)
+        for (unsigned int x = 0; x < width; ++x)
             if (cells[y][x].isBomb())
             {
                 // Incrementam numarul de bombe adiacente pentru celulele din jur
@@ -328,21 +355,11 @@ void Map::updateAdjacentBombs(bool reset)
                     {
                         int px = x + dx, py = y + dy;
 
-                        if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
-                            ++cells[py][px];
+                        if (isValidPosition(px, py))
+                            if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
+                                ++cells[py][px];
                     }
             }
-
-    // Pentru a nu face mereu verificarea isValidPosition,
-    // calculam separat pentru liniile si coloanele marginale
-    for (unsigned int x = 0; x < width; ++x)
-        updateAdjacentBombs(x, 0);
-    for (unsigned int x = 0; x < width; ++x)
-        updateAdjacentBombs(x, height - 1);
-    for (unsigned int y = 1; y < height - 1; ++y)
-        updateAdjacentBombs(0, y);
-    for (unsigned int y = 1; y < height - 1; ++y)
-        updateAdjacentBombs(width - 1, y);
 }
 
 void Map::updateAdjacentBombs(const int x, const int y)
