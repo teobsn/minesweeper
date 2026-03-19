@@ -25,7 +25,7 @@ public:
     Match();
     Match(const unsigned int revealedCells, const unsigned int mapBombs);
     Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned int mapBombs, const unsigned int mapSeed);
-    Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished);
+    Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished);
     ~Match();
 
     Match(const Match &other);
@@ -87,7 +87,8 @@ private:
 
     Match *games;
     int numberOfGames;
-    // float totalAverage;
+    int numberOfWins;
+
     float winRate;
 
 public:
@@ -104,6 +105,12 @@ public:
     const Match *getMatches() const;
 
     float getWinRate() const;
+    void setWinRate(float winRate);
+    void updateWinRate();
+
+    unsigned int getWins() const;
+    void updateWins();
+
     int getMatchesNumber() const;
 
     // Operatori de comparatie
@@ -122,7 +129,7 @@ public:
     PlayerStats &operator++();
 
     // Operator []
-    Cell operator[](int index);
+    unsigned int operator[](char c);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats);
@@ -138,8 +145,18 @@ private:
     static PlayerStats *playerStats;
     static unsigned int players;
     static unsigned int overallGames;
+    static unsigned int capacity;
+
+    static void reallocate(unsigned int newCapacity);
 
 public:
     Leaderboard();
     ~Leaderboard();
+
+    static PlayerStats *findPlayer(const char *name);
+    static PlayerStats *addPlayer(const char *name);
+    static PlayerStats *getPlayer(unsigned int index);
+    static unsigned int getPlayerCount();
+    static unsigned int getOverallGames();
+    static void addGame();
 };

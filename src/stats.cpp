@@ -26,8 +26,8 @@ Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const un
     this->mapSeed = mapSeed;
 }
 
-Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished)
-    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs), revealedCells(revealedCells), finished(finished), won(won), timePlayed(timePlayed)
+Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished)
+    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs), revealedCells(revealedCells), clicks(clicks), finished(finished), won(won), timePlayed(timePlayed)
 {
 }
 
@@ -294,7 +294,7 @@ void PlayerStats::addMatch(Match match)
     // Alocam vectorul nou
     Match *newGames = new Match[numberOfGames + 1];
 
-    // Copiem meciul vechi
+    // Copiem meciurile vechi
     for (int i = 0; i < numberOfGames; ++i)
         newGames[i] = games[i];
 
@@ -316,6 +316,8 @@ void PlayerStats::addMatch(Match match)
         if (games[i].getWinState())
             wins++;
 
+    this->numberOfWins = wins;
+
     winRate = numberOfGames > 0 ? (float)wins / numberOfGames : 0.0f;
 }
 
@@ -332,6 +334,36 @@ const Match *PlayerStats::getMatches() const
 float PlayerStats::getWinRate() const
 {
     return winRate;
+}
+
+void PlayerStats::setWinRate(float winRate)
+{
+    this->winRate = winRate;
+}
+
+void PlayerStats::updateWinRate()
+{
+    int wins = 0;
+    for (int i = 0; i < numberOfGames; ++i)
+        if (games[i].getWinState())
+            wins++;
+    
+    setWinRate((float)wins / numberOfGames);
+}
+
+unsigned int PlayerStats::getWins() const
+{
+    return numberOfWins;
+}
+
+void PlayerStats::updateWins()
+{
+    int wins = 0;
+    for (int i = 0; i < numberOfGames; ++i)
+        if (games[i].getWinState())
+            wins++;
+    
+    numberOfWins = wins;
 }
 
 int PlayerStats::getMatchesNumber() const
@@ -423,9 +455,22 @@ PlayerStats &PlayerStats::operator++()
     return *this;
 }
 
-Cell PlayerStats::operator[](int index)
+unsigned int PlayerStats::operator[](char c)
 {
-    return Cell();
+    switch (c)
+    {
+    case 'n':
+    case 0:
+        return numberOfGames;
+        break;
+
+    case 'w':
+    case 1:
+        return winRate;
+        break;
+    default:
+        return 0;
+    }
 }
 
 std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats)
@@ -447,7 +492,7 @@ std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
     if (is >> name >> numGames >> wRate)
     {
         plrStats.setPlayerName(name);
-        
+
         delete[] plrStats.games;
         plrStats.numberOfGames = numGames;
         plrStats.winRate = wRate;
@@ -466,10 +511,82 @@ std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
 PlayerStats *Leaderboard::playerStats = nullptr;
 unsigned int Leaderboard::players = 0;
 unsigned int Leaderboard::overallGames = 0;
+unsigned int Leaderboard::capacity = 0;
 
 Leaderboard::Leaderboard()
 {
 }
+
 Leaderboard::~Leaderboard()
 {
+}
+
+void Leaderboard::reallocate(unsigned int newCapacity)
+{
+    PlayerStats *newStats = new PlayerStats[newCapacity];
+
+    for (unsigned int i = 0; i < players; ++i)
+        newStats[i] = playerStats[i];
+
+    delete[] playerStats;
+    playerStats = newStats;
+    capacity = newCapacity;
+}
+
+PlayerStats *Leaderboard::findPlayer(const char *name)
+{
+    if (!name || players == 0)
+        return nullptr;
+
+    for (unsigned int i = 0; i < players; ++i)
+    {
+        const char *playerName = playerStats[i].getPlayerName();
+        if (playerName && strcmp(playerName, name) == 0)
+        {
+            return &playerStats[i];
+        }
+    }
+    return nullptr;
+}
+
+PlayerStats *Leaderboard::addPlayer(const char *name)
+{
+    PlayerStats *existing = findPlayer(name);
+    if (existing)
+        return existing;
+
+    if (players >= capacity)
+    {
+        // Comportament similar cu cel din vectorul STL
+        unsigned int newCapacity = capacity == 0 ? 4 : capacity * 2;
+        reallocate(newCapacity);
+    }
+
+    playerStats[players].setPlayerName(name);
+    ++players;
+
+    return &playerStats[players - 1];
+}
+
+PlayerStats *Leaderboard::getPlayer(unsigned int index)
+{
+    if (index >= players)
+        return nullptr;
+
+    return &playerStats[index];
+}
+
+unsigned int Leaderboard::getPlayerCount()
+{
+    return players;
+}
+
+unsigned int Leaderboard::getOverallGames()
+{
+    return overallGames;
+}
+
+void Leaderboard::addGame()
+{
+    ++overallGames;
 }
