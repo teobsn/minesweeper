@@ -134,7 +134,7 @@ void Game::fillReveal(int x, int y)
                         // Algoritm pentru a da reveal si la colturi
                         if (last)
                         {
-                            int nxCorner = nx + di[k - 1 % 4], nyCorner = ny + dj[k - 1 % 4];
+                            int nxCorner = nx + dj[(k + 1) % 4], nyCorner = ny - di[(k + 1) % 4];
 
                             // Harta e rectangulara, pozitia sigur e valida
                             if (!gameMap.isBombAt(nxCorner, nyCorner))
@@ -160,7 +160,6 @@ void Game::fillReveal(int x, int y)
         }
         Queue.pop();
     }
-    // todo: inca nu merg colturile :(
     // todo: verifica si chording
 }
 
