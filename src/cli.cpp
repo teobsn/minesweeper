@@ -20,6 +20,9 @@ MapSettings::MapSettings() : width(8), height(8), bombs(8), seed(0)
 
 void MapSettings::generateRandomSeed()
 {
+    // Seed rand
+    srand(time(nullptr));
+
     seed = (static_cast<unsigned long long>(std::rand()) << 32) | std::rand();
 }
 
