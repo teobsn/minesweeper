@@ -17,6 +17,11 @@ Cell::Cell(bool bomb, bool revealed, short unsigned int adjacentBombs)
 {
 }
 
+Cell::Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBombs)
+    : bomb(bomb), flagged(flagged), revealed(revealed), adjacentBombs(adjacentBombs)
+{
+}
+
 Cell::Cell(const Cell &other) : bomb(other.bomb), flagged(other.flagged), revealed(other.revealed), adjacentBombs(other.adjacentBombs)
 {
 }
@@ -129,16 +134,13 @@ std::ostream &operator<<(std::ostream &os, const Cell &cell)
 }
 
 std::istream &operator>>(std::istream &is, Cell &cell)
-{ // de testat
+{
     bool bomb = false;
     bool revealed = false;
     int adjacentBombs = 0;
 
     is >> bomb >> revealed >> adjacentBombs;
 
-    // cell.bomb = bomb;
-    // cell.revealed = revealed;
-    // cell.adjacentBombs = adjacentBombs;
     cell.setBomb(bomb);
     cell.setRevealed(revealed);
     cell.setAdjacentBombs(adjacentBombs);
