@@ -215,6 +215,7 @@ void Render::StartRender()
                         seed = atoi(mapHeightText);
                     else
                     {
+                        srand(time(nullptr));
                         seed = rand();
                         std::cout << "Generating random seed " << seed << "\n";
                     }
