@@ -65,12 +65,12 @@ public:
     bool operator<(const Match &other) const;
 
     // Operatori aritmetici
-    Match &operator+(/**/);
-    Match &operator*(/**/);
+    Match &operator+(int numRevealedCells);
+    Match &operator-(int numRevealedCells);
     Match &operator++();
 
     // Operator []
-    unsigned int operator[](char c);
+    unsigned int operator[](char c) const;
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Match &match);

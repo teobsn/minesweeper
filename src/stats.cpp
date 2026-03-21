@@ -183,13 +183,15 @@ bool Match::operator>=(const Match &other) const
     return !(*this < other);
 }
 
-Match &Match::operator+()
+Match &Match::operator+(int numRevealedCells)
 {
+    this->revealedCells += numRevealedCells;
     return *this;
 }
 
-Match &Match::operator*()
+Match &Match::operator-(int numRevealedCells)
 {
+    this->revealedCells -= numRevealedCells;
     return *this;
 }
 
@@ -199,7 +201,7 @@ Match &Match::operator++()
     return *this;
 }
 
-unsigned int Match::operator[](char c)
+unsigned int Match::operator[](char c) const
 {
     switch (c)
     {
