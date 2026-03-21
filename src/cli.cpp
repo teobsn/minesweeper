@@ -320,7 +320,8 @@ void Commandline::startNewGame()
     
     if (player)
     {
-        player->addMatch(match);
+        // player->addMatch(match);
+        *player + match;
         Leaderboard::addGame();
     }
 
