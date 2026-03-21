@@ -101,6 +101,8 @@ public:
     void setPlayerName(const char *newName);
 
     void addMatch(Match match);
+    void removeMatches(int numMatches);
+
     Match *getMatches();
     const Match *getMatches() const;
 
@@ -124,8 +126,8 @@ public:
     bool operator<(const PlayerStats &other) const;
 
     // Operatori aritmetici
-    PlayerStats &operator+(/**/);
-    PlayerStats &operator*(/**/);
+    PlayerStats &operator+(Match game);
+    PlayerStats &operator-(int numMatches);
     PlayerStats &operator++();
 
     // Operator []

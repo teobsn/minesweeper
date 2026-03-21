@@ -342,6 +342,23 @@ void PlayerStats::addMatch(Match match)
     winRate = numberOfGames > 0 ? (float)wins / numberOfGames : 0.0f;
 }
 
+void PlayerStats::removeMatches(int numMatches)
+{
+    if (numMatches <= 0 || numMatches > numberOfGames)
+        return;
+
+    Match *newGames = new Match[numberOfGames - numMatches];
+    for (int j = 0; j < numberOfGames - numMatches; ++j)
+        newGames[j] = games[j];
+    delete[] games;
+    games = newGames;
+
+    numberOfGames -= numMatches;
+
+    updateWins();
+    updateWinRate();
+}
+
 Match *PlayerStats::getMatches()
 {
     return games;
@@ -461,13 +478,15 @@ bool PlayerStats::operator>=(const PlayerStats &other) const
     return !(*this < other);
 }
 
-PlayerStats &PlayerStats::operator+()
+PlayerStats &PlayerStats::operator+(Match game)
 {
+    addMatch(game);
     return *this;
 }
 
-PlayerStats &PlayerStats::operator*()
+PlayerStats &PlayerStats::operator-(int numMatches)
 {
+    removeMatches(numMatches);
     return *this;
 }
 
