@@ -105,7 +105,8 @@ void Match::setClicks(const unsigned int clicks)
 
 void Match::incrementClicks()
 {
-    this->clicks++;
+    // this->clicks++;
+    ++(*this);
 }
 
 bool Match::getWinState() const
