@@ -139,6 +139,9 @@ Map &Map::operator*(double factor)
 {
     unsigned int newBombs = bombs * factor;
 
+    if (newBombs > width * height)
+        newBombs = width * height;
+
     unsigned int bombDiff = newBombs - bombs;
 
     if (bombDiff > 0)
@@ -239,6 +242,11 @@ void Map::generateBombs(const unsigned int bombs, const bool updateAdjacentBombs
         std::cerr << "Nu se pot genera mai multe bombe decat celulele disponibile! (" << this->bombs + bombs << " > " << width * height << ")";
         return;
     }
+    else if (this->bombs + bombs < 0)
+    {
+        std::cerr << "Nu se pot sterge mai putin bombe decat exista deja! (" << this->bombs + bombs << " < 0)";
+        return;
+    }
 
     // Impartim seed-ul in doua jumatati pentru a le folosi la initializarea pRNG-ului
     unsigned int seed_init = seed >> 32;
@@ -264,6 +272,20 @@ void Map::generateBombs(const unsigned int bombs, const bool updateAdjacentBombs
             if (updateAdjacentBombs)
                 updateAdjacentBombsAround(x, y);
         }
+    }
+
+    if (bombs < 0)
+    {
+        for (unsigned int y = 0; y < height; ++y)
+            for (unsigned int x = 0; x < width && i < -bombs; ++x)
+                if (cells[y][x].isBomb())
+                {
+                    cells[y][x].setBomb(false);
+                    this->bombs--;
+                    i++;
+                    
+                    updateAdjacentBombsAround(x, y);
+                }
     }
 }
 
