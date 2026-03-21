@@ -209,18 +209,18 @@ unsigned int Match::operator[](char c) const
 {
     switch (c)
     {
-        case 'w':
-        case 0:
-            return won;
-            break;
-        case 'r':
-        case 1:
-            return revealedCells;
-            break;
-        case 't':
-        case 2:
-            return timePlayed.count();
-            break;
+    case 'w':
+    case 0:
+        return won;
+        break;
+    case 'r':
+    case 1:
+        return revealedCells;
+        break;
+    case 't':
+    case 2:
+        return timePlayed.count();
+        break;
     case 'f':
     case 3:
         return finished;
@@ -229,8 +229,8 @@ unsigned int Match::operator[](char c) const
     case 4:
         return clicks;
         break;
-        default:
-            return 0;
+    default:
+        return 0;
     }
 }
 
@@ -502,8 +502,9 @@ PlayerStats &PlayerStats::operator-(int numMatches)
     return *this;
 }
 
-PlayerStats &PlayerStats::operator++()
+PlayerStats &PlayerStats::operator--()
 {
+    this->removeMatches(1);
     return *this;
 }
 

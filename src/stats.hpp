@@ -128,7 +128,7 @@ public:
     // Operatori aritmetici
     PlayerStats &operator+(Match game);
     PlayerStats &operator-(int numMatches);
-    PlayerStats &operator++();
+    PlayerStats &operator--();
 
     // Operator []
     unsigned int operator[](char c);
