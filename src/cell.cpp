@@ -4,25 +4,30 @@
 // C++ standard library
 #include <iostream>
 
-Cell::Cell() : bomb(false), flagged(false), revealed(false), adjacentBombs(0)
+Cell::Cell() : bomb(false), flagged(false), revealed(false), adjacentBombs(0), symbol(' ')
 {
 }
 
-Cell::Cell(bool bomb) : bomb(bomb), flagged(false), revealed(false), adjacentBombs(0)
+Cell::Cell(bool bomb) : bomb(bomb), flagged(false), revealed(false), adjacentBombs(0), symbol(' ')
 {
 }
 
 Cell::Cell(bool bomb, bool revealed, short unsigned int adjacentBombs)
-    : bomb(bomb), flagged(false), revealed(revealed), adjacentBombs(adjacentBombs)
+    : bomb(bomb), flagged(false), revealed(revealed), adjacentBombs(adjacentBombs), symbol(' ')
 {
 }
 
 Cell::Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBombs)
-    : bomb(bomb), flagged(flagged), revealed(revealed), adjacentBombs(adjacentBombs)
+    : bomb(bomb), flagged(flagged), revealed(revealed), adjacentBombs(adjacentBombs), symbol(' ')
 {
 }
 
-Cell::Cell(const Cell &other) : bomb(other.bomb), flagged(other.flagged), revealed(other.revealed), adjacentBombs(other.adjacentBombs)
+Cell::Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBombs, char symbol)
+    : bomb(bomb), flagged(flagged), revealed(revealed), adjacentBombs(adjacentBombs), symbol(symbol)
+{
+}
+
+Cell::Cell(const Cell &other) : bomb(other.bomb), flagged(other.flagged), revealed(other.revealed), adjacentBombs(other.adjacentBombs), symbol(other.symbol)
 {
 }
 
@@ -85,6 +90,7 @@ Cell &Cell::operator=(const Cell &other)
     this->adjacentBombs = other.adjacentBombs;
     this->revealed = other.revealed;
     this->flagged = other.flagged;
+    this->symbol = other.symbol;
 
     return *this;
 }
@@ -97,7 +103,8 @@ bool Cell::operator==(const Cell &other) const
     return this->bomb == other.bomb &&
            this->revealed == other.revealed &&
            this->flagged == other.flagged &&
-           this->adjacentBombs == other.adjacentBombs;
+           this->adjacentBombs == other.adjacentBombs &&
+           this->symbol == other.symbol;
 }
 
 bool Cell::operator!=(const Cell &other) const
@@ -125,14 +132,34 @@ bool Cell::operator>=(const Cell &other) const
     return !(*this < other);
 }
 
+void Cell::updateSymbol()
+{
+    if (bomb)
+        symbol = 'B';
+    else if (adjacentBombs)
+        symbol = static_cast<char>('0' + adjacentBombs);
+    else
+        symbol = 'B';
+}
+
 std::ostream &operator<<(std::ostream &os, const Cell &cell)
 {
-    if (cell.bomb)
-        os << "B";
-    else if (cell.adjacentBombs)
-        os << cell.adjacentBombs;
+    if (cell.revealed)
+    {
+        if (cell.bomb)
+            os << "B";
+        else if (cell.adjacentBombs)
+            os << cell.adjacentBombs;
+        else
+            os << " ";
+    }
     else
-        os << " ";
+    {
+        if (cell.flagged)
+            os << "P";
+        else
+            os << "■";
+    }
 
     return os;
 }
@@ -141,13 +168,17 @@ std::istream &operator>>(std::istream &is, Cell &cell)
 {
     bool bomb = false;
     bool revealed = false;
+    bool flagged = false;
     int adjacentBombs = 0;
 
-    is >> bomb >> revealed >> adjacentBombs;
+    is >> bomb >> revealed >> flagged >> adjacentBombs;
 
     cell.setBomb(bomb);
     cell.setRevealed(revealed);
+    cell.setFlagged(flagged);
     cell.setAdjacentBombs(adjacentBombs);
+
+    cell.updateSymbol();
 
     return is;
 }
@@ -194,21 +225,21 @@ int Cell::operator[](char c) const
 {
     switch (c)
     {
-        case 'b':
-        case 0:
-            return this->bomb;
-            break;
-        case 'a':
-        case 1:
-            return this->adjacentBombs;
-            break;
-        case 'f':
-        case 2:
-            return this->flagged;
-            break;
-        case 'r':
-        case 3:
-            return this->revealed;
-            break;
+    case 'b':
+    case 0:
+        return this->bomb;
+        break;
+    case 'a':
+    case 1:
+        return this->adjacentBombs;
+        break;
+    case 'f':
+    case 2:
+        return this->flagged;
+        break;
+    case 'r':
+    case 3:
+        return this->revealed;
+        break;
     }
 }

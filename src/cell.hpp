@@ -10,12 +10,15 @@ class Cell
     bool revealed;
     short unsigned int adjacentBombs;
 
+    char symbol;
+
 public:
     // Constructori
     Cell();
     Cell(bool bomb);
     Cell(bool bomb, bool revealed, short unsigned int adjacentBombs);
     Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBombs);
+    Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBombs, char symbol);
     Cell(const Cell &other);
     ~Cell();
 
@@ -56,4 +59,6 @@ public:
     bool isFlagged() const;
     void toggleFlagged();
     void setFlagged(bool value);
+
+    void updateSymbol();
 };
