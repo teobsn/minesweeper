@@ -241,5 +241,9 @@ int Cell::operator[](char c) const
     case 3:
         return this->revealed;
         break;
+    default:
+        return 0;
+        break;
+    
     }
 }
