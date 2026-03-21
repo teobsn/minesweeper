@@ -403,7 +403,8 @@ void PlayerStats::updateWinRate()
 
 unsigned int PlayerStats::getWins() const
 {
-    return numberOfWins;
+    // return numberOfWins;
+    return (*this)['w'];
 }
 
 void PlayerStats::updateWins()
@@ -418,7 +419,8 @@ void PlayerStats::updateWins()
 
 int PlayerStats::getMatchesNumber() const
 {
-    return numberOfGames;
+    // return numberOfGames;
+    return (*this)['n'];
 }
 
 PlayerStats &PlayerStats::operator=(const PlayerStats &other)
@@ -508,7 +510,7 @@ PlayerStats &PlayerStats::operator--()
     return *this;
 }
 
-unsigned int PlayerStats::operator[](char c)
+unsigned int PlayerStats::operator[](char c) const
 {
     switch (c)
     {
@@ -516,9 +518,12 @@ unsigned int PlayerStats::operator[](char c)
     case 0:
         return numberOfGames;
         break;
-
     case 'w':
     case 1:
+        return numberOfWins;
+        break;
+    case 'r':
+    case 2:
         return winRate;
         break;
     default:

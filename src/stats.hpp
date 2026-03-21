@@ -131,7 +131,7 @@ public:
     PlayerStats &operator--();
 
     // Operator []
-    unsigned int operator[](char c);
+    unsigned int operator[](char c) const;
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats);
