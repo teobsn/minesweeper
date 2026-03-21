@@ -267,7 +267,7 @@ std::istream &operator>>(std::istream &is, Match &match)
     return is;
 }
 
-PlayerStats::PlayerStats() : playerName(nullptr), games(nullptr), numberOfGames(0), winRate(0.0f)
+PlayerStats::PlayerStats() : playerName(nullptr), games(nullptr), numberOfGames(0), numberOfWins(0), winRate(0.0f)
 {
 }
 
@@ -277,7 +277,7 @@ PlayerStats::~PlayerStats()
     delete[] playerName;
 }
 
-PlayerStats::PlayerStats(const PlayerStats &stats) : playerName(nullptr), numberOfGames(stats.numberOfGames), winRate(stats.winRate)
+PlayerStats::PlayerStats(const PlayerStats &stats) : playerName(nullptr), numberOfGames(stats.numberOfGames), numberOfWins(stats.numberOfWins), winRate(stats.winRate)
 {
     if (stats.playerName)
     {
