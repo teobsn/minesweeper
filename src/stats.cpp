@@ -94,7 +94,8 @@ void Match::setTimePlayed(std::chrono::duration<int, std::milli> timePlayed)
 
 unsigned int Match::getClicks() const
 {
-    return clicks;
+    // return clicks;
+    return (*this)['c'];
 }
 
 void Match::setClicks(const unsigned int clicks)
@@ -109,7 +110,8 @@ void Match::incrementClicks()
 
 bool Match::getWinState() const
 {
-    return won;
+    // return won;
+    return (*this)['w'];
 }
 
 void Match::setWinState(bool won)
@@ -119,7 +121,8 @@ void Match::setWinState(bool won)
 
 bool Match::isFinished() const
 {
-    return finished;
+    // return finished;
+    return (*this)['f'];
 }
 
 void Match::setFinished(bool finished)
@@ -217,6 +220,14 @@ unsigned int Match::operator[](char c) const
         case 2:
             return timePlayed.count();
             break;
+    case 'f':
+    case 3:
+        return finished;
+        break;
+    case 'c':
+    case 4:
+        return clicks;
+        break;
         default:
             return 0;
     }
