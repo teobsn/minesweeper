@@ -129,7 +129,14 @@ bool Map::operator<=(const Map &other) const
     return !(*this > other);
 }
 
-Map &Map::operator+(unsigned int newBombs)
+Map &Map::operator+(int newBombs)
+{
+    generateBombs(newBombs);
+    updateAdjacentBombs(true);
+    return *this;
+}
+
+Map &Map::operator-(int newBombs)
 {
     generateBombs(newBombs);
     updateAdjacentBombs(true);
@@ -265,26 +272,28 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
     rng.seed(seed_init, seed_seq);
 
     // Generam pozitiile bombelor
-    unsigned int i = 0;
-    while (i < bombs)
+    if (bombs > 0)
     {
-        unsigned int x = rng.nextUInt(width);
-        unsigned int y = rng.nextUInt(height);
-
-        if (!cells[y][x].isBomb())
+        unsigned int i = 0;
+        while (i < bombs)
         {
-            cells[y][x].setBomb(true);
-            this->bombs++;
-            ++i;
+            unsigned int x = rng.nextUInt(width);
+            unsigned int y = rng.nextUInt(height);
 
-            if (updateAdjacentBombs)
-                updateAdjacentBombsAround(x, y);
+            if (!cells[y][x].isBomb())
+            {
+                cells[y][x].setBomb(true);
+                this->bombs++;
+                ++i;
+
+                if (updateAdjacentBombs)
+                    updateAdjacentBombsAround(x, y);
+            }
         }
     }
-
-    // Remove bombs
-    if (bombs < 0)
-    {
+    else if (bombs < 0)
+    { // Remove bombs
+        unsigned int i = 0;
         for (unsigned int y = 0; y < height; ++y)
             for (unsigned int x = 0; x < width && i < -bombs; ++x)
                 if (cells[y][x].isBomb())
@@ -293,7 +302,8 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
                     this->bombs--;
                     i++;
 
-                    updateAdjacentBombsAround(x, y);
+                    if (updateAdjacentBombs)
+                        updateAdjacentBombsAround(x, y);
                 }
     }
 }

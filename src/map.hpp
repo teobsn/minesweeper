@@ -45,12 +45,14 @@ public:
     bool operator<(const Map &other) const;
 
     // Operatori aritmetici
-    Map &operator+(unsigned int bombs);
+    Map &operator+(int bombs);
+    Map &operator-(int bombs);
     Map &operator*(double factor);
     Map &operator++();
 
-    // Friend pentru +, *
+    // Friend pentru +, -, *
     friend Map &operator+(int value, Map &map);
+    friend Map &operator-(int value, Map &map);
     friend Map &operator*(double factor, Map &map);
 
     // Operator []
