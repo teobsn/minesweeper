@@ -33,6 +33,7 @@ set(SOURCES-GUI
     src/game.cpp
     src/map.cpp
     src/render.cpp
+    src/stats.cpp
 )
 
 set(SOURCES-BENCHMARK
