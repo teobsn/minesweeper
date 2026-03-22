@@ -334,9 +334,14 @@ bool Map::isValidPosition(const int x, const int y) const
            y < static_cast<int>(height);
 }
 
-unsigned int Map::getSeed() const
+unsigned long long Map::getSeed() const
 {
     return seed;
+}
+
+void Map::setSeed(const unsigned long long newSeed)
+{
+    seed = newSeed;
 }
 
 bool Map::isBombAt(const int x, const int y) const
