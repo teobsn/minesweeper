@@ -315,7 +315,7 @@ void Commandline::startNewGame()
             // Cream meciul (statistica) din jocul jucat
             Match match = saveGameRecord(game, won);
 
-            std::cout << "Time: " << match.getTimePlayed().count() / 1000 << "s\n";
+            std::cout << "Time: " << match['t'] / 1000 << "s\n";
             std::cout << "Clicks: " << match.getClicks() << "\n";
             std::cout.flush();
 
