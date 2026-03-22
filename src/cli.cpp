@@ -477,6 +477,8 @@ void Commandline::displayAllPlayersStatistics()
         return;
     }
 
+    std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAvg Clicks\n";
+
     for (unsigned int i = 0; i < playerCount; ++i)
     {
         PlayerStats *player = Leaderboard::getPlayer(i);
@@ -486,33 +488,30 @@ void Commandline::displayAllPlayersStatistics()
         const char *playerName = player->getPlayerName();
         int totalGames = player->getMatchesNumber();
         float winRate = player->getWinRate() * 100.0f;
-
-        std::cout << "Player: " << (playerName ? playerName : "Unknown") << "\n";
-        std::cout << "  Games: " << totalGames << "\n";
-        std::cout << "  Win Rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
+        unsigned int wins = player->getWins();
+        unsigned int totalTime = 0;
+        unsigned int totalClicks = 0;
 
         if (totalGames > 0)
         {
             const Match *matches = player->getMatches();
-            unsigned int totalTime = 0;
-            unsigned int totalClicks = 0;
-            unsigned int wins = player->getWins();
-
             for (int j = 0; j < totalGames; ++j)
             {
                 totalTime += matches[j].getTimePlayed().count();
                 totalClicks += matches[j].getClicks();
             }
-
-            std::cout << "  Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
-            std::cout << "  Total time: " << (totalTime / 1000) << "s\n";
-            std::cout << "  Average number of clicks: " << (totalClicks / static_cast<unsigned int>(totalGames)) << "\n";
         }
 
-        std::cout << "\n";
+        std::cout << (playerName ? playerName : "Unknown") << "\t\t"
+                  << totalGames << "\t"
+                  << wins << "\t"
+                  << (totalGames - wins) << "\t"
+                  << std::fixed << std::setprecision(1) << winRate << "%\t"
+                  << (totalTime / 1000) << "s\t"
+                  << (totalGames > 0 ? (totalClicks / static_cast<unsigned int>(totalGames)) : 0) << "\n";
     }
 
-    std::cout << "Total games played: " << Leaderboard::getOverallGames() << "\n";
+    std::cout << "\nTotal games played (all players): " << Leaderboard::getOverallGames() << "\n";
     std::cout << "\n";
     waitForEnter();
 }
