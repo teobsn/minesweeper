@@ -706,7 +706,7 @@ void Leaderboard::addGame()
     ++overallGames;
 }
 
-void Leaderboard::sort()
+void Leaderboard::sort(char order, bool equality)
 {
     if (players <= 1)
         return;
@@ -715,7 +715,23 @@ void Leaderboard::sort()
     for (unsigned int i = 0; i < players - 1; ++i)
         for (unsigned int j = 0; j < players - i - 1; ++j)
         {
-            if (playerStats[j] < playerStats[j + 1])
+            bool condition = false;
+            if (order == 'a')
+            {
+                if (equality)
+                    condition = (playerStats[j] >= playerStats[j + 1]);
+                else
+                    condition = (playerStats[j] > playerStats[j + 1]);
+            }
+            else
+            { // 'd'
+                if (equality)
+                    condition = (playerStats[j] <= playerStats[j + 1]);
+                else
+                    condition = (playerStats[j] < playerStats[j + 1]);
+            }
+
+            if (condition)
             {
                 // Swap prin temp
                 PlayerStats temp = playerStats[j];
