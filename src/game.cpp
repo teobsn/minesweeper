@@ -229,6 +229,12 @@ Game::GameState Game::getCurrentState() const
     return gameState;
 }
 
+Map &Game::getMap()
+{
+    return gameMap;
+}
+
+
 const Map &Game::getMap() const
 {
     return gameMap;

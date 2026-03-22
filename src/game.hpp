@@ -39,6 +39,8 @@ public:
 
     GameState getCurrentState() const;
     const Map &getMap() const;
+    Map &getMap();
+    
     std::chrono::duration<int, std::milli> getElapsedTime() const;
     
     unsigned int getClicks() const;
