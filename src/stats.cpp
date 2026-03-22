@@ -297,7 +297,7 @@ PlayerStats::PlayerStats(const char *name, int numberOfGames, int numberOfWins)
 }
 
 PlayerStats::PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins)
-     : numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(0.0f)
+    : numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(0.0f)
 {
     playerName = new char[strlen(name) + 1];
     strcpy(playerName, name);
@@ -317,7 +317,7 @@ PlayerStats::PlayerStats(const char *name, Match *games, int numberOfGames, int 
     // Presupunem ca games va tine strict de instanta curenta
     this->games = games;
 
-    //updateWinRate() // e deja dat de lista de initializare
+    // updateWinRate() // e deja dat de lista de initializare
 }
 
 PlayerStats::PlayerStats(const PlayerStats &stats) : playerName(nullptr), numberOfGames(stats.numberOfGames), numberOfWins(stats.numberOfWins), winRate(stats.winRate)
@@ -344,7 +344,7 @@ PlayerStats::~PlayerStats()
 {
     if (games != nullptr)
         delete[] games;
-    
+
     if (playerName != nullptr)
         delete[] playerName;
 
