@@ -32,6 +32,7 @@
 # IDE and Editor files
 .vscode/
 .idea/
+.cache/
 *.swp
 *.swo
 *~
@@ -64,3 +65,6 @@ Thumbs.db
 # Misc
 *.log
 *.dSYM/
+
+# Valgrind
+vgcore.*
