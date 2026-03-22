@@ -287,53 +287,71 @@ void Commandline::displayGameStatus(const Game &game, bool withControls) const
 
 void Commandline::startNewGame()
 {
-    clearScreen();
-
+    bool playAgain = false;
+    
     // Harta, joc nou
     Map gameMap(settings.width, settings.height, settings.seed, settings.bombs);
     Game game(Game::GameState::NOT_STARTED, gameMap);
 
-    // Game Loop
-    processGameInput(game);
+    do {
+        clearScreen();
 
-    // Sfarsit game loop -> salvam "meciul"
-    bool won = game.getCurrentState() == Game::GameState::WON;
+        // Game Loop
+        processGameInput(game);
 
-    std::cout << "\n";
-    if (won)
-        std::cout << "You won!\n";
-    else if (game.getCurrentState() == Game::GameState::LOST)
-        std::cout << "You lost! Game over!\n\n";
-    else
-        std::cout << "Game quit.\n\n";
+        // Sfarsit game loop -> salvam "meciul"
+        bool won = game.getCurrentState() == Game::GameState::WON;
 
-    if (game.getCurrentState() == Game::GameState::WON || game.getCurrentState() == Game::GameState::LOST)
-    {
-        // Cream meciul (statistica) din jocul jucat
-        Match match = saveGameRecord(game, won);
+        std::cout << "\n";
+        if (won)
+            std::cout << "You won!\n";
+        else if (game.getCurrentState() == Game::GameState::LOST)
+            std::cout << "You lost! Game over!\n\n";
+        else
+            std::cout << "Game quit.\n\n";
 
-        std::cout << "Time: " << match.getTimePlayed().count() / 1000 << "s\n";
-        std::cout << "Clicks: " << match.getClicks() << "\n";
-        std::cout.flush();
-
-        char playerName[64] = "";
-        std::cout << "\nEnter your name to save stats (empty to skip): ";
-
-        std::cin.getline(playerName, 64);
-
-        PlayerStats *player = nullptr;
-        if (playerName[0] != '\0')
-            player = Leaderboard::addPlayer(playerName);
-
-        if (player)
+        if (game.getCurrentState() == Game::GameState::WON || game.getCurrentState() == Game::GameState::LOST)
         {
-            // player->addMatch(match);
-            *player + match;
-            Leaderboard::addGame();
-        }
-    }
+            // Cream meciul (statistica) din jocul jucat
+            Match match = saveGameRecord(game, won);
 
-    generateRandomSeed();
+            std::cout << "Time: " << match.getTimePlayed().count() / 1000 << "s\n";
+            std::cout << "Clicks: " << match.getClicks() << "\n";
+            std::cout.flush();
+
+            char playerName[64] = "";
+            std::cout << "\nEnter your name to save stats (empty to skip): ";
+
+            std::cin.getline(playerName, 64);
+
+            PlayerStats *player = nullptr;
+            if (playerName[0] != '\0')
+                player = Leaderboard::addPlayer(playerName);
+
+            if (player)
+            {
+                // player->addMatch(match);
+                *player + match;
+                Leaderboard::addGame();
+            }
+        }
+
+        std::cout << "\nPlay again with same settings?\n";
+        std::cout << "1. Yes\n";
+        std::cout << "2. No\n";
+        int choice = readIntInput("", 1, 2);
+        
+        if (choice == 1) {
+            playAgain = true;
+            generateRandomSeed();
+            game.reset();
+            game.getMap().setSeed(settings.seed);
+            game.getMap() + settings.bombs;
+        } else {
+            playAgain = false;
+        }
+
+    } while (playAgain);
 
     std::cout << "\n";
     waitForEnter();
@@ -513,7 +531,7 @@ void Commandline::displayAllPlayersStatistics()
         return;
     }
 
-    std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAvg Clicks\n";
+    std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAverage Clicks\n";
 
     for (unsigned int i = 0; i < playerCount; ++i)
     {
@@ -542,7 +560,7 @@ void Commandline::displayAllPlayersStatistics()
                   << totalGames << "\t"
                   << wins << "\t"
                   << (totalGames - wins) << "\t"
-                  << std::fixed << std::setprecision(1) << winRate << "%\t"
+                  << std::fixed << std::setprecision(1) << winRate << "%\t\t"
                   << (totalTime / 1000) << "s\t"
                   << (totalGames > 0 ? (totalClicks / static_cast<unsigned int>(totalGames)) : 0) << "\n";
     }
