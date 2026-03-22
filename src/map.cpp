@@ -243,7 +243,7 @@ std::istream &operator>>(std::istream &is, Map &map)
     return is;
 }
 
-void Map::generateBombs(const unsigned int bombs, const bool updateAdjacentBombs)
+void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
 {
     if (bombs == 0)
         return;
