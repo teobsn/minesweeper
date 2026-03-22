@@ -279,7 +279,10 @@ void Commandline::displayGameStatus(const Game &game, bool withControls) const
     std::cout << "Bombs: " << game.getMap().getBombs() << " | Time: " << game.getElapsedTime().count() / 1000 << "s\n";
 
     if (withControls)
+    {
         std::cout << "WASD: Move | ENTER: Reveal | SPACE: Mark/Flag | E: Chording | Q: Quit\n";
+        std::cout << "+: Add Bomb | -: Remove Bomb | *: Multiply Bombs (x1.5)\n";
+    }
 }
 
 void Commandline::startNewGame()
@@ -369,6 +372,15 @@ void Commandline::processGameInput(Game &game)
         case 'e':
         case 'E':
             game.adjacentReveal(cursorX, cursorY); // Chording
+            break;
+        case '+':
+            game.getMap() + 1;
+            break;
+        case '-':
+            game.getMap() - 1;
+            break;
+        case '*':
+            game.setMap(game.getMap() * 1.5);
             break;
         case '\n':
         case '\r': // Enter
