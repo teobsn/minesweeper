@@ -460,11 +460,13 @@ void Commandline::displayStatistics() const
     waitForEnter();
 }
 
-void Commandline::displayAllPlayersStatistics() const
+void Commandline::displayAllPlayersStatistics()
 {
     clearScreen();
 
     std::cout << "All players statistics:\n\n";
+
+    Leaderboard::sort();
 
     unsigned int playerCount = Leaderboard::getPlayerCount();
 

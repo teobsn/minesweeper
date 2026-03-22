@@ -169,4 +169,5 @@ public:
     static unsigned int getPlayerCount();
     static unsigned int getOverallGames();
     static void addGame();
+    static void sort();
 };

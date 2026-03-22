@@ -53,7 +53,7 @@ private:
 
     Match saveGameRecord(const Game &game, bool won);
     void displayStatistics() const;
-    void displayAllPlayersStatistics() const;
+    void displayAllPlayersStatistics();
 
     int readIntInput(const char *prompt, int min, int max);
     unsigned long long readULLInput(const char *prompt);

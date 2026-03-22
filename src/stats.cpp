@@ -705,3 +705,22 @@ void Leaderboard::addGame()
 {
     ++overallGames;
 }
+
+void Leaderboard::sort()
+{
+    if (players <= 1)
+        return;
+
+    // Bubble Sort :-o
+    for (unsigned int i = 0; i < players - 1; ++i)
+        for (unsigned int j = 0; j < players - i - 1; ++j)
+        {
+            if (playerStats[j] < playerStats[j + 1])
+            {
+                // Swap prin temp
+                PlayerStats temp = playerStats[j];
+                playerStats[j] = playerStats[j + 1];
+                playerStats[j + 1] = temp;
+            }
+        }
+}
