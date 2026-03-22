@@ -51,10 +51,21 @@ set(SOURCES-DEMO1
     src/cli.cpp
 )
 
+set(SOURCES-DEMO2
+    src/test-demo.cpp
+    src/cell.cpp
+    src/game.cpp
+    src/map.cpp
+    src/cli.cpp
+    src/stats.cpp
+)
+
+
 add_executable(minesweeper ${SOURCES-CLI})
 add_executable(minesweeper-gui ${SOURCES-GUI})
 add_executable(minesweeper-benchmark ${SOURCES-BENCHMARK})
 add_executable(minesweeper-animation-demo ${SOURCES-DEMO1})
+add_executable(minesweeper-test ${SOURCES-DEMO2})
 
 # Enable parallel builds
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)

@@ -23,8 +23,8 @@ private:
 
 public:
     Match();
-    Match(const unsigned int revealedCells, const unsigned int mapBombs);
-    Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned int mapBombs, const unsigned int mapSeed);
+    Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed);
+    Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs);
     Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished);
     ~Match();
 
@@ -65,9 +65,13 @@ public:
     bool operator<(const Match &other) const;
 
     // Operatori aritmetici
-    Match &operator+(int numRevealedCells);
-    Match &operator-(int numRevealedCells);
+    Match &operator+(int clicks);
+    Match &operator-(int clicks);
     Match &operator++();
+
+    // Friend pentru +, -
+    friend Match &operator+(int value, Match &match);
+    friend Match &operator-(int value, Match &match);
 
     // Operator []
     unsigned int operator[](char c) const;
@@ -93,6 +97,10 @@ private:
 
 public:
     PlayerStats();
+    PlayerStats(const char *name);
+    PlayerStats(const char *name, int numberOfGames, int numberOfWins);
+    PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins);
+    PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins, float winRate);
     ~PlayerStats();
     PlayerStats(const PlayerStats &stats);
 

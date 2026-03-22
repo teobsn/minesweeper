@@ -12,18 +12,16 @@
 Match::Match() : mapWidth(0), mapHeight(0), mapSeed(0), mapBombs(0),
                  revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0) {}
 
-Match::Match(const unsigned int revealedCells, const unsigned int mapBombs) : Match()
+Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed)
+    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(0),
+      revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0)
 {
-    this->revealedCells = revealedCells;
-    this->mapBombs = mapBombs;
 }
 
-Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned int mapBombs, const unsigned int mapSeed) : Match()
+Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs)
+    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs),
+      revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0)
 {
-    this->mapWidth = mapWidth;
-    this->mapHeight = mapHeight;
-    this->mapBombs = mapBombs;
-    this->mapSeed = mapSeed;
 }
 
 Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished)
@@ -33,6 +31,7 @@ Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const un
 
 Match::~Match()
 {
+    std::cout << "\n~Match()\n";
 }
 
 Match::Match(const Match &other)
@@ -187,16 +186,28 @@ bool Match::operator>=(const Match &other) const
     return !(*this < other);
 }
 
-Match &Match::operator+(int numRevealedCells)
+Match &Match::operator+(int clicks)
 {
-    this->revealedCells += numRevealedCells;
+    this->clicks += clicks;
     return *this;
 }
 
-Match &Match::operator-(int numRevealedCells)
+Match &Match::operator-(int clicks)
 {
-    this->revealedCells -= numRevealedCells;
+    this->clicks -= clicks;
     return *this;
+}
+
+Match &operator+(int value, Match &match)
+{
+    match.clicks += value;
+    return match;
+}
+
+Match &operator-(int value, Match &match)
+{
+    match.clicks -= value;
+    return match;
 }
 
 Match &Match::operator++()
@@ -271,10 +282,42 @@ PlayerStats::PlayerStats() : playerName(nullptr), games(nullptr), numberOfGames(
 {
 }
 
-PlayerStats::~PlayerStats()
+PlayerStats::PlayerStats(const char *name)
+    : games(nullptr), numberOfGames(0), numberOfWins(0), winRate(0.0f)
 {
-    delete[] games;
-    delete[] playerName;
+    playerName = new char[strlen(name) + 1];
+    strcpy(playerName, name);
+}
+
+PlayerStats::PlayerStats(const char *name, int numberOfGames, int numberOfWins)
+    : games(nullptr), numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(0.0f)
+{
+    playerName = new char[strlen(name) + 1];
+    strcpy(playerName, name);
+}
+
+PlayerStats::PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins)
+     : numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(0.0f)
+{
+    playerName = new char[strlen(name) + 1];
+    strcpy(playerName, name);
+
+    // Presupunem ca games va tine strict de instanta curenta
+    this->games = games;
+
+    updateWinRate();
+}
+
+PlayerStats::PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins, float winRate)
+    : numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(winRate)
+{
+    playerName = new char[strlen(name) + 1];
+    strcpy(playerName, name);
+
+    // Presupunem ca games va tine strict de instanta curenta
+    this->games = games;
+
+    //updateWinRate() // e deja dat de lista de initializare
 }
 
 PlayerStats::PlayerStats(const PlayerStats &stats) : playerName(nullptr), numberOfGames(stats.numberOfGames), numberOfWins(stats.numberOfWins), winRate(stats.winRate)
@@ -295,6 +338,17 @@ PlayerStats::PlayerStats(const PlayerStats &stats) : playerName(nullptr), number
     }
     else
         games = nullptr;
+}
+
+PlayerStats::~PlayerStats()
+{
+    if (games != nullptr)
+        delete[] games;
+    
+    if (playerName != nullptr)
+        delete[] playerName;
+
+    std::cout << "\n~PlayerStats()\n";
 }
 
 char *PlayerStats::getPlayerName()
@@ -577,6 +631,9 @@ Leaderboard::Leaderboard()
 
 Leaderboard::~Leaderboard()
 {
+    std::cout << "\n~Leaderboard()\n";
+
+    delete[] playerStats;
 }
 
 void Leaderboard::reallocate(unsigned int newCapacity)

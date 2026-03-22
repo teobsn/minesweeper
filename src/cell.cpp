@@ -33,6 +33,9 @@ Cell::Cell(const Cell &other) : bomb(other.bomb), flagged(other.flagged), reveal
 
 Cell::~Cell()
 {
+#ifdef DEBUG
+    std::cout << "\n~Cell()\n";
+#endif
 }
 
 bool Cell::isBomb() const

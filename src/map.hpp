@@ -50,8 +50,8 @@ public:
     Map &operator++();
 
     // Friend pentru +, *
-    friend unsigned int &operator+(Map &map);
-    friend double &operator*(Map &map);
+    friend Map &operator+(int value, Map &map);
+    friend Map &operator*(double factor, Map &map);
 
     // Operator []
     Cell operator[](int index);
@@ -65,6 +65,8 @@ public:
     unsigned int getHeight() const;
     unsigned int getBombs() const;
     bool isValidPosition(const int x, const int y) const;
+
+    unsigned int getSeed() const;
 
     bool isBombAt(const int x, const int y) const;
     int getAdjacentBombsAt(const int x, const int y) const;

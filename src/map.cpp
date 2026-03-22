@@ -59,6 +59,7 @@ Map::Map(const Map &other)
 
 Map::~Map()
 {
+    std::cout << "\n~Map()\n";
 }
 
 Map &Map::operator=(const Map &other)
@@ -151,6 +152,16 @@ Map &Map::operator*(double factor)
 
     updateAdjacentBombs(true);
     return *this;
+}
+
+Map &operator+(int value, Map &map)
+{
+    return map + value;
+}
+
+Map &operator*(double factor, Map &map)
+{
+    return map * factor;
 }
 
 Map &Map::operator++()
@@ -283,7 +294,7 @@ void Map::generateBombs(const unsigned int bombs, const bool updateAdjacentBombs
                     cells[y][x].setBomb(false);
                     this->bombs--;
                     i++;
-                    
+
                     updateAdjacentBombsAround(x, y);
                 }
     }
@@ -311,6 +322,11 @@ bool Map::isValidPosition(const int x, const int y) const
            // static_cast e mai explicit decat typecastul clasic din C
            x < static_cast<int>(width) &&
            y < static_cast<int>(height);
+}
+
+unsigned int Map::getSeed() const
+{
+    return seed;
 }
 
 bool Map::isBombAt(const int x, const int y) const
