@@ -332,7 +332,9 @@ void Game::checkWinCondition()
 {
     for (unsigned int y = 0; y < gameMap.getHeight(); ++y)
         for (unsigned int x = 0; x < gameMap.getWidth(); ++x)
-            if (!gameMap.isBombAt(x, y) && !gameMap.isRevealedAt(x, y))
+            // if (!gameMap.isBombAt(x, y) && !gameMap.isRevealedAt(x, y))
+                if (!gameMap[x * gameMap.getHeight() + y]['b']    
+                    && !gameMap[x * gameMap.getHeight() + y]['r'])
                 return;
 
     gameState = GameState::WON;
