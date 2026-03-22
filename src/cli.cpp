@@ -302,30 +302,35 @@ void Commandline::startNewGame()
     std::cout << "\n";
     if (won)
         std::cout << "You won!\n";
-    else
+    else if (game.getCurrentState() == Game::GameState::LOST)
         std::cout << "You lost! Game over!\n\n";
+    else
+        std::cout << "Game quit.\n\n";
 
-    // Cream meciul (statistica) din jocul jucat
-    Match match = saveGameRecord(game, won);
-
-    std::cout << "Time: " << match.getTimePlayed().count() / 1000 << "s\n";
-    std::cout << "Clicks: " << match.getClicks() << "\n";
-    std::cout.flush();
-
-    char playerName[64] = "";
-    std::cout << "\nEnter your name: ";
-
-    std::cin.getline(playerName, 64);
-
-    PlayerStats *player = nullptr;
-    if (playerName[0] != '\0')
-        player = Leaderboard::addPlayer(playerName);
-    
-    if (player)
+    if (game.getCurrentState() == Game::GameState::WON || game.getCurrentState() == Game::GameState::LOST)
     {
-        // player->addMatch(match);
-        *player + match;
-        Leaderboard::addGame();
+        // Cream meciul (statistica) din jocul jucat
+        Match match = saveGameRecord(game, won);
+
+        std::cout << "Time: " << match.getTimePlayed().count() / 1000 << "s\n";
+        std::cout << "Clicks: " << match.getClicks() << "\n";
+        std::cout.flush();
+
+        char playerName[64] = "";
+        std::cout << "\nEnter your name to save stats (empty to skip): ";
+
+        std::cin.getline(playerName, 64);
+
+        PlayerStats *player = nullptr;
+        if (playerName[0] != '\0')
+            player = Leaderboard::addPlayer(playerName);
+
+        if (player)
+        {
+            // player->addMatch(match);
+            *player + match;
+            Leaderboard::addGame();
+        }
     }
 
     generateRandomSeed();
@@ -411,7 +416,7 @@ Match Commandline::saveGameRecord(const Game &game, bool won)
     return match;
 }
 
-void Commandline::displayStatistics() const
+void Commandline::displayStatistics()
 {
     clearScreen();
 
@@ -432,44 +437,63 @@ void Commandline::displayStatistics() const
         return;
     }
 
-    const Match *matches = player->getMatches();
-    int totalGames = player->getMatchesNumber();
-    unsigned int wins = player->getWins();
-    unsigned int totalTime = 0;
-    unsigned int totalClicks = 0;
-
-    for (int i = 0; i < totalGames; ++i)
+    bool viewing = true;
+    while (viewing)
     {
-        totalTime += matches[i].getTimePlayed().count();
-        totalClicks += matches[i].getClicks();
+        clearScreen();
+        const Match *matches = player->getMatches();
+        int totalGames = player->getMatchesNumber();
+        unsigned int wins = player->getWins();
+        unsigned int totalTime = 0;
+        unsigned int totalClicks = 0;
+
+        for (int i = 0; i < totalGames; ++i)
+        {
+            totalTime += matches[i].getTimePlayed().count();
+            totalClicks += matches[i].getClicks();
+        }
+
+        float winRate = player->getWinRate() * 100.0f;
+
+        std::cout << "Player: " << player->getPlayerName() << "\n";
+        std::cout << "Games: " << totalGames << "\n";
+        std::cout << "Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
+        std::cout << "Win rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
+        std::cout << "Total time: " << (totalTime / 1000) << "s\n";
+        std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / static_cast<unsigned int>(totalGames) : 0) << "\n";
+
+        std::cout << "\nRecent Games:\n";
+        size_t start = (static_cast<size_t>(totalGames) > 10) ? static_cast<size_t>(totalGames) - 10 : 0;
+        for (size_t i = start; i < static_cast<size_t>(totalGames); ++i)
+        {
+            const Match &record = matches[i];
+            std::cout << (record.getWinState() ? "Win" : "Loss") << " | "
+                      << record.getMapWidth() << "x" << record.getMapHeight() << " | "
+                      << record.getMapBombs() << " bombs | Seed: " << record.getMapSeed() << " | "
+                      << (record.getTimePlayed().count() / 1000) << "s | "
+                      << record.getClicks() << " clicks\n";
+        }
+
+        std::cout << "\nOptions:\n";
+        std::cout << "1. Remove Last Match\n";
+        std::cout << "2. Back\n";
+
+        int choice = readIntInput("Your choice: ", 1, 2);
+
+        switch (choice)
+        {
+        case 1:
+            --(*player);
+            std::cout << "Last match removed.\n";
+            if (player->getMatchesNumber() == 0)
+                viewing = false;
+
+            break;
+        default:
+            viewing = false;
+            break;
+        }
     }
-
-    float winRate = player->getWinRate() * 100.0f;
-
-    std::cout << "Games: " << totalGames << "\n";
-    std::cout << "Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
-    std::cout << "Win rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
-    std::cout << "Total time: " << (totalTime / 1000) << "s\n";
-    std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / static_cast<unsigned int>(totalGames) : 0) << "\n";
-
-    const char *name = player->getPlayerName();
-    if (name != nullptr)
-        std::cout << "\nPlayer: " << name << "\n";
-
-    std::cout << "\nRecent Games:\n";
-    size_t start = (static_cast<size_t>(totalGames) > 10) ? static_cast<size_t>(totalGames) - 10 : 0;
-    for (size_t i = start; i < static_cast<size_t>(totalGames); ++i)
-    {
-        const Match &record = matches[i];
-        std::cout << (record.getWinState() ? "Win" : "Loss") << " | "
-                  << record.getMapWidth() << "x" << record.getMapHeight() << " | "
-                  << record.getMapBombs() << " bombs | Seed: " << record.getMapSeed() << " | "
-                  << (record.getTimePlayed().count() / 1000) << "s | "
-                  << record.getClicks() << " clicks\n";
-    }
-
-    std::cout << "\n";
-    waitForEnter();
 }
 
 void Commandline::displayAllPlayersStatistics()

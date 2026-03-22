@@ -52,7 +52,7 @@ private:
     void displayGameStatus(const Game &game, bool withControls) const;
 
     Match saveGameRecord(const Game &game, bool won);
-    void displayStatistics() const;
+    void displayStatistics();
     void displayAllPlayersStatistics();
 
     int readIntInput(const char *prompt, int min, int max);
