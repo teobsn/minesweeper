@@ -176,7 +176,7 @@ Map &Map::operator++()
     return *this;
 }
 
-Cell Map::operator[](int index)
+Cell &Map::operator[](int index)
 {
     int x = index % width, y = index / width;
 

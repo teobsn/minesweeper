@@ -56,7 +56,7 @@ public:
     friend Map &operator*(double factor, Map &map);
 
     // Operator []
-    Cell operator[](int index);
+    Cell &operator[](int index);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Map &map);

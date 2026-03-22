@@ -60,5 +60,6 @@ public:
     void toggleFlagged();
     void setFlagged(bool value);
 
+    char getSymbol() const;
     void updateSymbol();
 };

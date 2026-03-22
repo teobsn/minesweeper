@@ -87,6 +87,11 @@ void Cell::setFlagged(bool value)
     flagged = value;
 }
 
+char Cell::getSymbol() const
+{
+    return symbol;
+}
+
 Cell &Cell::operator=(const Cell &other)
 {
     this->bomb = other.bomb;

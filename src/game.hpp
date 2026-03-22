@@ -43,9 +43,11 @@ public:
     Map &getMap();
     
     std::chrono::duration<int, std::milli> getElapsedTime() const;
+    std::chrono::steady_clock::time_point getStartTime() const;
     
     unsigned int getClicks() const;
     unsigned int getCellsRevealed() const;
+    unsigned int getFlagsPlaced() const;
 
     // Operator de atribuire
     Game &operator=(const Game &other);
@@ -65,7 +67,7 @@ public:
     Game &operator++();
 
     // Operator []
-    Cell operator[](int index);
+    Cell &operator[](int index);
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Game &game);

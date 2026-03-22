@@ -215,6 +215,11 @@ std::chrono::duration<int, std::milli> Game::getElapsedTime() const
     return std::chrono::duration_cast<std::chrono::duration<int, std::milli>>(now - startTime);
 }
 
+std::chrono::steady_clock::time_point Game::getStartTime() const
+{
+    return startTime;
+}
+
 unsigned int Game::getClicks() const
 {
     return clicks;
@@ -223,6 +228,11 @@ unsigned int Game::getClicks() const
 unsigned int Game::getCellsRevealed() const
 {
     return cellsRevealed;
+}
+
+unsigned int Game::getFlagsPlaced() const
+{
+    return flagsPlaced;
 }
 
 Game &Game::operator=(const Game &other)
@@ -295,7 +305,7 @@ Game &Game::operator++()
     return *this;
 }
 
-Cell Game::operator[](int index)
+Cell &Game::operator[](int index)
 {
     return gameMap[index];
 }
