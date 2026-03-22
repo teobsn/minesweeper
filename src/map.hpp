@@ -15,7 +15,7 @@ class Map
     std::vector<std::vector<Cell>> cells;
 
     void reserveCells();
-    void generateBombs(const unsigned int bombs, const bool updateAdjacentBombs = false);
+    void generateBombs(const int bombs, const bool updateAdjacentBombs = false);
 
     Cell &getCell(const int x, const int y);
 

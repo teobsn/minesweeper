@@ -143,12 +143,9 @@ Map &Map::operator*(double factor)
     if (newBombs > width * height)
         newBombs = width * height;
 
-    unsigned int bombDiff = newBombs - bombs;
+    int bombDiff = newBombs - bombs;
 
-    if (bombDiff > 0)
-        generateBombs(bombDiff);
-    else if (bombDiff < 0)
-        generateBombs(-bombDiff);
+    generateBombs(bombDiff);
 
     updateAdjacentBombs(true);
     return *this;
@@ -285,6 +282,7 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
         }
     }
 
+    // Remove bombs
     if (bombs < 0)
     {
         for (unsigned int y = 0; y < height; ++y)
