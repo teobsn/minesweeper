@@ -142,7 +142,7 @@ void Cell::updateSymbol()
     else if (adjacentBombs)
         symbol = static_cast<char>('0' + adjacentBombs);
     else
-        symbol = 'B';
+        symbol = ' ';
 }
 
 std::ostream &operator<<(std::ostream &os, const Cell &cell)

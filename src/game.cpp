@@ -84,9 +84,7 @@ void Game::revealCell(int x, int y)
 void Game::fillReveal(int x, int y)
 {
     /*
-        Algoritm de reveal a vecinilor folosind algoritmul de "Fill cu coada"
-
-        Explicatie: https://www.pbinfo.ro/articole/18894/fill-cu-coada
+        Standard Minesweeper reveal algorithm using BFS with 8-connectivity.
     */
 
     std::queue<std::pair<int, int>> Queue;
@@ -95,72 +93,31 @@ void Game::fillReveal(int x, int y)
     while (!Queue.empty())
     {
         int i = Queue.front().first, j = Queue.front().second;
+        Queue.pop();
 
-        int di[] = {0, -1, 0, 1};
-        int dj[] = {-1, 0, 1, 0};
-
-        /*
-        Ordinea de verificare e:
-
-                  1
-                2 X 4
-                  3
-
-        Ordinea de verificare trebuie sa fie circulara
-        pentru ca algoritmul sa functioneze corect
-        (altfel, cazul verificarii colturilor nu va functiona corespunzator)
-        */
-
-        bool last = !gameMap.isBombAt(i + di[3], j + dj[3]);
-        for (int k = 0; k < 4; k++)
+        for (int dy = -1; dy <= 1; ++dy)
         {
-            short int nx = i + di[k], ny = j + dj[k];
-
-            // Poate pare neintuitiv algoritmul, dar, in Minesweeper, algoritmul de Fill da reveal
-            // si la celulele care au marcaj nenul - altfel nu ai putea continua jocul (cel putin facand decizii rationale :o)
-            if (gameMap.isValidPosition(nx, ny))
+            for (int dx = -1; dx <= 1; ++dx)
             {
-                if (!gameMap.isBombAt(nx, ny))
-                { // ^^^ In teorie, nu este necesar. La un reveal de tip fill, avem in coada
-                  // doar celule care nu au bombe in jur
-                    if (!gameMap.isRevealedAt(nx, ny))
+                if (dx == 0 && dy == 0)
+                    continue;
+
+                int nx = i + dx, ny = j + dy;
+
+                if (gameMap.isValidPosition(nx, ny) && !gameMap.isRevealedAt(nx, ny) && !gameMap.isFlaggedAt(nx, ny))
+                {
+                    if (!gameMap.isBombAt(nx, ny))
                     {
                         gameMap.revealAt(nx, ny);
+                        cellsRevealed++;
 
-                        unsigned int bombs = gameMap.getAdjacentBombsAt(nx, ny);
-                        if (bombs == 0)
+                        if (gameMap.getAdjacentBombsAt(nx, ny) == 0)
                             Queue.push(std::make_pair(nx, ny));
-
-                        // Algoritm pentru a da reveal si la colturi
-                        if (last)
-                        {
-                            int nxCorner = nx + dj[(k + 1) % 4], nyCorner = ny - di[(k + 1) % 4];
-
-                            // Harta e rectangulara, pozitia sigur e valida
-                            if (!gameMap.isBombAt(nxCorner, nyCorner))
-                            {
-                                gameMap.revealAt(nxCorner, nyCorner);
-
-                                if (gameMap.getAdjacentBombsAt(nxCorner, nyCorner) == 0)
-                                    Queue.push(std::make_pair(nxCorner, nyCorner));
-                            }
-                        }
                     }
-                    last = true;
                 }
-                else
-                {
-                    last = false;
-                }
-            }
-            else
-            {
-                last = false;
             }
         }
-        Queue.pop();
     }
-    // todo: verifica si chording
 }
 
 void Game::adjacentReveal(int x, int y)
@@ -338,10 +295,9 @@ void Game::checkWinCondition()
 {
     for (unsigned int y = 0; y < gameMap.getHeight(); ++y)
         for (unsigned int x = 0; x < gameMap.getWidth(); ++x)
-            // if (!gameMap.isBombAt(x, y) && !gameMap.isRevealedAt(x, y))
-                if (!gameMap[x * gameMap.getHeight() + y]['b']    
-                    && !gameMap[x * gameMap.getHeight() + y]['r'])
-                return;
+            if (!gameMap[y * gameMap.getWidth() + x]['b']    
+                && !gameMap[y * gameMap.getWidth() + x]['r'])
+            return;
 
     gameState = GameState::WON;
 }

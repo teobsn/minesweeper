@@ -275,7 +275,8 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
     if (bombs > 0)
     {
         unsigned int i = 0;
-        while (i < bombs)
+        unsigned int targetBombs = static_cast<unsigned int>(bombs);
+        while (i < targetBombs)
         {
             unsigned int x = rng.nextUInt(width);
             unsigned int y = rng.nextUInt(height);
@@ -294,8 +295,9 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
     else if (bombs < 0)
     { // Remove bombs
         unsigned int i = 0;
+        unsigned int bombsToRemove = static_cast<unsigned int>(-bombs);
         for (unsigned int y = 0; y < height; ++y)
-            for (unsigned int x = 0; x < width && i < -bombs; ++x)
+            for (unsigned int x = 0; x < width && i < bombsToRemove; ++x)
                 if (cells[y][x].isBomb())
                 {
                     cells[y][x].setBomb(false);
