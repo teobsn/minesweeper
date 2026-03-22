@@ -463,13 +463,19 @@ void Commandline::displayStatistics()
         int totalGames = player->getMatchesNumber();
         unsigned int wins = player->getWins();
         unsigned int totalTime = 0;
-        unsigned int totalClicks = 0;
 
+        int *clicksArray = new int[totalGames];
         for (int i = 0; i < totalGames; ++i)
         {
             totalTime += matches[i].getTimePlayed().count();
-            totalClicks += matches[i].getClicks();
+            clicksArray[i] = static_cast<int>(matches[i].getClicks());
         }
+
+        int totalClicks = 0;
+        for (int i = 0; i < totalGames; ++i)
+            totalClicks += clicksArray[i];
+        
+        delete[] clicksArray;
 
         float winRate = player->getWinRate() * 100.0f;
 
@@ -478,7 +484,7 @@ void Commandline::displayStatistics()
         std::cout << "Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
         std::cout << "Win rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
         std::cout << "Total time: " << (totalTime / 1000) << "s\n";
-        std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / static_cast<unsigned int>(totalGames) : 0) << "\n";
+        std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / totalGames : 0) << "\n";
 
         std::cout << "\nRecent Games:\n";
         size_t start = (static_cast<size_t>(totalGames) > 10) ? static_cast<size_t>(totalGames) - 10 : 0;
