@@ -56,6 +56,15 @@ void Game::startGame()
     startTime = std::chrono::steady_clock::now();
 }
 
+void Game::reset()
+{
+    gameMap.clearGrid();
+    gameState = GameState::NOT_STARTED;
+    flagsPlaced = 0;
+    cellsRevealed = 0;
+    clicks = 0;
+}
+
 void Game::setMap(const Map &map)
 {
     this->gameMap = map;

@@ -28,6 +28,7 @@ public:
     ~Game();
 
     void startGame();
+    void reset();
 
     void setMap(const Map& map);
 
