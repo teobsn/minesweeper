@@ -475,3 +475,12 @@ void Map::revealAll()
         for (unsigned int x = 0; x < width; ++x)
             cells[y][x].setRevealed(true);
 }
+
+void Map::clearGrid()
+{
+    for (unsigned int y = 0; y < height; ++y)
+        for (unsigned int x = 0; x < width; ++x)
+            cells[y][x] = Cell();
+
+    this->bombs = 0;
+}

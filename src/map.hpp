@@ -68,7 +68,8 @@ public:
     unsigned int getBombs() const;
     bool isValidPosition(const int x, const int y) const;
 
-    unsigned int getSeed() const;
+    unsigned long long getSeed() const;
+    void setSeed(const unsigned long long newSeed);
 
     bool isBombAt(const int x, const int y) const;
     int getAdjacentBombsAt(const int x, const int y) const;
@@ -84,6 +85,8 @@ public:
     void revealAt(const int x, const int y);
 
     void revealAll();
+    
+    void clearGrid();
 };
 
 std::ostream &operator<<(std::ostream &os, const Map &map);
