@@ -136,9 +136,9 @@ Map &Map::operator+(int newBombs)
     return *this;
 }
 
-Map &Map::operator-(int newBombs)
+Map &Map::operator-(int numBombs)
 {
-    generateBombs(newBombs);
+    generateBombs(-numBombs);
     updateAdjacentBombs(true);
     return *this;
 }
