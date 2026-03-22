@@ -252,12 +252,12 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
     if (bombs == 0)
         return;
 
-    if (this->bombs + bombs > width * height)
+    if (static_cast<int>(this->bombs) + bombs > static_cast<int>(width * height))
     {
         std::cerr << "Nu se pot genera mai multe bombe decat celulele disponibile! (" << this->bombs + bombs << " > " << width * height << ")";
         return;
     }
-    else if (this->bombs + bombs < 0)
+    else if (static_cast<int>(this->bombs) + bombs < 0)
     {
         std::cerr << "Nu se pot sterge mai putin bombe decat exista deja! (" << this->bombs + bombs << " < 0)";
         return;
