@@ -270,9 +270,9 @@ std::istream &operator>>(std::istream &is, Match &match)
         match.setMapInfo(width, height, seed, bombs);
         match.setRevealedCells(revealed);
         match.setClicks(clicks);
-        match.finished = finished;
-        match.won = won;
-        match.timePlayed = std::chrono::duration<int, std::milli>(timePlayedMs);
+        match.setFinished(finished);
+        match.setWinState(won);
+        match.setTimePlayed(std::chrono::duration<int, std::milli>(timePlayedMs));
     }
 
     return is;
@@ -607,7 +607,7 @@ std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
 
         delete[] plrStats.games;
         plrStats.numberOfGames = numGames;
-        plrStats.winRate = wRate;
+        plrStats.setWinRate(wRate);
         if (numGames > 0)
         {
             plrStats.games = new Match[numGames];
