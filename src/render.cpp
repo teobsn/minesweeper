@@ -29,6 +29,7 @@ Render::Render()
     finalTime = 0;
     guiState = GUIState::MENU;
     statsSaved = false;
+    mapRevealedOnLoss = false;
 }
 
 Render::~Render()
@@ -50,6 +51,7 @@ void Render::InitializeGame(unsigned int width, unsigned int height, unsigned in
     game = Game(Game::GameState::NOT_STARTED, newMap);
     guiState = GUIState::GAME;
     statsSaved = false;
+    mapRevealedOnLoss = false;
 
     // Resize window based on map size
     int screenWidth = GetScreenWidth();
@@ -290,6 +292,10 @@ void Render::DrawGame()
     if (state == Game::GameState::WON || state == Game::GameState::LOST) {
         if (finalTime == 0) finalTime = game.getElapsedTime().count();
         SaveMatchStats();
+        if (state == Game::GameState::LOST && !mapRevealedOnLoss) {
+            game.revealFullMap();
+            mapRevealedOnLoss = true;
+        }
     } else if (state == Game::GameState::IN_PROGRESS || state == Game::GameState::NOT_STARTED) {
         finalTime = 0;
     }

@@ -32,6 +32,7 @@ private:
     Game game;
     long long finalTime;
     bool statsSaved;
+    bool mapRevealedOnLoss;
 
     Texture2D flagTexture;
     Texture2D bombTexture;
