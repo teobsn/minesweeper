@@ -59,7 +59,9 @@ Map::Map(const Map &other)
 
 Map::~Map()
 {
+#ifdef DEBUG
     std::cout << "\n~Map()\n";
+#endif
 }
 
 Map &Map::operator=(const Map &other)

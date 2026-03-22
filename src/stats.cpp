@@ -31,7 +31,9 @@ Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const un
 
 Match::~Match()
 {
+#ifdef DEBUG
     std::cout << "\n~Match()\n";
+#endif
 }
 
 Match::Match(const Match &other)
@@ -348,7 +350,9 @@ PlayerStats::~PlayerStats()
     if (playerName != nullptr)
         delete[] playerName;
 
+#ifdef DEBUG
     std::cout << "\n~PlayerStats()\n";
+#endif
 }
 
 char *PlayerStats::getPlayerName()
