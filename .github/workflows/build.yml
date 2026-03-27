@@ -1,0 +1,69 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
+        git clone --depth 1 https://github.com/raysan5/raylib.git raylib
+        cd raylib
+        mkdir build && cd build
+        cmake -DBUILD_EXAMPLES=OFF ..
+        make -j$(nproc)
+        sudo make install
+
+    - name: Install Dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: brew install raylib
+
+    - name: Install raylib (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        vcpkg install raylib:x64-windows
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          cmake -B build -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release
+        else
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+        fi
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Create Artifact Directory
+      shell: bash
+      run: |
+        mkdir -p dist/resources
+        cp -r resources/* dist/resources/
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          cp build/Release/minesweeper-gui.exe dist/
+        else
+          cp build/minesweeper-gui dist/
+          if [ -f build/minesweeper ]; then cp build/minesweeper dist/; fi
+        fi
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: minesweeper-${{ matrix.os }}
+        path: dist/
