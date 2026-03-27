@@ -64,6 +64,8 @@ jobs:
         if [ "${{ runner.os }}" == "Windows" ]; then
           # On Windows, try to find .exe in build/Release/ or build/
           cp build/Release/*.exe dist/ 2>/dev/null || cp build/*.exe dist/ 2>/dev/null || true
+          # Find and copy raylib.dll from vcpkg install
+          find "$VCPKG_INSTALLATION_ROOT/installed" -name "raylib.dll" -exec cp {} dist/ \;
         else
           # On Linux and macOS, copy all 'minesweeper*' binaries from the build root
           # We use a portable check instead of 'find -executable'
