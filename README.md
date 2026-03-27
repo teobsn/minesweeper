@@ -2,6 +2,10 @@
 
 A C++ implementation of the classic Minesweeper game with both CLI and GUI interfaces.
 
+## Downloads
+
+Pre-built binaries for **Windows**, **macOS**, and **Linux** are automatically generated for every commit and can be found in the [GitHub Releases](https://github.com/teobsn/minesweeper-poo/releases) section.
+
 ## Building
 
 ```bash
