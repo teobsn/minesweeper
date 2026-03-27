@@ -11,6 +11,7 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
@@ -61,10 +62,16 @@ jobs:
         mkdir -p dist/resources
         cp -r resources/* dist/resources/
         if [ "${{ runner.os }}" == "Windows" ]; then
-          # Find the executable in Release or root build dir
-          find build -name "*.exe" -exec cp {} dist/ \;
+          # On Windows, try to find .exe in build/Release/ or build/
+          cp build/Release/*.exe dist/ 2>/dev/null || cp build/*.exe dist/ 2>/dev/null || true
         else
-          find build -maxdepth 1 -type f -executable -exec cp {} dist/ \;
+          # On Linux and macOS, copy all 'minesweeper*' binaries from the build root
+          # We use a portable check instead of 'find -executable'
+          for f in build/minesweeper*; do
+            if [ -x "$f" ] && [ -f "$f" ]; then
+              cp "$f" dist/
+            fi
+          done
         fi
 
     - name: Upload Artifacts
