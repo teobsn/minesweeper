@@ -62,22 +62,66 @@ jobs:
         mkdir -p dist/resources
         cp -r resources/* dist/resources/
         if [ "${{ runner.os }}" == "Windows" ]; then
-          # On Windows, try to find .exe in build/Release/ or build/
           cp build/Release/*.exe dist/ 2>/dev/null || cp build/*.exe dist/ 2>/dev/null || true
-          # Find and copy raylib.dll from vcpkg install
           find "$VCPKG_INSTALLATION_ROOT/installed" -name "raylib.dll" -exec cp {} dist/ \;
-        else
-          # On Linux and macOS, copy all 'minesweeper*' binaries from the build root
-          # We use a portable check instead of 'find -executable'
+          # Zip resources for Windows
+          cd dist && zip -r ../minesweeper-windows.zip . * && cd ..
+        elif [ "${{ runner.os }}" == 'macOS' ]; then
           for f in build/minesweeper*; do
-            if [ -x "$f" ] && [ -f "$f" ]; then
-              cp "$f" dist/
-            fi
+            if [ -x "$f" ] && [ -f "$f" ]; then cp "$f" dist/; fi
           done
+          cd dist && zip -r ../minesweeper-macos.zip . * && cd ..
+        else
+          for f in build/minesweeper*; do
+            if [ -x "$f" ] && [ -f "$f" ]; then cp "$f" dist/; fi
+          done
+          cd dist && tar -czf ../minesweeper-linux.tar.gz . * && cd ..
         fi
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: minesweeper-${{ matrix.os }}
-        path: dist/
+        path: |
+          minesweeper-windows.zip
+          minesweeper-macos.zip
+          minesweeper-linux.tar.gz
+        if-no-files-found: ignore
+
+  release:
+    name: Create Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Prepare Release Files
+      run: |
+        mkdir -p release-assets
+        find artifacts -name "*.zip" -exec cp {} release-assets/ \;
+        find artifacts -name "*.tar.gz" -exec cp {} release-assets/ \;
+
+    - name: Generate Tag
+      id: tag
+      run: echo "tag=build-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: Build ${{ steps.tag.outputs.tag }}
+        body: |
+          Continuous build for commit ${{ github.sha }}
+          
+          Assets for Windows, macOS, and Linux are attached below.
+        files: release-assets/*
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
