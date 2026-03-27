@@ -62,10 +62,12 @@ jobs:
         mkdir -p dist/resources
         cp -r resources/* dist/resources/
         if [ "${{ runner.os }}" == "Windows" ]; then
+          # Ensure 7-Zip is in PATH (standard location on GitHub runners)
+          export PATH=$PATH:"/C/Program Files/7-Zip"
           cp build/Release/*.exe dist/ 2>/dev/null || cp build/*.exe dist/ 2>/dev/null || true
           find "$VCPKG_INSTALLATION_ROOT/installed" -name "raylib.dll" -exec cp {} dist/ \;
-          # Zip resources for Windows
-          cd dist && zip -r ../minesweeper-windows.zip . * && cd ..
+          # Use 7z on Windows as zip is missing in the default bash path
+          cd dist && 7z a -tzip ../minesweeper-windows.zip * && cd ..
         elif [ "${{ runner.os }}" == 'macOS' ]; then
           for f in build/minesweeper*; do
             if [ -x "$f" ] && [ -f "$f" ]; then cp "$f" dist/; fi
