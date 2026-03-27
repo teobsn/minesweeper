@@ -18,7 +18,9 @@ endif()
 
 # Compiler flags
 if(MSVC)
-    add_compile_options(/W4 /O2 /permissive-)
+    # Force Release CRT for non-debug builds to avoid ucrtbased.dll dependency
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    add_compile_options(/W4 /O2 /permissive- /DNDEBUG)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64")
         add_compile_options(/arch:AVX2)
     endif()
