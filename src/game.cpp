@@ -5,9 +5,6 @@
 #include "map.hpp"
 #include "stats.hpp"
 
-// External libraries
-#include "raylib.h"
-
 // C++ standard library
 #include <iostream>
 #include <chrono>

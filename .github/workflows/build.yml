@@ -10,7 +10,6 @@ jobs:
   build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -18,52 +17,54 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Dependencies (Linux)
+    - name: Install System Dependencies (Linux)
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev libwayland-dev libxkbcommon-dev
-        git clone --depth 1 https://github.com/raysan5/raylib.git raylib
-        cd raylib
-        mkdir build && cd build
+
+    - name: Build and Install raylib (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        git clone --depth 1 https://github.com/raysan5/raylib.git raylib-src
+        mkdir -p raylib-src/build
+        cd raylib-src/build
         cmake -DBUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release ..
         make -j$(nproc)
         sudo make install
+        sudo ldconfig
 
     - name: Install Dependencies (macOS)
       if: runner.os == 'macOS'
       run: brew install raylib
 
+    - name: Install raylib (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        vcpkg install raylib:x64-windows
+
     - name: Configure CMake
       shell: bash
       run: |
         if [ "${{ runner.os }}" == "Windows" ]; then
-          # On Windows, we'll try to let find_package find raylib if installed via vcpkg or similar,
-          # but the easiest for GitHub Actions is often to use the vcpkg integration.
-          # We'll use the pre-installed vcpkg.
           cmake -B build -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release
         else
           cmake -B build -DCMAKE_BUILD_TYPE=Release
         fi
 
-    - name: Build
-      run: cmake --build build --config Release
+    - name: Build Project
+      run: cmake --build build --config Release --parallel 8
 
-    - name: Create Artifact Directory
+    - name: Prepare Artifacts
       shell: bash
       run: |
         mkdir -p dist/resources
         cp -r resources/* dist/resources/
         if [ "${{ runner.os }}" == "Windows" ]; then
-          if [ -f build/Release/minesweeper-gui.exe ]; then
-            cp build/Release/minesweeper-gui.exe dist/
-          else
-            # Fallback for some cmake generators
-            cp build/minesweeper-gui.exe dist/ || true
-          fi
+          # Find the executable in Release or root build dir
+          find build -name "*.exe" -exec cp {} dist/ \;
         else
-          cp build/minesweeper-gui dist/
-          if [ -f build/minesweeper ]; then cp build/minesweeper dist/; fi
+          find build -maxdepth 1 -type f -executable -exec cp {} dist/ \;
         fi
 
     - name: Upload Artifacts
