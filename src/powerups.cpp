@@ -3,12 +3,12 @@
 
 BasePowerUp::BasePowerUp(int id, std::string name) : id(id), name(name)
 {
-    std::cout << "BasePowerUp() " << name;
+    std::cout << "BasePowerUp()\n" << name;
 }
 
 BasePowerUp::~BasePowerUp()
 {
-    std::cout << "~BasePowerUp() " << name;
+    std::cout << "~BasePowerUp()\n" << name;
 }
 
 std::string BasePowerUp::getName() const { return name; }
@@ -65,7 +65,7 @@ void ShieldPowerUp::activate(Game &game, int, int)
 
 std::string ShieldPowerUp::getDescription() const
 {
-    return "Protects from the NEXT bomb you click.";
+    return "Protects you from the next bomb you click.";
 }
 
 
@@ -81,7 +81,7 @@ void ScannerPowerUp::activate(Game &game, int x, int y)
 
 std::string ScannerPowerUp::getDescription() const
 {
-    return "Reveals a small area around cursor.";
+    return "Reveals a small area around the cursor.";
 }
 
 
@@ -98,7 +98,7 @@ void UltimatePowerUp::activate(Game &game, int x, int y)
 
 std::string UltimatePowerUp::getDescription() const
 {
-    return "One-hit Shield + Large Area Scan.";
+    return "Combines the scanner and shield power-ups.";
 }
 
 
@@ -114,5 +114,5 @@ void BombDefuser::activate(Game &game, int, int)
 
 std::string BombDefuser::getDescription() const
 {
-    return "Instantly defuses half of hidden bombs.";
+    return "Instantly defuses half of the hidden bombs.";
 }

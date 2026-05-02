@@ -4,6 +4,7 @@
 #include "cell.hpp"
 #include "map.hpp"
 #include "stats.hpp"
+#include "powerups.hpp"
 
 // C++ standard library
 #include <iostream>
@@ -36,20 +37,20 @@ Game::Game(GameState gameState, Map gameMap, unsigned int flagsPlaced, unsigned 
 }
 
 Game::Game(const Game &game)
-    : gameMap(game.gameMap), gameState(game.gameState), flagsPlaced(game.flagsPlaced), cellsRevealed(game.cellsRevealed), clicks(game.clicks), startTime(game.startTime)
+    : gameMap(game.gameMap), gameState(game.gameState), flagsPlaced(game.flagsPlaced), cellsRevealed(game.cellsRevealed), clicks(game.clicks), startTime(game.startTime), invulnerable(game.invulnerable)
 {
+    // Istoricul nu se copiaza pentru a evita double free
+    this->powerUpHistory.clear();
 }
 
 Game::~Game()
 {
+    clearPowerUpHistory();
 }
 
 void Game::startGame()
 {
     gameState = GameState::IN_PROGRESS;
-    flagsPlaced = 0;
-    cellsRevealed = 0;
-    clicks = 0;
     startTime = std::chrono::steady_clock::now();
 }
 
@@ -61,6 +62,14 @@ void Game::reset()
     cellsRevealed = 0;
     clicks = 0;
     invulnerable = false;
+    clearPowerUpHistory();
+}
+
+void Game::clearPowerUpHistory()
+{
+    for (BasePowerUp* p : powerUpHistory)
+        delete p;
+    powerUpHistory.clear();
 }
 
 void Game::setMap(const Map &map)
@@ -106,13 +115,45 @@ void Game::setInvulnerable(bool value) {
     invulnerable = value; 
 }
 
-bool Game::isInvulnerable() const { return invulnerable; }
-void Game::consumeShield() { invulnerable = false; }
+bool Game::isInvulnerable() const {
+    return invulnerable;
+}
+
+void Game::consumeShield() {
+    invulnerable = false;
+}
 
 void Game::activateRadar(int x, int y, int radius) { 
     if (gameState == GameState::NOT_STARTED) startGame();
     gameMap.revealArea(x, y, radius); 
     checkWinCondition();
+}
+
+void Game::addPowerUpToHistory(BasePowerUp* p) {
+    if (p) powerUpHistory.push_back(p);
+}
+
+unsigned int Game::getPowerUpCount(const std::string& type) const {
+    if (type == "all") return powerUpHistory.size();
+    
+    unsigned int count = 0;
+    for (BasePowerUp* p : powerUpHistory) {
+        // Folosim dynamic_cast pentru a identifica in siguranta tipul real la runtime.
+        // Este preferat fata de static_cast deoarece returneaza nullptr in caz de esec,
+        // prevenind astfel accesul la memorie nevalida (Undefined Behaviour).
+        if (type == "Shield" && dynamic_cast<ShieldPowerUp*>(p)) count++;
+        else if (type == "Scanner" && dynamic_cast<ScannerPowerUp*>(p)) count++;
+        else if (type == "Ultimate" && dynamic_cast<UltimatePowerUp*>(p)) count++;
+        else if (type == "Defuser" && dynamic_cast<BombDefuser*>(p)) count++;
+    }
+    return count;
+}
+
+void Game::showPowerUpHistory() const {
+    // Colectie de pointeri la baza (cu late binding)
+    for (BasePowerUp* p : powerUpHistory) {
+        if (p) std::cout << p->getName() << ": " << p->getDescription() << "\n";
+    }
 }
 
 void Game::fillReveal(int x, int y)
@@ -265,12 +306,15 @@ Game &Game::operator=(const Game &other)
     if (this == &other)
         return *this;
 
+    clearPowerUpHistory();
+
     gameMap = other.gameMap;
     gameState = other.gameState;
     flagsPlaced = other.flagsPlaced;
     cellsRevealed = other.cellsRevealed;
     clicks = other.clicks;
     startTime = other.startTime;
+    invulnerable = other.invulnerable;
 
     return *this;
 }

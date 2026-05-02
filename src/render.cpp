@@ -464,19 +464,19 @@ void Render::HandleGameInput()
         if (CheckCollisionPointRec(mousePos, shieldBtn)) {
             BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
             p->use(game, mouseGridX, mouseGridY);
-            delete p;
+            game.addPowerUpToHistory(p);
             return;
         }
         if (CheckCollisionPointRec(mousePos, ultiBtn)) {
             BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
             p->use(game, mouseGridX, mouseGridY);
-            delete p;
+            game.addPowerUpToHistory(p);
             return;
         }
         if (CheckCollisionPointRec(mousePos, defuseBtn)) {
             BasePowerUp* p = new BombDefuser(4, 0.5);
             p->use(game, mouseGridX, mouseGridY);
-            delete p;
+            game.addPowerUpToHistory(p);
             return;
         }
     }
@@ -506,22 +506,22 @@ void Render::HandleGameInput()
     if (IsKeyPressed(KEY_ONE)) {
         BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
         p->use(game, mouseGridX, mouseGridY);
-        delete p;
+        game.addPowerUpToHistory(p);
     }
     if (IsKeyPressed(KEY_TWO)) {
         BasePowerUp* p = new ScannerPowerUp(2, 3);
         p->use(game, mouseGridX, mouseGridY);
-        delete p;
+        game.addPowerUpToHistory(p);
     }
     if (IsKeyPressed(KEY_THREE)) {
         BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
         p->use(game, mouseGridX, mouseGridY);
-        delete p;
+        game.addPowerUpToHistory(p);
     }
     if (IsKeyPressed(KEY_FOUR)) {
         BasePowerUp* p = new BombDefuser(4, 0.5);
         p->use(game, mouseGridX, mouseGridY);
-        delete p;
+        game.addPowerUpToHistory(p);
     }
 }
 
@@ -572,12 +572,13 @@ void Render::DrawMyStats()
         renderPosY += 40.0f;
 
         // Table Legend
-        float resW = 100, sizeW = 120, bombsW = 100, timeW = 100;
+        float resW = 70, sizeW = 90, bombsW = 70, timeW = 70, clickW = 70;
         DrawTextEx(AdwaitaMono, "Result", {padding, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Map Size", {padding + resW, renderPosY}, 20, 0, GRAY);
+        DrawTextEx(AdwaitaMono, "Size", {padding + resW, renderPosY}, 20, 0, GRAY);
         DrawTextEx(AdwaitaMono, "Bombs", {padding + resW + sizeW, renderPosY}, 20, 0, GRAY);
         DrawTextEx(AdwaitaMono, "Time", {padding + resW + sizeW + bombsW, renderPosY}, 20, 0, GRAY);
         DrawTextEx(AdwaitaMono, "Clicks", {padding + resW + sizeW + bombsW + timeW, renderPosY}, 20, 0, GRAY);
+        DrawTextEx(AdwaitaMono, "Powers", {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 20, 0, GRAY);
         
         renderPosY += 30.0f;
         DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, DARKGRAY);
@@ -585,15 +586,16 @@ void Render::DrawMyStats()
         int start = std::max(0, totalGames - 12);
         for (int i = totalGames - 1; i >= start; --i) {
             Color resColor = matches[i].getWinState() ? GREEN : RED;
-            DrawTextEx(AdwaitaMono, matches[i].getWinState() ? "WIN" : "LOSS", {padding, renderPosY}, 20, 0, resColor);
+            DrawTextEx(AdwaitaMono, matches[i].getWinState() ? "WIN" : "LOSS", {padding, renderPosY}, 18, 0, resColor);
             
             std::string sizeStr = std::to_string(matches[i].getMapWidth()) + "x" + std::to_string(matches[i].getMapHeight());
-            DrawTextEx(AdwaitaMono, sizeStr.c_str(), {padding + resW, renderPosY}, 20, 0, WHITE);
-            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getMapBombs()).c_str(), {padding + resW + sizeW, renderPosY}, 20, 0, WHITE);
-            DrawTextEx(AdwaitaMono, (std::to_string(matches[i].getTimePlayed().count() / 1000) + "s").c_str(), {padding + resW + sizeW + bombsW, renderPosY}, 20, 0, WHITE);
-            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getClicks()).c_str(), {padding + resW + sizeW + bombsW + timeW, renderPosY}, 20, 0, WHITE);
+            DrawTextEx(AdwaitaMono, sizeStr.c_str(), {padding + resW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getMapBombs()).c_str(), {padding + resW + sizeW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, (std::to_string(matches[i].getTimePlayed().count() / 1000) + "s").c_str(), {padding + resW + sizeW + bombsW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getClicks()).c_str(), {padding + resW + sizeW + bombsW + timeW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getTotalPowerUpsUsed()).c_str(), {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 18, 0, SKYBLUE);
             
-            renderPosY += 25.0f;
+            renderPosY += 22.0f;
         }
     }
 
@@ -696,6 +698,14 @@ void Render::SaveMatchStats()
     bool won = (game.getCurrentState() == Game::GameState::WON);
     const Map& m = game.getMap();
     Match match(m.getWidth(), m.getHeight(), m.getSeed(), m.getBombs(), game.getCellsRevealed(), game.getClicks(), std::chrono::duration<int, std::milli>(finalTime), won, true);
+    
+    // Set power-up statistics
+    match.setPowerUpStats(
+        game.getPowerUpCount("Shield"),
+        game.getPowerUpCount("Scanner"),
+        game.getPowerUpCount("Ultimate"),
+        game.getPowerUpCount("Defuser")
+    );
 
     if (playerNameText[0] != '\0') {
         PlayerStats *player = Leaderboard::addPlayer(playerNameText);

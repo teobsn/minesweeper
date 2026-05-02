@@ -8,6 +8,9 @@ class Game;
 class BasePowerUp
 {
 protected:
+    // Folosim 'protected' pentru a permite claselor derivate (Temporal/Spatial) 
+    // acces direct la atributele de baza, mentinandu-le in acelasi timp 
+    // incapsulate fata de exterior.
     int id;
     std::string name;
 
@@ -16,13 +19,15 @@ public:
     virtual ~BasePowerUp();
 
     void use(Game& game, int x = 0, int y = 0);
-    
+
     virtual void activate(Game& game, int x, int y) = 0;
     virtual std::string getDescription() const = 0;
 
     std::string getName() const;
 };
 
+// Utilizam 'virtual public' pentru a preveni duplicarea membrilor clasei BasePowerUp
+// in ierarhia de tip diamant (UltimatePowerUp).
 class TemporalEffect : virtual public BasePowerUp
 {
 protected:

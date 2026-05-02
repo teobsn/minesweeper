@@ -10,22 +10,32 @@
 #include <algorithm>
 
 Match::Match() : mapWidth(0), mapHeight(0), mapSeed(0), mapBombs(0),
-                 revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0) {}
+                 revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0),
+                 shieldsUsed(0), scannersUsed(0), ultimatesUsed(0), defusersUsed(0) {}
 
 Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed)
     : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(0),
-      revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0)
+      revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0),
+      shieldsUsed(0), scannersUsed(0), ultimatesUsed(0), defusersUsed(0)
 {
 }
 
 Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs)
     : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs),
-      revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0)
+      revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0),
+      shieldsUsed(0), scannersUsed(0), ultimatesUsed(0), defusersUsed(0)
 {
 }
 
 Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished)
-    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs), revealedCells(revealedCells), clicks(clicks), finished(finished), won(won), timePlayed(timePlayed)
+    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs), revealedCells(revealedCells), clicks(clicks), finished(finished), won(won), timePlayed(timePlayed),
+      shieldsUsed(0), scannersUsed(0), ultimatesUsed(0), defusersUsed(0)
+{
+}
+
+Match::Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished, unsigned int shields, unsigned int scans, unsigned int ults, unsigned int defs)
+    : mapWidth(mapWidth), mapHeight(mapHeight), mapSeed(mapSeed), mapBombs(mapBombs), revealedCells(revealedCells), clicks(clicks), finished(finished), won(won), timePlayed(timePlayed),
+      shieldsUsed(shields), scannersUsed(scans), ultimatesUsed(ults), defusersUsed(defs)
 {
 }
 
@@ -44,6 +54,10 @@ Match::Match(const Match &other)
     this->finished = other.finished;
     this->won = other.won;
     this->timePlayed = other.timePlayed;
+    this->shieldsUsed = other.shieldsUsed;
+    this->scannersUsed = other.scannersUsed;
+    this->ultimatesUsed = other.ultimatesUsed;
+    this->defusersUsed = other.defusersUsed;
 }
 
 unsigned int Match::getMapWidth() const
@@ -132,6 +146,39 @@ void Match::setFinished(bool finished)
     this->finished = finished;
 }
 
+unsigned int Match::getShieldsUsed() const
+{
+    return shieldsUsed;
+}
+
+unsigned int Match::getScannersUsed() const
+{
+    return scannersUsed;
+}
+
+unsigned int Match::getUltimatesUsed() const
+{
+    return ultimatesUsed;
+}
+
+unsigned int Match::getDefusersUsed() const
+{
+    return defusersUsed;
+}
+
+unsigned int Match::getTotalPowerUpsUsed() const
+{
+    return shieldsUsed + scannersUsed + ultimatesUsed + defusersUsed;
+}
+
+void Match::setPowerUpStats(unsigned int s, unsigned int sc, unsigned int u, unsigned int d)
+{
+    shieldsUsed = s;
+    scannersUsed = sc;
+    ultimatesUsed = u;
+    defusersUsed = d;
+}
+
 Match &Match::operator=(const Match &other)
 {
     if (this == &other)
@@ -146,6 +193,10 @@ Match &Match::operator=(const Match &other)
     finished = other.finished;
     won = other.won;
     timePlayed = other.timePlayed;
+    shieldsUsed = other.shieldsUsed;
+    scannersUsed = other.scannersUsed;
+    ultimatesUsed = other.ultimatesUsed;
+    defusersUsed = other.defusersUsed;
 
     return *this;
 }
@@ -242,6 +293,22 @@ unsigned int Match::operator[](char c) const
     case 4:
         return clicks;
         break;
+    case 's':
+    case 5:
+        return shieldsUsed;
+        break;
+    case 'a':
+    case 6:
+        return scannersUsed;
+        break;
+    case 'u':
+    case 7:
+        return ultimatesUsed;
+        break;
+    case 'd':
+    case 8:
+        return defusersUsed;
+        break;
     default:
         return 0;
     }
@@ -255,7 +322,8 @@ std::ostream &operator<<(std::ostream &os, const Match &match)
        << "  Status: " << (match.finished ? (match.won ? "Won" : "Lost") : "In Progress") << "\n"
        << "  Cells Revealed: " << match.revealedCells << "\n"
        << "  Clicks: " << match.clicks << "\n"
-       << "  Time Played: " << (match.timePlayed.count() / 1000.0) << "s\n";
+       << "  Time Played: " << (match.timePlayed.count() / 1000.0) << "s\n"
+       << "  PowerUps Used: " << match.getTotalPowerUpsUsed() << " (S:" << match.shieldsUsed << ", A:" << match.scannersUsed << ", U:" << match.ultimatesUsed << ", D:" << match.defusersUsed << ")\n";
 
     return os;
 }
@@ -266,8 +334,9 @@ std::istream &operator>>(std::istream &is, Match &match)
     unsigned long long seed;
     bool finished, won;
     int timePlayedMs;
+    unsigned int s, a, u, d;
 
-    if (is >> width >> height >> seed >> bombs >> revealed >> clicks >> finished >> won >> timePlayedMs)
+    if (is >> width >> height >> seed >> bombs >> revealed >> clicks >> finished >> won >> timePlayedMs >> s >> a >> u >> d)
     {
         match.setMapInfo(width, height, seed, bombs);
         match.setRevealedCells(revealed);
@@ -275,6 +344,7 @@ std::istream &operator>>(std::istream &is, Match &match)
         match.setFinished(finished);
         match.setWinState(won);
         match.setTimePlayed(std::chrono::duration<int, std::milli>(timePlayedMs));
+        match.setPowerUpStats(s, a, u, d);
     }
 
     return is;

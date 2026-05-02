@@ -7,6 +7,9 @@
 // C++ standard library
 #include <chrono>
 #include <queue>
+#include <vector>
+
+class BasePowerUp;
 
 class Game
 {
@@ -55,6 +58,10 @@ public:
     void consumeShield();
     void activateRadar(int x, int y, int radius);
 
+    void addPowerUpToHistory(BasePowerUp* p);
+    unsigned int getPowerUpCount(const std::string& type = "all") const;
+    void showPowerUpHistory() const;
+
     // Operator de atribuire
     Game &operator=(const Game &other);
 
@@ -90,7 +97,9 @@ private:
     std::chrono::steady_clock::time_point startTime;
 
     bool invulnerable = false;
+    std::vector<BasePowerUp*> powerUpHistory;
 
+    void clearPowerUpHistory();
     void checkWinCondition();
     void loseGame();
 };

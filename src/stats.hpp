@@ -21,11 +21,17 @@ private:
 
     std::chrono::duration<int, std::milli> timePlayed;
 
+    unsigned int shieldsUsed = 0;
+    unsigned int scannersUsed = 0;
+    unsigned int ultimatesUsed = 0;
+    unsigned int defusersUsed = 0;
+
 public:
     Match();
     Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed);
     Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs);
     Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished);
+    Match(const unsigned int mapWidth, const unsigned int mapHeight, const unsigned long long mapSeed, const unsigned int mapBombs, const unsigned int revealedCells, const unsigned int clicks, const std::chrono::duration<int, std::milli> timePlayed, bool won, bool finished, unsigned int shields, unsigned int scans, unsigned int ults, unsigned int defs);
     ~Match();
 
     Match(const Match &other);
@@ -51,6 +57,14 @@ public:
 
     bool isFinished() const;
     void setFinished(bool finished);
+
+    unsigned int getShieldsUsed() const;
+    unsigned int getScannersUsed() const;
+    unsigned int getUltimatesUsed() const;
+    unsigned int getDefusersUsed() const;
+    unsigned int getTotalPowerUpsUsed() const;
+
+    void setPowerUpStats(unsigned int s, unsigned int sc, unsigned int u, unsigned int d);
 
     // Operator de atribuire
     Match &operator=(const Match &other);

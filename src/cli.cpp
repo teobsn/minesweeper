@@ -411,28 +411,28 @@ void Commandline::processGameInput(Game &game)
         {
             BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
             p->use(game, cursorX, cursorY);
-            delete p;
+            game.addPowerUpToHistory(p);
             break;
         }
         case '2':
         {
             BasePowerUp* p = new ScannerPowerUp(2, 3);
             p->use(game, cursorX, cursorY);
-            delete p;
+            game.addPowerUpToHistory(p);
             break;
         }
         case '3':
         {
             BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
             p->use(game, cursorX, cursorY);
-            delete p;
+            game.addPowerUpToHistory(p);
             break;
         }
         case '4':
         {
             BasePowerUp* p = new BombDefuser(4, 0.5);
             p->use(game, cursorX, cursorY);
-            delete p;
+            game.addPowerUpToHistory(p);
             break;
         }
         case '\n':
