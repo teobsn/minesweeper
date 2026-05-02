@@ -24,9 +24,7 @@ void BasePowerUp::use(Game &game, int x, int y)
 
 void BasePowerUp::activate(Game &game, int, int)
 {
-#ifdef DEBUG
     game.addPowerUpToHistory(this);
-#endif
 }
 
 TemporalEffect::TemporalEffect(int id, std::string name, float duration)
