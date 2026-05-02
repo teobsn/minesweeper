@@ -20,8 +20,9 @@ public:
 
     void use(Game& game, int x = 0, int y = 0);
 
-    virtual void activate(Game& game, int x, int y) = 0;
+    virtual void activate(Game& game, int x, int y);
     virtual std::string getDescription() const = 0;
+    virtual std::string getCategory() const = 0;
 
     std::string getName() const;
 };
@@ -60,6 +61,7 @@ public:
 
     void activate(Game& game, int x, int y) override;
     std::string getDescription() const override;
+    std::string getCategory() const override;
 };
 
 class ScannerPowerUp : public SpatialEffect
@@ -70,6 +72,7 @@ public:
 
     void activate(Game& game, int x, int y) override;
     std::string getDescription() const override;
+    std::string getCategory() const override;
 };
 
 class UltimatePowerUp final : public TemporalEffect, public SpatialEffect
@@ -80,6 +83,7 @@ public:
 
     void activate(Game& game, int x, int y) override;
     std::string getDescription() const override;
+    std::string getCategory() const override;
 };
 
 class BombDefuser : public BasePowerUp
@@ -93,4 +97,5 @@ public:
 
     void activate(Game& game, int x, int y) override;
     std::string getDescription() const override;
+    std::string getCategory() const override;
 };

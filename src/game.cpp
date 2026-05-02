@@ -15,6 +15,10 @@
 
 Game::Game()
 {
+#ifdef DEBUG
+    std::cout << "Game()\n";
+#endif
+
     gameState = GameState::MENU;
     flagsPlaced = 0;
     cellsRevealed = 0;
@@ -25,16 +29,25 @@ Game::Game()
 Game::Game(GameState gameState)
     : gameState(gameState), flagsPlaced(0), cellsRevealed(0), clicks(0), startTime(std::chrono::steady_clock::now())
 {
+#ifdef DEBUG
+    std::cout << "Game()\n";
+#endif
 }
 
 Game::Game(GameState gameState, Map gameMap)
     : gameMap(gameMap), gameState(gameState), flagsPlaced(0), cellsRevealed(0), clicks(0), startTime(std::chrono::steady_clock::now())
 {
+#ifdef DEBUG
+    std::cout << "Game()\n";
+#endif
 }
 
 Game::Game(GameState gameState, Map gameMap, unsigned int flagsPlaced, unsigned int cellsRevealed, unsigned int clicks, std::chrono::steady_clock::time_point startTime)
     : gameMap(gameMap), gameState(gameState), flagsPlaced(flagsPlaced), cellsRevealed(cellsRevealed), clicks(clicks), startTime(startTime)
 {
+#ifdef DEBUG
+    std::cout << "Game()\n";
+#endif
 }
 
 Game::Game(const Game &game)
@@ -46,6 +59,9 @@ Game::Game(const Game &game)
 
 Game::~Game()
 {
+#ifdef DEBUG
+    std::cout << "~Game()\n";
+#endif
     clearPowerUpHistory();
 }
 

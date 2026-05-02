@@ -464,19 +464,16 @@ void Render::HandleGameInput()
         if (CheckCollisionPointRec(mousePos, shieldBtn)) {
             BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
             p->use(game, mouseGridX, mouseGridY);
-            game.addPowerUpToHistory(p);
             return;
         }
         if (CheckCollisionPointRec(mousePos, ultiBtn)) {
             BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
             p->use(game, mouseGridX, mouseGridY);
-            game.addPowerUpToHistory(p);
             return;
         }
         if (CheckCollisionPointRec(mousePos, defuseBtn)) {
             BasePowerUp* p = new BombDefuser(4, 0.5);
             p->use(game, mouseGridX, mouseGridY);
-            game.addPowerUpToHistory(p);
             return;
         }
     }
@@ -506,22 +503,18 @@ void Render::HandleGameInput()
     if (IsKeyPressed(KEY_ONE)) {
         BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
         p->use(game, mouseGridX, mouseGridY);
-        game.addPowerUpToHistory(p);
     }
     if (IsKeyPressed(KEY_TWO)) {
         BasePowerUp* p = new ScannerPowerUp(2, 3);
         p->use(game, mouseGridX, mouseGridY);
-        game.addPowerUpToHistory(p);
     }
     if (IsKeyPressed(KEY_THREE)) {
         BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
         p->use(game, mouseGridX, mouseGridY);
-        game.addPowerUpToHistory(p);
     }
     if (IsKeyPressed(KEY_FOUR)) {
         BasePowerUp* p = new BombDefuser(4, 0.5);
         p->use(game, mouseGridX, mouseGridY);
-        game.addPowerUpToHistory(p);
     }
 }
 

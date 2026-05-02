@@ -9,11 +9,14 @@
 // External libraries
 #include "pcg/pcg32.h"
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-#  include "pcg/pcg32_8.h"
+#include "pcg/pcg32_8.h"
 #endif
 
 Map::Map() : width(1), height(1), seed(0), bombs(0)
 {
+#ifdef DEBUG
+    std::cout << "Map()\n";
+#endif
     this->bombs = 0;
 
     reserveCells();
@@ -24,6 +27,9 @@ Map::Map() : width(1), height(1), seed(0), bombs(0)
 Map::Map(const unsigned int width, const unsigned int height, const unsigned long long seed)
     : width(width), height(height), seed(seed)
 {
+#ifdef DEBUG
+    std::cout << "Map()\n";
+#endif
     this->bombs = 0;
 
     reserveCells();
@@ -33,11 +39,17 @@ Map::Map(const unsigned int width, const unsigned int height, const unsigned lon
 
 Map::Map(const unsigned int width, const unsigned int height) : Map(width, height, 0)
 {
+#ifdef DEBUG
+    std::cout << "Map()\n";
+#endif
 }
 
 Map::Map(const unsigned int width, const unsigned int height, const unsigned long long seed, unsigned int bombs)
     : width(width), height(height), seed(seed)
 {
+#ifdef DEBUG
+    std::cout << "Map()\n";
+#endif
     this->bombs = 0;
     if (bombs > width * height)
         bombs = width * height;

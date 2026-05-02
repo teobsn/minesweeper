@@ -3,12 +3,16 @@
 
 BasePowerUp::BasePowerUp(int id, std::string name) : id(id), name(name)
 {
-    std::cout << "BasePowerUp()\n" << name;
+#ifdef DEBUG
+    std::cout << "BasePowerUp() " << name << "\n";
+#endif
 }
 
 BasePowerUp::~BasePowerUp()
 {
-    std::cout << "~BasePowerUp()\n" << name;
+#ifdef DEBUG
+    std::cout << "~BasePowerUp() " << name << "\n";
+#endif
 }
 
 std::string BasePowerUp::getName() const { return name; }
@@ -18,16 +22,26 @@ void BasePowerUp::use(Game &game, int x, int y)
     this->activate(game, x, y);
 }
 
+void BasePowerUp::activate(Game &game, int, int)
+{
+#ifdef DEBUG
+    game.addPowerUpToHistory(this);
+#endif
+}
 
 TemporalEffect::TemporalEffect(int id, std::string name, float duration)
     : BasePowerUp(id, name), duration(duration)
 {
+#ifdef DEBUG
     std::cout << "TemporalEffect()\n";
+#endif
 }
 
 TemporalEffect::~TemporalEffect()
 {
+#ifdef DEBUG
     std::cout << "~TemporalEffect()\n";
+#endif
 }
 
 float TemporalEffect::getDuration() const
@@ -35,16 +49,19 @@ float TemporalEffect::getDuration() const
     return duration;
 }
 
-
 SpatialEffect::SpatialEffect(int id, std::string name, int radius)
     : BasePowerUp(id, name), radius(radius)
 {
+#ifdef DEBUG
     std::cout << "SpatialEffect()\n";
+#endif
 }
 
 SpatialEffect::~SpatialEffect()
 {
+#ifdef DEBUG
     std::cout << "~SpatialEffect()\n";
+#endif
 }
 
 int SpatialEffect::getRadius() const
@@ -52,14 +69,14 @@ int SpatialEffect::getRadius() const
     return radius;
 }
 
-
 ShieldPowerUp::ShieldPowerUp(int id, float duration)
     : BasePowerUp(id, "Shield"), TemporalEffect(id, "Shield", duration) {}
 
 ShieldPowerUp::~ShieldPowerUp() {}
 
-void ShieldPowerUp::activate(Game &game, int, int)
+void ShieldPowerUp::activate(Game &game, int x, int y)
 {
+    BasePowerUp::activate(game, x, y);
     game.setInvulnerable(true);
 }
 
@@ -68,6 +85,10 @@ std::string ShieldPowerUp::getDescription() const
     return "Protects you from the next bomb you click.";
 }
 
+std::string ShieldPowerUp::getCategory() const
+{
+    return "Defense";
+}
 
 ScannerPowerUp::ScannerPowerUp(int id, int radius)
     : BasePowerUp(id, "Scanner"), SpatialEffect(id, "Scanner", radius) {}
@@ -76,6 +97,7 @@ ScannerPowerUp::~ScannerPowerUp() {}
 
 void ScannerPowerUp::activate(Game &game, int x, int y)
 {
+    BasePowerUp::activate(game, x, y);
     game.activateRadar(x, y, radius);
 }
 
@@ -84,6 +106,10 @@ std::string ScannerPowerUp::getDescription() const
     return "Reveals a small area around the cursor.";
 }
 
+std::string ScannerPowerUp::getCategory() const
+{
+    return "Detection";
+}
 
 UltimatePowerUp::UltimatePowerUp(int id, float duration, int radius)
     : BasePowerUp(id, "Ultimate"), TemporalEffect(id, "Ultimate", duration), SpatialEffect(id, "Ultimate", radius) {}
@@ -92,6 +118,7 @@ UltimatePowerUp::~UltimatePowerUp() {}
 
 void UltimatePowerUp::activate(Game &game, int x, int y)
 {
+    BasePowerUp::activate(game, x, y);
     game.setInvulnerable(true);
     game.activateRadar(x, y, radius);
 }
@@ -101,18 +128,28 @@ std::string UltimatePowerUp::getDescription() const
     return "Combines the scanner and shield power-ups.";
 }
 
+std::string UltimatePowerUp::getCategory() const
+{
+    return "Tactical";
+}
 
 BombDefuser::BombDefuser(int id, double ratio)
     : BasePowerUp(id, "Bomb Defuser"), ratio(ratio) {}
 
 BombDefuser::~BombDefuser() {}
 
-void BombDefuser::activate(Game &game, int, int)
+void BombDefuser::activate(Game &game, int x, int y)
 {
+    BasePowerUp::activate(game, x, y);
     game * ratio; // operator overload :)
 }
 
 std::string BombDefuser::getDescription() const
 {
     return "Instantly defuses half of the hidden bombs.";
+}
+
+std::string BombDefuser::getCategory() const
+{
+    return "Utility";
 }
