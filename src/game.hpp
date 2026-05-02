@@ -49,6 +49,12 @@ public:
     unsigned int getCellsRevealed() const;
     unsigned int getFlagsPlaced() const;
 
+    // Power-up methods
+    void setInvulnerable(bool value);
+    bool isInvulnerable() const;
+    void consumeShield();
+    void activateRadar(int x, int y, int radius);
+
     // Operator de atribuire
     Game &operator=(const Game &other);
 
@@ -82,6 +88,8 @@ private:
     unsigned int cellsRevealed;
     unsigned int clicks;
     std::chrono::steady_clock::time_point startTime;
+
+    bool invulnerable = false;
 
     void checkWinCondition();
     void loseGame();

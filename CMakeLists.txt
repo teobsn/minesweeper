@@ -42,6 +42,7 @@ set(SOURCES-COMMON
     src/game.cpp
     src/map.cpp
     src/stats.cpp
+    src/powerups.cpp
 )
 
 set(SOURCES-GUI
@@ -59,28 +60,21 @@ if(BUILD_CLI)
     )
 
     set(SOURCES-BENCHMARK
+        ${SOURCES-COMMON}
         src/benchmark.cpp
-        src/cell.cpp
-        src/game.cpp
-        src/map.cpp
         src/cli.cpp
     )
 
     set(SOURCES-DEMO1
+        ${SOURCES-COMMON}
         src/animation-demo.cpp
-        src/cell.cpp
-        src/game.cpp
-        src/map.cpp
         src/cli.cpp
     )
 
     set(SOURCES-DEMO2
+        ${SOURCES-COMMON}
         src/test-demo.cpp
-        src/cell.cpp
-        src/game.cpp
-        src/map.cpp
         src/cli.cpp
-        src/stats.cpp
     )
 endif()
 

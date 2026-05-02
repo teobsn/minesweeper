@@ -1,6 +1,7 @@
 
 // Minesweeper headers
 #include "cli.hpp"
+#include "powerups.hpp"
 
 // C++ Standard libraries
 #include <iostream>
@@ -282,6 +283,7 @@ void Commandline::displayGameStatus(const Game &game, bool withControls) const
     {
         std::cout << "WASD: Move | ENTER: Reveal | SPACE: Mark/Flag | E: Chording | Q: Quit\n";
         std::cout << "+: Add Bomb | -: Remove Bomb | *: Multiply Bombs (x1.5)\n";
+        std::cout << "1: Shield | 2: Scanner | 3: Ultimate | 4: Bomb Defuser\n";
     }
 }
 
@@ -405,6 +407,34 @@ void Commandline::processGameInput(Game &game)
         case '*':
             game.setMap(game.getMap() * 1.5);
             break;
+        case '1':
+        {
+            BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+            p->use(game, cursorX, cursorY);
+            delete p;
+            break;
+        }
+        case '2':
+        {
+            BasePowerUp* p = new ScannerPowerUp(2, 3);
+            p->use(game, cursorX, cursorY);
+            delete p;
+            break;
+        }
+        case '3':
+        {
+            BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+            p->use(game, cursorX, cursorY);
+            delete p;
+            break;
+        }
+        case '4':
+        {
+            BasePowerUp* p = new BombDefuser(4, 0.5);
+            p->use(game, cursorX, cursorY);
+            delete p;
+            break;
+        }
         case '\n':
         case '\r': // Enter
             game.revealCell(cursorX, cursorY);

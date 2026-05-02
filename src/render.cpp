@@ -5,6 +5,7 @@
 #include "map.hpp"
 #include "stats.hpp"
 #include "render.hpp"
+#include "powerups.hpp"
 
 // External libraries
 #include "raylib.h"
@@ -44,9 +45,6 @@ void Render::InitializeGame(unsigned int width, unsigned int height, unsigned in
     std::cout << "Number of bombs: " << bombs << "\n";
     std::cout << "Seed: " << seed << "\n";
 
-    // Initialize game in NOT_STARTED state. 
-    // This is CRITICAL for the safe-first-click logic in HandleGameInput.
-    // We create the Map first, then the Game.
     Map newMap(width, height, seed, bombs);
     game = Game(Game::GameState::NOT_STARTED, newMap);
     guiState = GUIState::GAME;
@@ -142,7 +140,11 @@ void Render::DrawMenu()
     DrawTextEx(AdwaitaMono, "Player Name", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxPlayerName = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxPlayerName, rectColor);
-    DrawTextEx(AdwaitaMono, playerNameText, {textBoxPlayerName.x + 5, textBoxPlayerName.y + 5}, textSize, 0, textColor);
+    
+    // const_cast;
+    const char* displayName = playerNameText;
+    char* modifiableName = const_cast<char*>(displayName);
+    DrawTextEx(AdwaitaMono, modifiableName, {textBoxPlayerName.x + 5, textBoxPlayerName.y + 5}, textSize, 0, textColor);
 
     renderPosY += 60.0f;
     DrawTextEx(AdwaitaMono, "Map Width", {renderPosX, renderPosY}, textSize, 0, textColor);
@@ -315,6 +317,10 @@ void Render::DrawGame()
     DrawTextEx(AdwaitaMono, timeStr.c_str(), {20.0f, 15.0f}, 30.0f, 0, WHITE);
     DrawTextEx(AdwaitaMono, flagsStr.c_str(), {(float)screenWidth - MeasureTextEx(AdwaitaMono, flagsStr.c_str(), 30, 0).x - 20.0f, 15.0f}, 30.0f, 0, WHITE);
 
+    if (game.isInvulnerable()) {
+        DrawTextEx(AdwaitaMono, "SHIELD ACTIVE", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "SHIELD ACTIVE", 20, 0).x / 2.0f, 45.0f}, 20.0f, 0, GOLD);
+    }
+
     if (game.getCurrentState() == Game::GameState::WON) {
         DrawTextEx(AdwaitaMono, "YOU WON!", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "YOU WON!", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, GREEN);
     } else if (game.getCurrentState() == Game::GameState::LOST) {
@@ -372,6 +378,37 @@ void Render::DrawGame()
     DrawTextEx(AdwaitaMono, "*1.5", {scaleBombsButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*1.5", 20, 0).x / 2.0f, scaleBombsButton.y + 5.0f}, 20.0f, 0, WHITE);
     if (CheckCollisionPointRec(mousePos, scaleBombsButton)) DrawRectangleLinesEx(scaleBombsButton, 2, WHITE);
 
+    // Power-up buttons
+    Rectangle shieldBtn = {200.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
+    DrawRectangleRec(shieldBtn, DARKBLUE);
+    DrawTextEx(AdwaitaMono, "SHIELD", {shieldBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "SHIELD", 18, 0).x / 2.0f, shieldBtn.y + 6.0f}, 18.0f, 0, WHITE);
+    if (CheckCollisionPointRec(mousePos, shieldBtn)) {
+        DrawRectangleLinesEx(shieldBtn, 2, GOLD);
+        BasePowerUp* temp = new ShieldPowerUp(0, 0);
+        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {shieldBtn.x, shieldBtn.y - 25.0f}, 16, 0, GOLD);
+        delete temp;
+    }
+
+    Rectangle ultiBtn = {290.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
+    DrawRectangleRec(ultiBtn, MAROON);
+    DrawTextEx(AdwaitaMono, "ULTI", {ultiBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "ULTI", 18, 0).x / 2.0f, ultiBtn.y + 6.0f}, 18.0f, 0, WHITE);
+    if (CheckCollisionPointRec(mousePos, ultiBtn)) {
+        DrawRectangleLinesEx(ultiBtn, 2, PURPLE);
+        BasePowerUp* temp = new UltimatePowerUp(0, 0, 0);
+        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {ultiBtn.x, ultiBtn.y - 25.0f}, 16, 0, PURPLE);
+        delete temp;
+    }
+
+    Rectangle defuseBtn = {380.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
+    DrawRectangleRec(defuseBtn, DARKPURPLE);
+    DrawTextEx(AdwaitaMono, "DEFUSE", {defuseBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "DEFUSE", 18, 0).x / 2.0f, defuseBtn.y + 6.0f}, 18.0f, 0, WHITE);
+    if (CheckCollisionPointRec(mousePos, defuseBtn)) {
+        DrawRectangleLinesEx(defuseBtn, 2, WHITE);
+        BasePowerUp* temp = new BombDefuser(0, 0);
+        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {defuseBtn.x, defuseBtn.y - 25.0f}, 16, 0, WHITE);
+        delete temp;
+    }
+
     // Right side button: MENU
     Rectangle backButton = {(float)screenWidth - 220.0f, (float)screenHeight - 40.0f, 200.0f, 30.0f};
     DrawRectangleRec(backButton, DARKGRAY);
@@ -389,6 +426,23 @@ void Render::HandleGameInput()
     Rectangle addBombButton = {20.0f, (float)screenHeight - 40.0f, 40.0f, 30.0f};
     Rectangle scaleDownButton = {65.0f, (float)screenHeight - 40.0f, 60.0f, 30.0f};
     Rectangle scaleBombsButton = {130.0f, (float)screenHeight - 40.0f, 60.0f, 30.0f};
+    Rectangle shieldBtn = {200.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
+    Rectangle ultiBtn = {290.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
+    Rectangle defuseBtn = {380.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
+
+    const Map& map = game.getMap();
+    unsigned int width = map.getWidth();
+    unsigned int height = map.getHeight();
+    float statsHeight = 60.0f;
+    float gridPadding = 20.0f;
+    float availableWidth = (float)screenWidth - 2.0f * gridPadding;
+    float availableHeight = (float)screenHeight - statsHeight - 2.0f * gridPadding;
+    float cellSize = std::min(availableWidth / (float)width, availableHeight / (float)height);
+    float startX = gridPadding + (availableWidth - (float)width * cellSize) / 2.0f;
+    float startY = statsHeight + gridPadding + (availableHeight - (float)height * cellSize) / 2.0f;
+
+    int mouseGridX = (int)((mousePos.x - startX) / cellSize);
+    int mouseGridY = (int)((mousePos.y - startY) / cellSize);
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         if (CheckCollisionPointRec(mousePos, backButton)) {
@@ -407,22 +461,27 @@ void Render::HandleGameInput()
             game * 1.5;
             return;
         }
+        if (CheckCollisionPointRec(mousePos, shieldBtn)) {
+            BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+            p->use(game, mouseGridX, mouseGridY);
+            delete p;
+            return;
+        }
+        if (CheckCollisionPointRec(mousePos, ultiBtn)) {
+            BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+            p->use(game, mouseGridX, mouseGridY);
+            delete p;
+            return;
+        }
+        if (CheckCollisionPointRec(mousePos, defuseBtn)) {
+            BasePowerUp* p = new BombDefuser(4, 0.5);
+            p->use(game, mouseGridX, mouseGridY);
+            delete p;
+            return;
+        }
     }
 
-    const Map& map = game.getMap();
-    unsigned int width = map.getWidth();
-    unsigned int height = map.getHeight();
-    float statsHeight = 60.0f;
-    float gridPadding = 20.0f;
-    float availableWidth = (float)screenWidth - 2.0f * gridPadding;
-    float availableHeight = (float)screenHeight - statsHeight - 2.0f * gridPadding;
-    float cellSize = std::min(availableWidth / (float)width, availableHeight / (float)height);
-    float startX = gridPadding + (availableWidth - (float)width * cellSize) / 2.0f;
-    float startY = statsHeight + gridPadding + (availableHeight - (float)height * cellSize) / 2.0f;
-
     if (mousePos.x >= startX && mousePos.x < startX + (float)width * cellSize && mousePos.y >= startY && mousePos.y < startY + (float)height * cellSize) {
-        int x = (int)((mousePos.x - startX) / cellSize);
-        int y = (int)((mousePos.y - startY) / cellSize);
         if (game.getCurrentState() == Game::GameState::IN_PROGRESS || game.getCurrentState() == Game::GameState::NOT_STARTED) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 if (game.getCurrentState() == Game::GameState::NOT_STARTED) {
@@ -430,19 +489,40 @@ void Render::HandleGameInput()
                     unsigned int h = map.getHeight();
                     unsigned int b = map.getBombs();
                     unsigned long long s = map.getSeed();
-                    if (game.getMap().isBombAt(x, y)) {
+                    if (game.getMap().isBombAt(mouseGridX, mouseGridY)) {
                         s++;
                         game.setMap(Map(w, h, s, b));
                     }
                     game.startGame();
                 }
-                game.revealCell(x, y);
-            } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) game.toggleFlag(x, y);
-            else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) game.adjacentReveal(x, y);
+                game.revealCell(mouseGridX, mouseGridY);
+            } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) game.toggleFlag(mouseGridX, mouseGridY);
+            else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) game.adjacentReveal(mouseGridX, mouseGridY);
         }
     }
     if (IsKeyPressed(KEY_R)) game.reset();
     if (IsKeyPressed(KEY_ESCAPE)) guiState = GUIState::MENU;
+
+    if (IsKeyPressed(KEY_ONE)) {
+        BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+        p->use(game, mouseGridX, mouseGridY);
+        delete p;
+    }
+    if (IsKeyPressed(KEY_TWO)) {
+        BasePowerUp* p = new ScannerPowerUp(2, 3);
+        p->use(game, mouseGridX, mouseGridY);
+        delete p;
+    }
+    if (IsKeyPressed(KEY_THREE)) {
+        BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+        p->use(game, mouseGridX, mouseGridY);
+        delete p;
+    }
+    if (IsKeyPressed(KEY_FOUR)) {
+        BasePowerUp* p = new BombDefuser(4, 0.5);
+        p->use(game, mouseGridX, mouseGridY);
+        delete p;
+    }
 }
 
 void Render::DrawMyStats()

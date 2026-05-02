@@ -480,6 +480,20 @@ void Map::revealAll()
             cells[y][x].setRevealed(true);
 }
 
+void Map::revealArea(int x, int y, int radius)
+{
+    for (int i = y - radius; i <= y + radius; ++i)
+    {
+        for (int j = x - radius; j <= x + radius; ++j)
+        {
+            if (isValidPosition(j, i))
+            {
+                revealAt(j, i);
+            }
+        }
+    }
+}
+
 void Map::clearGrid()
 {
     for (unsigned int y = 0; y < height; ++y)

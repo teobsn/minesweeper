@@ -85,6 +85,7 @@ public:
     void revealAt(const int x, const int y);
 
     void revealAll();
+    void revealArea(int x, int y, int radius);
     
     void clearGrid();
 };

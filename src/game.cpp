@@ -60,6 +60,7 @@ void Game::reset()
     flagsPlaced = 0;
     cellsRevealed = 0;
     clicks = 0;
+    invulnerable = false;
 }
 
 void Game::setMap(const Map &map)
@@ -73,18 +74,45 @@ void Game::revealCell(int x, int y)
         return;
 
     clicks++;
-    gameMap.revealAt(x, y);
-    cellsRevealed++;
 
     if (gameMap.isBombAt(x, y))
-        loseGame();
+    {
+        if (invulnerable)
+        {
+            gameMap.revealAt(x, y);
+            cellsRevealed++;
+            invulnerable = false; // Consumare imediata
+        }
+        else
+        {
+            gameMap.revealAt(x, y);
+            cellsRevealed++;
+            loseGame();
+            return;
+        }
+    }
     else
     {
+        gameMap.revealAt(x, y);
+        cellsRevealed++;
         if (gameMap.getAdjacentBombsAt(x, y) == 0)
             fillReveal(x, y);
-
-        checkWinCondition();
     }
+
+    checkWinCondition();
+}
+
+void Game::setInvulnerable(bool value) { 
+    invulnerable = value; 
+}
+
+bool Game::isInvulnerable() const { return invulnerable; }
+void Game::consumeShield() { invulnerable = false; }
+
+void Game::activateRadar(int x, int y, int radius) { 
+    if (gameState == GameState::NOT_STARTED) startGame();
+    gameMap.revealArea(x, y, radius); 
+    checkWinCondition();
 }
 
 void Game::fillReveal(int x, int y)
@@ -293,6 +321,7 @@ Game &Game::operator+(unsigned int bombs)
 Game &Game::operator*(double factor)
 {
     gameMap = gameMap * factor;
+    checkWinCondition();
     return *this;
 }
 
