@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstring>
 #include <queue>
+#include <typeinfo>
 
 Game::Game()
 {
@@ -151,8 +152,12 @@ unsigned int Game::getPowerUpCount(const std::string& type) const {
 
 void Game::showPowerUpHistory() const {
     // Colectie de pointeri la baza (cu late binding)
+    // Utilizam typeid si type_info pentru inspectia tipului real
     for (BasePowerUp* p : powerUpHistory) {
-        if (p) std::cout << p->getName() << ": " << p->getDescription() << "\n";
+        if (p) {
+            std::cout << "[" << typeid(*p).name() << "] " 
+                      << p->getName() << ": " << p->getDescription() << "\n";
+        }
     }
 }
 
