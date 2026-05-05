@@ -21,6 +21,8 @@ public:
     void use(Game& game, int x = 0, int y = 0);
 
     virtual void activate(Game& game, int x, int y);
+    // Clasa BasePowerUp nu poate fi instantiata direct deoarece include
+    // doua functii virtual pure
     virtual std::string getDescription() const = 0;
     virtual std::string getCategory() const = 0;
 
