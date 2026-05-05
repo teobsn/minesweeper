@@ -61,9 +61,12 @@ public:
     ShieldPowerUp(int id, float duration);
     virtual ~ShieldPowerUp();
 
-    void activate(Game& game, int x, int y) override;
-    std::string getDescription() const override;
-    std::string getCategory() const override;
+    // Utilizam 'final' pe metodele claselor care nu sunt destinate sa fie baze
+    // pentru alte derivate. Acest lucru garanteaza ca logica de activare
+    // nu va fi modificata accidental in viitor (si ajuta la devirtualizare).
+    void activate(Game& game, int x, int y) override final;
+    std::string getDescription() const override final;
+    std::string getCategory() const override final;
 };
 
 class ScannerPowerUp : public SpatialEffect
@@ -72,11 +75,16 @@ public:
     ScannerPowerUp(int id, int radius);
     virtual ~ScannerPowerUp();
 
-    void activate(Game& game, int x, int y) override;
-    std::string getDescription() const override;
-    std::string getCategory() const override;
+    void activate(Game& game, int x, int y) override final;
+    std::string getDescription() const override final;
+    std::string getCategory() const override final;
 };
 
+// Utilizam 'final' pentru a marca faptul ca UltimatePowerUp este varful ierarhiei
+// si nu mai poate fi derivat.
+// Acest lucru permite compilatorului sa optimizeze
+// apelurile de functii virtuale, eliminand overhead-ul 
+// legat de vtable acolo unde este posibil.
 class UltimatePowerUp final : public TemporalEffect, public SpatialEffect
 {
 public:
@@ -97,7 +105,7 @@ public:
     BombDefuser(int id, double ratio);
     virtual ~BombDefuser();
 
-    void activate(Game& game, int x, int y) override;
-    std::string getDescription() const override;
-    std::string getCategory() const override;
+    void activate(Game& game, int x, int y) override final;
+    std::string getDescription() const override final;
+    std::string getCategory() const override final;
 };
