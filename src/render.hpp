@@ -10,6 +10,7 @@
 
 // C++ standard library
 #include <chrono>
+#include <string>
 
 class Render
 {
@@ -26,7 +27,7 @@ private:
     char mapHeightText[5];
     char mapBombsText[5];
     char mapSeedText[13];
-    char playerNameText[64];
+    std::string playerName;
 
     GUIState guiState;
     Game game;
