@@ -180,6 +180,26 @@ unsigned int Game::getPowerUpCount(const std::string& type) const {
             // Daca obiectul nu este de tipul asteptat, continuam cautarea in istoric.
             continue;
         }
+
+
+        /*
+        // Varianta pe pointeri inloc de referinte, caz in care dynamic_cast returneaza nullptr
+        // inloc sa emita exceptia std::bad_cast
+
+        if (type == "Shield") {
+            ShieldPowerUp* casted = dynamic_cast<ShieldPowerUp*>(p);
+            if (casted != nullptr) count++; // Verificare non-null inainte de utilizare
+        } else if (type == "Scanner") {
+            ScannerPowerUp* casted = dynamic_cast<ScannerPowerUp*>(p);
+            if (casted != nullptr) count++;
+        } else if (type == "Ultimate") {
+            UltimatePowerUp* casted = dynamic_cast<UltimatePowerUp*>(p);
+            if (casted != nullptr) count++;
+        } else if (type == "Defuser") {
+            BombDefuser* casted = dynamic_cast<BombDefuser*>(p);
+            if (casted != nullptr) count++;
+        
+        */
     }
     return count;
 }

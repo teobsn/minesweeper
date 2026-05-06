@@ -39,11 +39,8 @@ Render::~Render()
 
 void Render::InitializeGame(unsigned int width, unsigned int height, unsigned int bombs, unsigned long long seed)
 {
-    std::cout << "Generating map with attributes:\n";
-    std::cout << "Width: " << width << "\n";
-    std::cout << "Height: " << height << "\n";
-    std::cout << "Number of bombs: " << bombs << "\n";
-    std::cout << "Seed: " << seed << "\n";
+    // Informatiile sunt logate pentru debug
+    std::cout << "Generating map: " << width << "x" << height << ", Bombs: " << bombs << ", Seed: " << seed << "\n";
 
     Map newMap(width, height, seed, bombs);
     game = Game(Game::GameState::NOT_STARTED, newMap);
@@ -140,11 +137,7 @@ void Render::DrawMenu()
     DrawTextEx(AdwaitaMono, "Player Name", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxPlayerName = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxPlayerName, rectColor);
-    
-    // const_cast;
-    const char* displayName = playerNameText;
-    char* modifiableName = const_cast<char*>(displayName);
-    DrawTextEx(AdwaitaMono, modifiableName, {textBoxPlayerName.x + 5, textBoxPlayerName.y + 5}, textSize, 0, textColor);
+    DrawTextEx(AdwaitaMono, playerNameText, {textBoxPlayerName.x + 5, textBoxPlayerName.y + 5}, textSize, 0, textColor);
 
     renderPosY += 60.0f;
     DrawTextEx(AdwaitaMono, "Map Width", {renderPosX, renderPosY}, textSize, 0, textColor);
