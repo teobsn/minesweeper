@@ -38,7 +38,7 @@ protected:
 
 public:
     TemporalEffect(int id, std::string name, float duration);
-    virtual ~TemporalEffect();
+    virtual ~TemporalEffect() override;
     
     float getDuration() const;
 };
@@ -50,7 +50,7 @@ protected:
 
 public:
     SpatialEffect(int id, std::string name, int radius);
-    virtual ~SpatialEffect();
+    virtual ~SpatialEffect() override;
 
     int getRadius() const;
 };
