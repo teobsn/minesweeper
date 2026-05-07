@@ -103,6 +103,7 @@ class PlayerStats
 private:
     char *playerName;
 
+protected:
     Match *games;
     int numberOfGames;
     int numberOfWins;
