@@ -4,19 +4,25 @@ A C++ implementation of the classic Minesweeper game with both CLI and GUI inter
 
 ## Downloads
 
-Pre-built binaries for **Windows**, **macOS**, and **Linux** are automatically generated for every commit and can be found in the [GitHub Releases](https://github.com/teobsn/minesweeper-poo/releases) section.
+Pre-built binaries for **Windows**, **macOS**, and **Linux** are automatically generated for every commit (with GitHub Actions) and can be found in the [GitHub Releases](https://github.com/teobsn/minesweeper-poo/releases) section.
 
 ## Building
 
+Linux / macOS:
 ```bash
 ./build.sh
+```
+
+Windows:
+```batch
+build.bat
 ```
 
 Build outputs:
 - `build/minesweeper` - CLI version
 - `build/minesweeper-gui` - GUI version  
-- `build/minesweeper-benchmark` - Benchmark utilities
-- `build/minesweeper-animation-demo` - Animation demo
+- `build/minesweeper-benchmark` - Benchmark utility
+- `build/minesweeper-animation-demo` - Map generation animation demo
 
 ## Dependencies
 
