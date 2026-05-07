@@ -80,12 +80,9 @@ public:
     std::string getCategory() const override final;
 };
 
-// Utilizam 'final' pentru a marca faptul ca UltimatePowerUp este varful ierarhiei
-// si nu mai poate fi derivat.
-// Acest lucru permite compilatorului sa optimizeze
-// apelurile de functii virtuale, eliminand overhead-ul 
-// legat de vtable acolo unde este posibil.
-class UltimatePowerUp final : public TemporalEffect, public SpatialEffect
+// Utilizam moștenirea virtuală pentru a preveni duplicarea membrilor clasei BasePowerUp
+// in ierarhia de tip diamant (UltimatePowerUp).
+class UltimatePowerUp : public TemporalEffect, public SpatialEffect
 {
 public:
     UltimatePowerUp(int id, float duration, int radius);
