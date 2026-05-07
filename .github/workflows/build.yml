@@ -68,15 +68,38 @@ jobs:
           # Only copy from Release directory to ensure no Debug binary is picked up
           cp build/Release/*.exe dist/ 2>/dev/null || true
           
-          # Explicitly copy Release DLLs from vcpkg
-          # The triplet is usually x64-windows for windows-latest
-          VCPKG_BIN="$VCPKG_INSTALLATION_ROOT/installed/x64-windows/bin"
-          if [ -d "$VCPKG_BIN" ]; then
-            cp "$VCPKG_BIN/raylib.dll" dist/ 2>/dev/null || true
-            cp "$VCPKG_BIN/glfw3.dll" dist/ 2>/dev/null || true
-          else
-            # Fallback find if triplet differs, but filter for bin/ (Release)
-            find "$VCPKG_INSTALLATION_ROOT/installed" -path "*/bin/*.dll" -exec cp {} dist/ \;
+          # Explicitly copy required runtime DLLs from vcpkg
+          VCPKG_TRIPLET="x64-windows"
+          VCPKG_BIN="$VCPKG_INSTALLATION_ROOT/installed/${VCPKG_TRIPLET}/bin"
+
+          # Copy raylib.dll (required for the GUI executable)
+          if [ -f "$VCPKG_BIN/raylib.dll" ]; then
+            cp "$VCPKG_BIN/raylib.dll" dist/
+            echo "Copied raylib.dll"
+          fi
+
+          # Copy glfw3.dll (required by raylib for window/input management)
+          if [ -f "$VCPKG_BIN/glfw3.dll" ]; then
+            cp "$VCPKG_BIN/glfw3.dll" dist/
+            echo "Copied glfw3.dll"
+          fi
+
+          # Copy winmm.dll if present (Windows multimedia library, sometimes needed)
+          if [ -f "$VCPKG_BIN/winmm.dll" ]; then
+            cp "$VCPKG_BIN/winmm.dll" dist/
+            echo "Copied winmm.dll"
+          fi
+
+          # Fallback: if DLLs weren't found in the standard location, search the entire vcpkg installed tree
+          if [ ! -f "dist/raylib.dll" ] || [ ! -f "dist/glfw3.dll" ]; then
+            echo "Some DLLs missing, searching vcpkg tree..."
+            find "$VCPKG_INSTALLATION_ROOT/installed" -maxdepth 3 -name "*.dll" -exec cp {} dist/ \;
+          fi
+
+          # Verify that the critical DLLs are present
+          if [ ! -f "dist/raylib.dll" ]; then
+            echo "ERROR: raylib.dll was not found in any location!"
+            exit 1
           fi
 
           # Use 7z on Windows as zip is missing in the default bash path
