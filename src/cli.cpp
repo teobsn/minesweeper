@@ -410,13 +410,13 @@ void Commandline::processGameInput(Game &game)
         case '1':
         {
             BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
-            p->use(game, cursorX, cursorY);
+            p->use(game, cursorX, cursorY); // Valid (metoda 'use' este publica)
             break;
         }
         case '2':
         {
             BasePowerUp* p = new ScannerPowerUp(2, 3);
-            p->use(game, cursorX, cursorY);
+            p->use(game, cursorX, cursorY); // Valid (metoda publica)
             break;
         }
         case '3':

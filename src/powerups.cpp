@@ -19,12 +19,12 @@ std::string BasePowerUp::getName() const { return name; }
 
 void BasePowerUp::use(Game &game, int x, int y)
 {
-    this->activate(game, x, y);
+    this->activate(game, x, y); // Valid (metoda virtuala publica)
 }
 
 void BasePowerUp::activate(Game &game, int, int)
 {
-    game.addPowerUpToHistory(this);
+    game.addPowerUpToHistory(this); // Valid (metoda publica a clasei Game)
 }
 
 TemporalEffect::TemporalEffect(int id, std::string name, float duration)
