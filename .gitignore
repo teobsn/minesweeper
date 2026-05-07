@@ -68,3 +68,6 @@ Thumbs.db
 
 # Valgrind
 vgcore.*
+
+# Game leftovers
+last_player.txt
