@@ -271,11 +271,11 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
 
     if (static_cast<int>(this->bombs) + bombs > static_cast<int>(width * height))
     {
-        throw GameConfigException("Nu se pot genera mai multe bombe decat celulele disponibile", static_cast<int>(width), static_cast<int>(height), static_cast<int>(this->bombs + bombs));
+        throw GameConfigException("Cannot generate more bombs than available cells", static_cast<int>(width), static_cast<int>(height), static_cast<int>(this->bombs + bombs));
     }
     else if (static_cast<int>(this->bombs) + bombs < 0)
     {
-        throw GameConfigException("Nu se pot sterge mai putin bombe decat exista deja", static_cast<int>(width), static_cast<int>(height), static_cast<int>(this->bombs + bombs));
+        throw GameConfigException("Cannot remove more bombs than currently exist", static_cast<int>(width), static_cast<int>(height), static_cast<int>(this->bombs + bombs));
     }
 
     // Impartim seed-ul in doua jumatati pentru a le folosi la initializarea pRNG-ului

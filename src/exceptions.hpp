@@ -31,7 +31,7 @@ public:
         : MinesweeperException(msg), x(x), y(y) 
     {
         std::ostringstream oss;
-        oss << message << " la coordonatele (" << x << ", " << y << ")";
+        oss << message << " at coordinates (" << x << ", " << y << ")";
         message = oss.str();
     }
 
@@ -50,7 +50,7 @@ public:
         : MinesweeperException(msg), width(w), height(h), bombs(b) 
     {
         std::ostringstream oss;
-        oss << message << " [Harta: " << w << "x" << h << ", Bombe: " << b << "]";
+        oss << message << " [Map: " << w << "x" << h << ", Bombs: " << b << "]";
         message = oss.str();
     }
 
@@ -70,7 +70,7 @@ public:
         : MinesweeperException(msg), sqliteErrorCode(errorCode) 
     {
         std::ostringstream oss;
-        oss << message << " (Cod eroare SQLite: " << errorCode << ")";
+        oss << message << " (SQLite error code: " << errorCode << ")";
         message = oss.str();
     }
 
@@ -87,6 +87,6 @@ public:
     explicit ResourceGuard(const std::string& name) : resourceName(name) {}
     ~ResourceGuard() noexcept
     {
-        std::cout << "[Stack Unwinding] Eliberare resursa: " << resourceName << "\n";
+        std::cout << "[Stack Unwinding] Releasing resource: " << resourceName << "\n";
     }
 };

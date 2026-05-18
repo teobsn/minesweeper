@@ -138,7 +138,7 @@ void Commandline::handleMainMenu()
     }
     catch (...)
     {
-        std::cout << "A aparut o eroare necunoscuta.\n";
+        std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
 }
@@ -410,7 +410,7 @@ void Commandline::startNewGame()
     }
     catch (...)
     {
-        std::cout << "A aparut o eroare necunoscuta.\n";
+        std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
 }
@@ -538,7 +538,7 @@ void Commandline::processGameInput(Game &game)
         {
             disableRawMode();
             clearScreen();
-            std::cout << "A aparut o eroare necunoscuta.\n";
+            std::cout << "An unknown error occurred.\n";
             waitForEnter();
             enableRawMode();
         }
@@ -663,7 +663,7 @@ void Commandline::displayStatistics()
     }
     catch (...)
     {
-        std::cout << "A aparut o eroare necunoscuta.\n";
+        std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
 }
@@ -752,7 +752,7 @@ void Commandline::displayAllPlayersStatistics()
     }
     catch (...)
     {
-        std::cout << "A aparut o eroare necunoscuta.\n";
+        std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
 }
@@ -762,7 +762,7 @@ void Commandline::StartCommandline()
     try
     {
         ResourceGuard demoGuard("Stack unwinding demo");
-        throw MinesweeperException("Demo stack unwinding");
+        throw MinesweeperException("Stack unwinding demo");
     }
     catch (const MinesweeperException &)
     {
@@ -798,7 +798,7 @@ void Commandline::StartCommandline()
         }
         catch (...)
         {
-            std::cout << "A aparut o eroare necunoscuta.\n";
+            std::cout << "An unknown error occurred.\n";
             waitForEnter();
         }
     }

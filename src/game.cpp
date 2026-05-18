@@ -98,10 +98,10 @@ void Game::setMap(const Map &map)
 void Game::revealCell(int x, int y)
 {
     if (!gameMap.isValidPosition(x, y))
-        throw InvalidMoveException("Miscare invalida: pozitie in afara hartii", x, y);
+        throw InvalidMoveException("Invalid move: position outside the map", x, y);
 
     if (gameMap.isRevealedAt(x, y) || gameMap.isFlaggedAt(x, y))
-        throw InvalidMoveException("Miscare invalida: celula nu poate fi dezvaluita", x, y);
+        throw InvalidMoveException("Invalid move: cell cannot be revealed", x, y);
 
     clicks++;
 
@@ -270,7 +270,7 @@ void Game::adjacentReveal(int x, int y)
         Sursa explicatie: https://www.speedrun.com/de-DE/gm/guides/0jd4m
     */
     if (!gameMap.isValidPosition(x, y) || !gameMap.isRevealedAt(x, y))
-        throw InvalidMoveException("Miscare invalida: chording pe o celula indisponibila", x, y);
+        throw InvalidMoveException("Invalid move: chord used on an unavailable cell", x, y);
 
     clicks++;
     int flaggedNeighbors = 0;
@@ -308,7 +308,7 @@ void Game::revealFullMap()
 void Game::toggleFlag(int x, int y)
 {
     if (!gameMap.isValidPosition(x, y) || gameMap.isRevealedAt(x, y))
-        throw InvalidMoveException("Miscare invalida: steag imposibil pe aceasta celula", x, y);
+        throw InvalidMoveException("Invalid move: cannot place a flag on this cell", x, y);
 
     clicks++;
     gameMap.toggleFlagAt(x, y);

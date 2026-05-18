@@ -27,7 +27,7 @@ int main()
     }
     catch (...)
     {
-        std::cout << "A aparut o eroare necunoscuta.\n";
+        std::cout << "An unknown error occurred.\n";
     }
     return 0;
 }

@@ -396,7 +396,7 @@ const std::string &PlayerStats::getPlayerName() const noexcept
 void PlayerStats::setPlayerName(const std::string &newName)
 {
     if (newName.empty())
-        throw MinesweeperException("Numele jucatorului nu poate fi gol");
+        throw MinesweeperException("Player name cannot be empty");
 
     playerName = newName;
 }
@@ -630,7 +630,7 @@ Leaderboard::~Leaderboard()
 PlayerStats *Leaderboard::findPlayer(const std::string &name)
 {
     if (name.empty())
-        throw MinesweeperException("Numele jucatorului nu poate fi gol");
+        throw MinesweeperException("Player name cannot be empty");
 
     auto it = std::find_if(playerStats.begin(), playerStats.end(), [&](const PlayerStats &player)
     {
@@ -646,7 +646,7 @@ PlayerStats *Leaderboard::findPlayer(const std::string &name)
 PlayerStats *Leaderboard::addPlayer(const std::string &name)
 {
     if (name.empty())
-        throw MinesweeperException("Numele jucatorului nu poate fi gol");
+        throw MinesweeperException("Player name cannot be empty");
 
     PlayerStats *existing = findPlayer(name);
     if (existing)
@@ -659,7 +659,7 @@ PlayerStats *Leaderboard::addPlayer(const std::string &name)
 PlayerStats *Leaderboard::getPlayer(unsigned int index)
 {
     if (index >= playerStats.size())
-        throw DatabaseException("Index invalid in leaderboard", static_cast<int>(index));
+        throw DatabaseException("Invalid leaderboard index", static_cast<int>(index));
 
     return &playerStats[index];
 }
@@ -690,7 +690,7 @@ void Leaderboard::sort(char order, bool equality)
         return;
 
     if (order != 'a' && order != 'd')
-        throw MinesweeperException("Ordinea de sortare este invalida");
+        throw MinesweeperException("Invalid sort order");
 
     auto comparator = [order](const PlayerStats &lhs, const PlayerStats &rhs)
     {

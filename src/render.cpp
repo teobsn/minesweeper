@@ -529,7 +529,7 @@ void Render::HandleGameInput()
         std::cout << e.what() << "\n";
     }
     catch (...) {
-        std::cout << "A aparut o eroare necunoscuta.\n";
+        std::cout << "An unknown error occurred.\n";
     }
 }
 
