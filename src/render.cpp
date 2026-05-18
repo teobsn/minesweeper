@@ -6,6 +6,7 @@
 #include "stats.hpp"
 #include "render.hpp"
 #include "powerups.hpp"
+#include "exceptions.hpp"
 
 // External libraries
 #include "raylib.h"
@@ -441,77 +442,94 @@ void Render::HandleGameInput()
     int mouseGridX = (int)((mousePos.x - startX) / cellSize);
     int mouseGridY = (int)((mousePos.y - startY) / cellSize);
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        if (CheckCollisionPointRec(mousePos, backButton)) {
-            guiState = GUIState::MENU;
-            return;
+    try {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (CheckCollisionPointRec(mousePos, backButton)) {
+                guiState = GUIState::MENU;
+                return;
+            }
+            if (CheckCollisionPointRec(mousePos, addBombButton)) {
+                game + 1;
+                return;
+            }
+            if (CheckCollisionPointRec(mousePos, scaleDownButton)) {
+                game * 0.75;
+                return;
+            }
+            if (CheckCollisionPointRec(mousePos, scaleBombsButton)) {
+                game * 1.5;
+                return;
+            }
+            if (CheckCollisionPointRec(mousePos, shieldBtn)) {
+                BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+                p->use(game, mouseGridX, mouseGridY);
+                return;
+            }
+            if (CheckCollisionPointRec(mousePos, ultiBtn)) {
+                BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+                p->use(game, mouseGridX, mouseGridY);
+                return;
+            }
+            if (CheckCollisionPointRec(mousePos, defuseBtn)) {
+                BasePowerUp* p = new BombDefuser(4, 0.5);
+                p->use(game, mouseGridX, mouseGridY);
+                return;
+            }
         }
-        if (CheckCollisionPointRec(mousePos, addBombButton)) {
-            game + 1;
-            return;
+
+        if (mousePos.x >= startX && mousePos.x < startX + (float)width * cellSize && mousePos.y >= startY && mousePos.y < startY + (float)height * cellSize) {
+            if (game.getCurrentState() == Game::GameState::IN_PROGRESS || game.getCurrentState() == Game::GameState::NOT_STARTED) {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                    if (game.getCurrentState() == Game::GameState::NOT_STARTED) {
+                        unsigned int w = map.getWidth();
+                        unsigned int h = map.getHeight();
+                        unsigned int b = map.getBombs();
+                        unsigned long long s = map.getSeed();
+                        if (game.getMap().isBombAt(mouseGridX, mouseGridY)) {
+                            s++;
+                            game.setMap(Map(w, h, s, b));
+                        }
+                        game.startGame();
+                    }
+                    game.revealCell(mouseGridX, mouseGridY);
+                } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) game.toggleFlag(mouseGridX, mouseGridY);
+                else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) game.adjacentReveal(mouseGridX, mouseGridY);
+            }
         }
-        if (CheckCollisionPointRec(mousePos, scaleDownButton)) {
-            game * 0.75;
-            return;
-        }
-        if (CheckCollisionPointRec(mousePos, scaleBombsButton)) {
-            game * 1.5;
-            return;
-        }
-        if (CheckCollisionPointRec(mousePos, shieldBtn)) {
+        if (IsKeyPressed(KEY_R)) game.reset();
+        if (IsKeyPressed(KEY_ESCAPE)) guiState = GUIState::MENU;
+
+        if (IsKeyPressed(KEY_ONE)) {
             BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
             p->use(game, mouseGridX, mouseGridY);
-            return;
         }
-        if (CheckCollisionPointRec(mousePos, ultiBtn)) {
+        if (IsKeyPressed(KEY_TWO)) {
+            BasePowerUp* p = new ScannerPowerUp(2, 3);
+            p->use(game, mouseGridX, mouseGridY);
+        }
+        if (IsKeyPressed(KEY_THREE)) {
             BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
             p->use(game, mouseGridX, mouseGridY);
-            return;
         }
-        if (CheckCollisionPointRec(mousePos, defuseBtn)) {
+        if (IsKeyPressed(KEY_FOUR)) {
             BasePowerUp* p = new BombDefuser(4, 0.5);
             p->use(game, mouseGridX, mouseGridY);
-            return;
         }
     }
-
-    if (mousePos.x >= startX && mousePos.x < startX + (float)width * cellSize && mousePos.y >= startY && mousePos.y < startY + (float)height * cellSize) {
-        if (game.getCurrentState() == Game::GameState::IN_PROGRESS || game.getCurrentState() == Game::GameState::NOT_STARTED) {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                if (game.getCurrentState() == Game::GameState::NOT_STARTED) {
-                    unsigned int w = map.getWidth();
-                    unsigned int h = map.getHeight();
-                    unsigned int b = map.getBombs();
-                    unsigned long long s = map.getSeed();
-                    if (game.getMap().isBombAt(mouseGridX, mouseGridY)) {
-                        s++;
-                        game.setMap(Map(w, h, s, b));
-                    }
-                    game.startGame();
-                }
-                game.revealCell(mouseGridX, mouseGridY);
-            } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) game.toggleFlag(mouseGridX, mouseGridY);
-            else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) game.adjacentReveal(mouseGridX, mouseGridY);
-        }
+    catch (const InvalidMoveException &e) {
+        std::cout << e.what() << "\n";
     }
-    if (IsKeyPressed(KEY_R)) game.reset();
-    if (IsKeyPressed(KEY_ESCAPE)) guiState = GUIState::MENU;
-
-    if (IsKeyPressed(KEY_ONE)) {
-        BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
-        p->use(game, mouseGridX, mouseGridY);
+    catch (const GameConfigException &e) {
+        std::cout << e.what() << "\n";
     }
-    if (IsKeyPressed(KEY_TWO)) {
-        BasePowerUp* p = new ScannerPowerUp(2, 3);
-        p->use(game, mouseGridX, mouseGridY);
+    catch (const DatabaseException &e) {
+        std::cout << e.what() << "\n";
     }
-    if (IsKeyPressed(KEY_THREE)) {
-        BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
-        p->use(game, mouseGridX, mouseGridY);
+    catch (const MinesweeperException &e) {
+        std::cout << e.what() << "\n";
     }
-    if (IsKeyPressed(KEY_FOUR)) {
-        BasePowerUp* p = new BombDefuser(4, 0.5);
-        p->use(game, mouseGridX, mouseGridY);
+    catch (...) {
+        std::cout << "A aparut o eroare necunoscuta.\n";
     }
 }
 

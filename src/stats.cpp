@@ -2,6 +2,7 @@
 #include "stats.hpp"
 #include "cell.hpp"
 #include "map.hpp"
+#include "exceptions.hpp"
 
 // C++ standard library
 #include <iostream>
@@ -724,7 +725,10 @@ void Leaderboard::reallocate(unsigned int newCapacity)
 
 PlayerStats *Leaderboard::findPlayer(const char *name)
 {
-    if (!name || players == 0)
+    if (!name || *name == '\0')
+        throw MinesweeperException("Numele jucatorului nu poate fi gol");
+
+    if (players == 0)
         return nullptr;
 
     for (unsigned int i = 0; i < players; ++i)
@@ -740,6 +744,9 @@ PlayerStats *Leaderboard::findPlayer(const char *name)
 
 PlayerStats *Leaderboard::addPlayer(const char *name)
 {
+    if (!name || *name == '\0')
+        throw MinesweeperException("Numele jucatorului nu poate fi gol");
+
     PlayerStats *existing = findPlayer(name);
     if (existing)
         return existing;
@@ -760,7 +767,7 @@ PlayerStats *Leaderboard::addPlayer(const char *name)
 PlayerStats *Leaderboard::getPlayer(unsigned int index)
 {
     if (index >= players)
-        return nullptr;
+        throw DatabaseException("Index invalid in leaderboard", static_cast<int>(index));
 
     return &playerStats[index];
 }
@@ -784,6 +791,9 @@ void Leaderboard::sort(char order, bool equality)
 {
     if (players <= 1)
         return;
+
+    if (order != 'a' && order != 'd')
+        throw MinesweeperException("Ordinea de sortare este invalida");
 
     // Bubble Sort :-o
     for (unsigned int i = 0; i < players - 1; ++i)

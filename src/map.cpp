@@ -1,6 +1,7 @@
 // Minesweeper headers
 #include "map.hpp"
 #include "cell.hpp"
+#include "exceptions.hpp"
 
 // C++ standard library
 #include <vector>
@@ -270,13 +271,11 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
 
     if (static_cast<int>(this->bombs) + bombs > static_cast<int>(width * height))
     {
-        std::cerr << "Nu se pot genera mai multe bombe decat celulele disponibile! (" << this->bombs + bombs << " > " << width * height << ")";
-        return;
+        throw GameConfigException("Nu se pot genera mai multe bombe decat celulele disponibile", static_cast<int>(width), static_cast<int>(height), static_cast<int>(this->bombs + bombs));
     }
     else if (static_cast<int>(this->bombs) + bombs < 0)
     {
-        std::cerr << "Nu se pot sterge mai putin bombe decat exista deja! (" << this->bombs + bombs << " < 0)";
-        return;
+        throw GameConfigException("Nu se pot sterge mai putin bombe decat exista deja", static_cast<int>(width), static_cast<int>(height), static_cast<int>(this->bombs + bombs));
     }
 
     // Impartim seed-ul in doua jumatati pentru a le folosi la initializarea pRNG-ului

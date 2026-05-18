@@ -2,6 +2,7 @@
 // Minesweeper headers
 #include "cli.hpp"
 #include "powerups.hpp"
+#include "exceptions.hpp"
 
 // C++ Standard libraries
 #include <iostream>
@@ -94,23 +95,51 @@ void Commandline::handleMainMenu()
 {
     int choice = readIntInput("Your choice: ", 1, 5);
 
-    switch (static_cast<MenuOption>(choice))
+    try
     {
-    case MenuOption::START_GAME:
-        startNewGame();
-        break;
-    case MenuOption::CHANGE_SETTINGS:
-        handleSettingsMenu();
-        break;
-    case MenuOption::VIEW_STATS:
-        displayStatistics();
-        break;
-    case MenuOption::VIEW_ALL_PLAYERS:
-        displayAllPlayersStatistics();
-        break;
-    case MenuOption::EXIT:
-        exit(0);
-        break;
+        switch (static_cast<MenuOption>(choice))
+        {
+        case MenuOption::START_GAME:
+            startNewGame();
+            break;
+        case MenuOption::CHANGE_SETTINGS:
+            handleSettingsMenu();
+            break;
+        case MenuOption::VIEW_STATS:
+            displayStatistics();
+            break;
+        case MenuOption::VIEW_ALL_PLAYERS:
+            displayAllPlayersStatistics();
+            break;
+        case MenuOption::EXIT:
+            exit(0);
+            break;
+        }
+    }
+    catch (const InvalidMoveException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const GameConfigException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const DatabaseException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const MinesweeperException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (...)
+    {
+        std::cout << "A aparut o eroare necunoscuta.\n";
+        waitForEnter();
     }
 }
 
@@ -289,74 +318,102 @@ void Commandline::displayGameStatus(const Game &game, bool withControls) const
 
 void Commandline::startNewGame()
 {
-    bool playAgain = false;
-    
-    // Harta, joc nou
-    Map gameMap(settings.width, settings.height, settings.seed, settings.bombs);
-    Game game(Game::GameState::NOT_STARTED, gameMap);
+    try
+    {
+        bool playAgain = false;
+        
+        // Harta, joc nou
+        Map gameMap(settings.width, settings.height, settings.seed, settings.bombs);
+        Game game(Game::GameState::NOT_STARTED, gameMap);
 
-    do {
-        clearScreen();
+        do {
+            clearScreen();
 
-        // Game Loop
-        processGameInput(game);
+            // Game Loop
+            processGameInput(game);
 
-        // Sfarsit game loop -> salvam "meciul"
-        bool won = game.getCurrentState() == Game::GameState::WON;
+            // Sfarsit game loop -> salvam "meciul"
+            bool won = game.getCurrentState() == Game::GameState::WON;
+
+            std::cout << "\n";
+            if (won)
+                std::cout << "You won!\n";
+            else if (game.getCurrentState() == Game::GameState::LOST)
+                std::cout << "You lost! Game over!\n\n";
+            else
+                std::cout << "Game quit.\n\n";
+
+            if (game.getCurrentState() == Game::GameState::WON || game.getCurrentState() == Game::GameState::LOST)
+            {
+                // Cream meciul (statistica) din jocul jucat
+                Match match = saveGameRecord(game, won);
+
+                std::cout << "Time: " << match['t'] / 1000 << "s\n";
+                std::cout << "Clicks: " << match.getClicks() << "\n";
+                std::cout.flush();
+
+                char playerName[64] = "";
+                std::cout << "\nEnter your name to save stats (empty to skip): ";
+
+                std::cin.getline(playerName, 64);
+
+                PlayerStats *player = nullptr;
+                if (playerName[0] != '\0')
+                    player = Leaderboard::addPlayer(playerName);
+
+                if (player)
+                {
+                    // player->addMatch(match);
+                    *player + match;
+                    Leaderboard::addGame();
+                }
+            }
+
+            std::cout << "\nPlay again with same settings?\n";
+            std::cout << "1. Yes\n";
+            std::cout << "2. No\n";
+            int choice = readIntInput("", 1, 2);
+            
+            if (choice == 1) {
+                playAgain = true;
+                generateRandomSeed();
+                game.reset();
+                game.getMap().setSeed(settings.seed);
+                game.getMap() + settings.bombs;
+            } else {
+                playAgain = false;
+            }
+
+        } while (playAgain);
 
         std::cout << "\n";
-        if (won)
-            std::cout << "You won!\n";
-        else if (game.getCurrentState() == Game::GameState::LOST)
-            std::cout << "You lost! Game over!\n\n";
-        else
-            std::cout << "Game quit.\n\n";
-
-        if (game.getCurrentState() == Game::GameState::WON || game.getCurrentState() == Game::GameState::LOST)
-        {
-            // Cream meciul (statistica) din jocul jucat
-            Match match = saveGameRecord(game, won);
-
-            std::cout << "Time: " << match['t'] / 1000 << "s\n";
-            std::cout << "Clicks: " << match.getClicks() << "\n";
-            std::cout.flush();
-
-            char playerName[64] = "";
-            std::cout << "\nEnter your name to save stats (empty to skip): ";
-
-            std::cin.getline(playerName, 64);
-
-            PlayerStats *player = nullptr;
-            if (playerName[0] != '\0')
-                player = Leaderboard::addPlayer(playerName);
-
-            if (player)
-            {
-                // player->addMatch(match);
-                *player + match;
-                Leaderboard::addGame();
-            }
-        }
-
-        std::cout << "\nPlay again with same settings?\n";
-        std::cout << "1. Yes\n";
-        std::cout << "2. No\n";
-        int choice = readIntInput("", 1, 2);
-        
-        if (choice == 1) {
-            playAgain = true;
-            generateRandomSeed();
-            game.reset();
-            game.getMap().setSeed(settings.seed);
-            game.getMap() + settings.bombs;
-        } else {
-            playAgain = false;
-        }
-
-    } while (playAgain);
-
-    std::cout << "\n";
-    waitForEnter();
+        waitForEnter();
+    }
+    catch (const InvalidMoveException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const GameConfigException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const DatabaseException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const MinesweeperException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (...)
+    {
+        std::cout << "A aparut o eroare necunoscuta.\n";
+        waitForEnter();
+    }
 }
 
 void Commandline::processGameInput(Game &game)
@@ -376,72 +433,115 @@ void Commandline::processGameInput(Game &game)
 
         char c = std::cin.get();
 
-        switch (c)
+        try
         {
-        case 'w':
-        case 'W':
-            cursorY = std::max(0, cursorY - 1);
-            break;
-        case 's':
-        case 'S':
-            cursorY = std::min(static_cast<int>(game.getMap().getHeight()) - 1, cursorY + 1);
-            break;
-        case 'a':
-        case 'A':
-            cursorX = std::max(0, cursorX - 1);
-            break;
-        case 'd':
-        case 'D':
-            cursorX = std::min(static_cast<int>(game.getMap().getWidth()) - 1, cursorX + 1);
-            break;
-        case 'e':
-        case 'E':
-            game.adjacentReveal(cursorX, cursorY); // Chording
-            break;
-        case '+':
-            game.getMap() + 1;
-            break;
-        case '-':
-            game.getMap() - 1;
-            break;
-        case '*':
-            game.setMap(game.getMap() * 1.5);
-            break;
-        case '1':
-        {
-            BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
-            p->use(game, cursorX, cursorY); // Valid (metoda 'use' este publica)
-            break;
+            switch (c)
+            {
+            case 'w':
+            case 'W':
+                cursorY = std::max(0, cursorY - 1);
+                break;
+            case 's':
+            case 'S':
+                cursorY = std::min(static_cast<int>(game.getMap().getHeight()) - 1, cursorY + 1);
+                break;
+            case 'a':
+            case 'A':
+                cursorX = std::max(0, cursorX - 1);
+                break;
+            case 'd':
+            case 'D':
+                cursorX = std::min(static_cast<int>(game.getMap().getWidth()) - 1, cursorX + 1);
+                break;
+            case 'e':
+            case 'E':
+                game.adjacentReveal(cursorX, cursorY); // Chording
+                break;
+            case '+':
+                game.getMap() + 1;
+                break;
+            case '-':
+                game.getMap() - 1;
+                break;
+            case '*':
+                game.setMap(game.getMap() * 1.5);
+                break;
+            case '1':
+            {
+                BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+                p->use(game, cursorX, cursorY); // Valid (metoda 'use' este publica)
+                break;
+            }
+            case '2':
+            {
+                BasePowerUp* p = new ScannerPowerUp(2, 3);
+                p->use(game, cursorX, cursorY); // Valid (metoda publica)
+                break;
+            }
+            case '3':
+            {
+                BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+                p->use(game, cursorX, cursorY);
+                break;
+            }
+            case '4':
+            {
+                BasePowerUp* p = new BombDefuser(4, 0.5);
+                p->use(game, cursorX, cursorY);
+                break;
+            }
+            case '\n':
+            case '\r': // Enter
+                game.revealCell(cursorX, cursorY);
+                break;
+            case ' ': // Space
+                game.toggleFlag(cursorX, cursorY);
+                break;
+            case 'q':
+            case 'Q':
+                disableRawMode();
+                return;
+            }
         }
-        case '2':
+        catch (const InvalidMoveException &e)
         {
-            BasePowerUp* p = new ScannerPowerUp(2, 3);
-            p->use(game, cursorX, cursorY); // Valid (metoda publica)
-            break;
-        }
-        case '3':
-        {
-            BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
-            p->use(game, cursorX, cursorY);
-            break;
-        }
-        case '4':
-        {
-            BasePowerUp* p = new BombDefuser(4, 0.5);
-            p->use(game, cursorX, cursorY);
-            break;
-        }
-        case '\n':
-        case '\r': // Enter
-            game.revealCell(cursorX, cursorY);
-            break;
-        case ' ': // Space
-            game.toggleFlag(cursorX, cursorY);
-            break;
-        case 'q':
-        case 'Q':
             disableRawMode();
-            return;
+            clearScreen();
+            std::cout << e.what() << "\n";
+            waitForEnter();
+            enableRawMode();
+        }
+        catch (const GameConfigException &e)
+        {
+            disableRawMode();
+            clearScreen();
+            std::cout << e.what() << "\n";
+            waitForEnter();
+            enableRawMode();
+        }
+        catch (const DatabaseException &e)
+        {
+            disableRawMode();
+            clearScreen();
+            std::cout << e.what() << "\n";
+            waitForEnter();
+            enableRawMode();
+        }
+        catch (const MinesweeperException &e)
+        {
+            disableRawMode();
+            clearScreen();
+            std::cout << e.what() << "\n";
+            waitForEnter();
+            enableRawMode();
+        }
+        catch (...)
+        {
+            disableRawMode();
+            clearScreen();
+            std::cout << "A aparut o eroare necunoscuta.\n";
+            waitForEnter();
+            enableRawMode();
         }
     }
 
@@ -462,152 +562,245 @@ Match Commandline::saveGameRecord(const Game &game, bool won)
 
 void Commandline::displayStatistics()
 {
-    clearScreen();
-
-    std::cout << "My statistics\n\n";
-
-    char playerName[64] = "";
-    std::cout << "Enter your name: ";
-    std::cin.getline(playerName, 64);
-
-    clearScreen();
-
-    PlayerStats *player = Leaderboard::findPlayer(playerName);
-
-    if (!player || player->getMatchesNumber() == 0)
-    {
-        std::cout << "No games found for this player...\n";
-        waitForEnter();
-        return;
-    }
-
-    bool viewing = true;
-    while (viewing)
+    try
     {
         clearScreen();
-        const Match *matches = player->getMatches();
-        int totalGames = player->getMatchesNumber();
-        unsigned int wins = player->getWins();
-        unsigned int totalTime = 0;
 
-        int *clicksArray = new int[totalGames];
-        for (int i = 0; i < totalGames; ++i)
+        std::cout << "My statistics\n\n";
+
+        char playerName[64] = "";
+        std::cout << "Enter your name: ";
+        std::cin.getline(playerName, 64);
+
+        clearScreen();
+
+        PlayerStats *player = Leaderboard::findPlayer(playerName);
+
+        if (!player || player->getMatchesNumber() == 0)
         {
-            totalTime += matches[i].getTimePlayed().count();
-            clicksArray[i] = static_cast<int>(matches[i].getClicks());
+            std::cout << "No games found for this player...\n";
+            waitForEnter();
+            return;
         }
 
-        int totalClicks = 0;
-        for (int i = 0; i < totalGames; ++i)
-            totalClicks += clicksArray[i];
-        
-        delete[] clicksArray;
-
-        float winRate = player->getWinRate() * 100.0f;
-
-        std::cout << "Player: " << player->getPlayerName() << "\n";
-        std::cout << "Games: " << totalGames << "\n";
-        std::cout << "Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
-        std::cout << "Win rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
-        std::cout << "Total time: " << (totalTime / 1000) << "s\n";
-        std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / totalGames : 0) << "\n";
-
-        std::cout << "\nRecent Games:\n";
-        size_t start = (static_cast<size_t>(totalGames) > 10) ? static_cast<size_t>(totalGames) - 10 : 0;
-        for (size_t i = start; i < static_cast<size_t>(totalGames); ++i)
+        bool viewing = true;
+        while (viewing)
         {
-            const Match &record = matches[i];
-            std::cout << (record.getWinState() ? "Win" : "Loss") << " | "
-                      << record.getMapWidth() << "x" << record.getMapHeight() << " | "
-                      << record.getMapBombs() << " bombs | Seed: " << record.getMapSeed() << " | "
-                      << (record.getTimePlayed().count() / 1000) << "s | "
-                      << record.getClicks() << " clicks\n";
-        }
+            clearScreen();
+            const Match *matches = player->getMatches();
+            int totalGames = player->getMatchesNumber();
+            unsigned int wins = player->getWins();
+            unsigned int totalTime = 0;
 
-        std::cout << "\nOptions:\n";
-        std::cout << "1. Remove Last Match\n";
-        std::cout << "2. Back\n";
+            int *clicksArray = new int[totalGames];
+            for (int i = 0; i < totalGames; ++i)
+            {
+                totalTime += matches[i].getTimePlayed().count();
+                clicksArray[i] = static_cast<int>(matches[i].getClicks());
+            }
 
-        int choice = readIntInput("Your choice: ", 1, 2);
+            int totalClicks = 0;
+            for (int i = 0; i < totalGames; ++i)
+                totalClicks += clicksArray[i];
+            
+            delete[] clicksArray;
 
-        switch (choice)
-        {
-        case 1:
-            --(*player);
-            std::cout << "Last match removed.\n";
-            if (player->getMatchesNumber() == 0)
+            float winRate = player->getWinRate() * 100.0f;
+
+            std::cout << "Player: " << player->getPlayerName() << "\n";
+            std::cout << "Games: " << totalGames << "\n";
+            std::cout << "Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
+            std::cout << "Win rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
+            std::cout << "Total time: " << (totalTime / 1000) << "s\n";
+            std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / totalGames : 0) << "\n";
+
+            std::cout << "\nRecent Games:\n";
+            size_t start = (static_cast<size_t>(totalGames) > 10) ? static_cast<size_t>(totalGames) - 10 : 0;
+            for (size_t i = start; i < static_cast<size_t>(totalGames); ++i)
+            {
+                const Match &record = matches[i];
+                std::cout << (record.getWinState() ? "Win" : "Loss") << " | "
+                          << record.getMapWidth() << "x" << record.getMapHeight() << " | "
+                          << record.getMapBombs() << " bombs | Seed: " << record.getMapSeed() << " | "
+                          << (record.getTimePlayed().count() / 1000) << "s | "
+                          << record.getClicks() << " clicks\n";
+            }
+
+            std::cout << "\nOptions:\n";
+            std::cout << "1. Remove Last Match\n";
+            std::cout << "2. Back\n";
+
+            int choice = readIntInput("Your choice: ", 1, 2);
+
+            switch (choice)
+            {
+            case 1:
+                --(*player);
+                std::cout << "Last match removed.\n";
+                if (player->getMatchesNumber() == 0)
+                    viewing = false;
+
+                break;
+            default:
                 viewing = false;
-
-            break;
-        default:
-            viewing = false;
-            break;
+                break;
+            }
         }
+    }
+    catch (const InvalidMoveException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const GameConfigException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const DatabaseException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const MinesweeperException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (...)
+    {
+        std::cout << "A aparut o eroare necunoscuta.\n";
+        waitForEnter();
     }
 }
 
 void Commandline::displayAllPlayersStatistics()
 {
-    clearScreen();
-
-    std::cout << "All players statistics:\n\n";
-
-    Leaderboard::sort();
-
-    unsigned int playerCount = Leaderboard::getPlayerCount();
-
-    if (playerCount == 0)
+    try
     {
-        std::cout << "No players yet. Play some games first!\n";
-        waitForEnter();
-        return;
-    }
+        clearScreen();
 
-    std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAverage Clicks\n";
+        std::cout << "All players statistics:\n\n";
 
-    for (unsigned int i = 0; i < playerCount; ++i)
-    {
-        PlayerStats *player = Leaderboard::getPlayer(i);
-        if (!player)
-            continue;
+        Leaderboard::sort();
 
-        const char *playerName = player->getPlayerName();
-        int totalGames = player->getMatchesNumber();
-        float winRate = player->getWinRate() * 100.0f;
-        unsigned int wins = player->getWins();
-        unsigned int totalTime = 0;
-        unsigned int totalClicks = 0;
+        unsigned int playerCount = Leaderboard::getPlayerCount();
 
-        if (totalGames > 0)
+        if (playerCount == 0)
         {
-            const Match *matches = player->getMatches();
-            for (int j = 0; j < totalGames; ++j)
-            {
-                totalTime += matches[j].getTimePlayed().count();
-                totalClicks += matches[j].getClicks();
-            }
+            std::cout << "No players yet. Play some games first!\n";
+            waitForEnter();
+            return;
         }
 
-        std::cout << (playerName ? playerName : "Unknown") << "\t\t"
-                  << totalGames << "\t"
-                  << wins << "\t"
-                  << (totalGames - wins) << "\t"
-                  << std::fixed << std::setprecision(1) << winRate << "%\t\t"
-                  << (totalTime / 1000) << "s\t"
-                  << (totalGames > 0 ? (totalClicks / static_cast<unsigned int>(totalGames)) : 0) << "\n";
-    }
+        std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAverage Clicks\n";
 
-    std::cout << "\nTotal games played (all players): " << Leaderboard::getOverallGames() << "\n";
-    std::cout << "\n";
-    waitForEnter();
+        for (unsigned int i = 0; i < playerCount; ++i)
+        {
+            PlayerStats *player = Leaderboard::getPlayer(i);
+            if (!player)
+                continue;
+
+            const char *playerName = player->getPlayerName();
+            int totalGames = player->getMatchesNumber();
+            float winRate = player->getWinRate() * 100.0f;
+            unsigned int wins = player->getWins();
+            unsigned int totalTime = 0;
+            unsigned int totalClicks = 0;
+
+            if (totalGames > 0)
+            {
+                const Match *matches = player->getMatches();
+                for (int j = 0; j < totalGames; ++j)
+                {
+                    totalTime += matches[j].getTimePlayed().count();
+                    totalClicks += matches[j].getClicks();
+                }
+            }
+
+            std::cout << (playerName ? playerName : "Unknown") << "\t\t"
+                      << totalGames << "\t"
+                      << wins << "\t"
+                      << (totalGames - wins) << "\t"
+                      << std::fixed << std::setprecision(1) << winRate << "%\t\t"
+                      << (totalTime / 1000) << "s\t"
+                      << (totalGames > 0 ? (totalClicks / static_cast<unsigned int>(totalGames)) : 0) << "\n";
+        }
+
+        std::cout << "\nTotal games played (all players): " << Leaderboard::getOverallGames() << "\n";
+        std::cout << "\n";
+        waitForEnter();
+    }
+    catch (const InvalidMoveException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const GameConfigException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const DatabaseException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (const MinesweeperException &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (...)
+    {
+        std::cout << "A aparut o eroare necunoscuta.\n";
+        waitForEnter();
+    }
 }
 
 void Commandline::StartCommandline()
 {
+    try
+    {
+        ResourceGuard demoGuard("Stack unwinding demo");
+        throw MinesweeperException("Demo stack unwinding");
+    }
+    catch (const MinesweeperException &)
+    {
+    }
+
     while (true)
     {
-        clearScreen();
-        printMainMenu();
-        handleMainMenu();
+        try
+        {
+            clearScreen();
+            printMainMenu();
+            handleMainMenu();
+        }
+        catch (const InvalidMoveException &e)
+        {
+            std::cout << e.what() << "\n";
+            waitForEnter();
+        }
+        catch (const GameConfigException &e)
+        {
+            std::cout << e.what() << "\n";
+            waitForEnter();
+        }
+        catch (const DatabaseException &e)
+        {
+            std::cout << e.what() << "\n";
+            waitForEnter();
+        }
+        catch (const MinesweeperException &e)
+        {
+            std::cout << e.what() << "\n";
+            waitForEnter();
+        }
+        catch (...)
+        {
+            std::cout << "A aparut o eroare necunoscuta.\n";
+            waitForEnter();
+        }
     }
 }
