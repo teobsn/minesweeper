@@ -24,10 +24,10 @@ public:
     };
 
 private:
-    char mapWidthText[5];
-    char mapHeightText[5];
-    char mapBombsText[5];
-    char mapSeedText[13];
+    std::string mapWidthText;
+    std::string mapHeightText;
+    std::string mapBombsText;
+    std::string mapSeedText;
     std::string playerName;
 
     GUIState guiState;

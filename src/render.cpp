@@ -15,7 +15,6 @@
 // C++ standard library
 #include <iostream>
 #include <chrono>
-#include <cstring>
 #include <cstdlib>
 #include <string>
 #include <algorithm>
@@ -55,10 +54,10 @@ const char *ThemeLabel(ThemeId theme)
 
 Render::Render()
 {
-    strcpy(mapWidthText, "12");
-    strcpy(mapHeightText, "12");
-    strcpy(mapBombsText, "8");
-    strcpy(mapSeedText, "");
+    mapWidthText = "12";
+    mapHeightText = "12";
+    mapBombsText = "8";
+    mapSeedText = "";
     playerName = "Player";
     finalTime = 0;
     guiState = GUIState::MENU;
@@ -178,28 +177,28 @@ void Render::DrawMenu()
     DrawTextEx(AdwaitaMono, "Map Width", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxMapWidth = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxMapWidth, rectColor);
-    DrawTextEx(AdwaitaMono, mapWidthText, {textBoxMapWidth.x + 5, textBoxMapWidth.y + 5}, textSize, 0, textColor);
+    DrawTextEx(AdwaitaMono, mapWidthText.c_str(), {textBoxMapWidth.x + 5, textBoxMapWidth.y + 5}, textSize, 0, textColor);
 
     renderPosY += 60.0f;
     DrawTextEx(AdwaitaMono, "Map Height", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxMapHeight = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxMapHeight, rectColor);
-    DrawTextEx(AdwaitaMono, mapHeightText, {textBoxMapHeight.x + 5, textBoxMapHeight.y + 5}, textSize, 0, textColor);
+    DrawTextEx(AdwaitaMono, mapHeightText.c_str(), {textBoxMapHeight.x + 5, textBoxMapHeight.y + 5}, textSize, 0, textColor);
 
     renderPosY += 60.0f;
     DrawTextEx(AdwaitaMono, "Bombs", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxMapBombs = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxMapBombs, rectColor);
-    DrawTextEx(AdwaitaMono, mapBombsText, {textBoxMapBombs.x + 5, textBoxMapBombs.y + 5}, textSize, 0, textColor);
+    DrawTextEx(AdwaitaMono, mapBombsText.c_str(), {textBoxMapBombs.x + 5, textBoxMapBombs.y + 5}, textSize, 0, textColor);
 
     renderPosY += 60.0f;
     DrawTextEx(AdwaitaMono, "Seed", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxMapSeed = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxMapSeed, rectColor);
-    if (strlen(mapSeedText) == 0) {
+    if (mapSeedText.empty()) {
         DrawTextEx(AdwaitaMono, "(optional)", {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, theme.muted);
     } else {
-        DrawTextEx(AdwaitaMono, mapSeedText, {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, textColor);
+        DrawTextEx(AdwaitaMono, mapSeedText.c_str(), {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, textColor);
     }
 
     renderPosY += 80.0f;
@@ -293,28 +292,37 @@ void Render::HandleMenuInput()
     const float themeRight = themeLeft + 155.0f;
     const StaticQueue<ThemeId, 4> themeChoices = {ThemeId::TokyoNight, ThemeId::OledBlack, ThemeId::Adwaita, ThemeId::Monokai};
 
-    auto handleTextInput = [](char* text, int maxLen, bool numericOnly) {
+    auto handleTextInput = [](std::string &text, std::size_t maxLen, bool numericOnly) {
         int key = GetCharPressed();
         while (key > 0) {
             bool validKey = !numericOnly || (key >= 48 && key <= 57);
-            if (validKey && ((int)strlen(text) < maxLen)) {
-                int len = (int)strlen(text);
-                text[len] = (char)key;
-                text[len + 1] = '\0';
+            if (validKey && text.size() < maxLen) {
+                text.push_back(static_cast<char>(key));
             }
             key = GetCharPressed();
         }
-        if (IsKeyPressed(KEY_BACKSPACE)) {
-            int len = (int)strlen(text);
-            if (len > 0) text[len - 1] = '\0';
+        if (IsKeyPressed(KEY_BACKSPACE) && !text.empty()) {
+            text.pop_back();
+        }
+    };
+
+    auto parseUnsigned = [](const std::string &text) -> unsigned int {
+        if (text.empty())
+            return 0;
+
+        try
+        {
+            return static_cast<unsigned int>(std::stoul(text));
+        }
+        catch (...)
+        {
+            return 0;
         }
     };
 
     if (CheckCollisionPointRec(mousePos, textBoxPlayerName)) {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
-        char buffer[64];
-        strncpy(buffer, playerName.c_str(), 63);
-        buffer[63] = '\0';
+        std::string buffer = playerName;
         handleTextInput(buffer, 63, false);
         playerName = buffer;
     } else if (CheckCollisionPointRec(mousePos, textBoxMapWidth)) {
@@ -332,13 +340,13 @@ void Render::HandleMenuInput()
     } else if (CheckCollisionPointRec(mousePos, startButton)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            unsigned int w = (unsigned int)atoi(mapWidthText);
-            unsigned int h = (unsigned int)atoi(mapHeightText);
+            unsigned int w = parseUnsigned(mapWidthText);
+            unsigned int h = parseUnsigned(mapHeightText);
             if (w > 100) w = 100;
             if (h > 100) h = 100;
-            unsigned int b = (unsigned int)atoi(mapBombsText);
+            unsigned int b = parseUnsigned(mapBombsText);
             unsigned long long s = 0;
-            if (strlen(mapSeedText) > 0) {
+            if (!mapSeedText.empty()) {
                 try { s = std::stoull(mapSeedText); } catch (...) { s = (unsigned long long)time(nullptr); }
             } else s = (unsigned long long)time(nullptr);
             if (w > 0 && h > 0)
