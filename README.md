@@ -77,7 +77,7 @@ Build outputs:
 
 The project is built with aggressive optimization flags for maximum performance:
 
-- **-O3** - Aggressive optimization level
-- **-march=native** - CPU-specific instructions (AVX2, SSE4, etc.)
-- **-flto** - Link-Time Optimization for whole-program optimization
-- **PCG with AVX2** - SIMD-accelerated random number generation
+- `-O3` - Aggressive optimization level
+- `-march=native` - CPU-specific instructions (AVX2, SSE4, etc.)
+- `-flto` - Link-Time Optimization for whole-program optimization
+- `PCG with AVX2` - SIMD-accelerated random number generation
