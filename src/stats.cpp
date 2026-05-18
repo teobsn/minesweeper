@@ -7,7 +7,6 @@
 // C++ standard library
 #include <iostream>
 #include <chrono>
-#include <cstring>
 #include <algorithm>
 
 Match::Match() : mapWidth(0), mapHeight(0), mapSeed(0), mapBombs(0),
@@ -351,163 +350,98 @@ std::istream &operator>>(std::istream &is, Match &match)
     return is;
 }
 
-PlayerStats::PlayerStats() : playerName(nullptr), games(nullptr), numberOfGames(0), numberOfWins(0), winRate(0.0f)
+PlayerStats::PlayerStats() : playerName(), games(), recentGames(), numberOfWins(0), winRate(0.0f)
 {
 }
 
-PlayerStats::PlayerStats(const char *name)
-    : games(nullptr), numberOfGames(0), numberOfWins(0), winRate(0.0f)
+PlayerStats::PlayerStats(const std::string &name)
+    : playerName(name), games(), recentGames(), numberOfWins(0), winRate(0.0f)
 {
-    playerName = new char[strlen(name) + 1];
-    strcpy(playerName, name);
 }
 
-PlayerStats::PlayerStats(const char *name, int numberOfGames, int numberOfWins)
-    : games(nullptr), numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(0.0f)
+PlayerStats::PlayerStats(const std::string &name, int numberOfGames, int numberOfWins)
+    : playerName(name), games(), recentGames(), numberOfWins(numberOfWins), winRate(0.0f)
 {
-    playerName = new char[strlen(name) + 1];
-    strcpy(playerName, name);
+    games.reserve(numberOfGames);
 }
 
-PlayerStats::PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins)
-    : numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(0.0f)
+PlayerStats::PlayerStats(const std::string &name, const std::vector<Match> &games, int numberOfWins)
+    : playerName(name), games(games), recentGames(), numberOfWins(numberOfWins), winRate(0.0f)
 {
-    playerName = new char[strlen(name) + 1];
-    strcpy(playerName, name);
-
-    // Presupunem ca games va tine strict de instanta curenta
-    this->games = games;
-
     updateWinRate();
+    updateWins();
 }
 
-PlayerStats::PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins, float winRate)
-    : numberOfGames(numberOfGames), numberOfWins(numberOfWins), winRate(winRate)
+PlayerStats::PlayerStats(const std::string &name, const std::vector<Match> &games, int numberOfWins, float winRate)
+    : playerName(name), games(games), recentGames(), numberOfWins(numberOfWins), winRate(winRate)
 {
-    playerName = new char[strlen(name) + 1];
-    strcpy(playerName, name);
-
-    // Presupunem ca games va tine strict de instanta curenta
-    this->games = games;
-
-    // updateWinRate() // e deja dat de lista de initializare
-}
-
-PlayerStats::PlayerStats(const PlayerStats &stats) : playerName(nullptr), numberOfGames(stats.numberOfGames), numberOfWins(stats.numberOfWins), winRate(stats.winRate)
-{
-    if (stats.playerName)
+    for (const Match &match : this->games)
     {
-        playerName = new char[strlen(stats.playerName) + 1];
-        strcpy(playerName, stats.playerName);
+        if (recentGames.full())
+            recentGames.pop();
+        recentGames.push(match);
     }
-
-    if (numberOfGames > 0 && stats.games != nullptr)
-    {
-        games = new Match[numberOfGames];
-        for (int i = 0; i < numberOfGames; ++i)
-        {
-            games[i] = stats.games[i];
-        }
-    }
-    else
-        games = nullptr;
 }
 
-PlayerStats::~PlayerStats()
-{
-    if (games != nullptr)
-        delete[] games;
-
-    if (playerName != nullptr)
-        delete[] playerName;
-
-#ifdef DEBUG
-    std::cout << "\n~PlayerStats()\n";
-#endif
-}
-
-char *PlayerStats::getPlayerName()
+std::string &PlayerStats::getPlayerName() noexcept
 {
     return playerName;
 }
 
-const char *PlayerStats::getPlayerName() const
+const std::string &PlayerStats::getPlayerName() const noexcept
 {
     return playerName;
 }
 
-void PlayerStats::setPlayerName(const char *newName)
+void PlayerStats::setPlayerName(const std::string &newName)
 {
-    if (playerName)
-        delete[] playerName;
-    if (newName)
-    {
-        playerName = new char[strlen(newName) + 1];
-        strcpy(playerName, newName);
-    }
-    else
-    {
-        playerName = nullptr;
-    }
+    if (newName.empty())
+        throw MinesweeperException("Numele jucatorului nu poate fi gol");
+
+    playerName = newName;
 }
 
-void PlayerStats::addMatch(Match match)
+void PlayerStats::addMatch(const Match &match)
 {
-    // Alocam vectorul nou
-    Match *newGames = new Match[numberOfGames + 1];
+    games.push_back(match);
 
-    // Copiem meciurile vechi
-    for (int i = 0; i < numberOfGames; ++i)
-        newGames[i] = games[i];
-
-    // Adaugam meciul nou
-    newGames[numberOfGames] = match;
-
-    // Dezalocam (asa e in limba romana?) vectorul vechi
-    delete[] games;
-
-    // Modificam pointerul la vectorul nou
-    games = newGames;
-
-    // Incrementam numarul de jocuri
-    numberOfGames++;
-
-    // Calculam numarul de castiguri
-    int wins = 0;
-    for (int i = 0; i < numberOfGames; ++i)
-        if (games[i].getWinState())
-            wins++;
-
-    this->numberOfWins = wins;
-
-    winRate = numberOfGames > 0 ? (float)wins / numberOfGames : 0.0f;
-}
-
-void PlayerStats::removeMatches(int numMatches)
-{
-    if (numMatches <= 0 || numMatches > numberOfGames)
-        return;
-
-    Match *newGames = new Match[numberOfGames - numMatches];
-    for (int j = 0; j < numberOfGames - numMatches; ++j)
-        newGames[j] = games[j];
-    delete[] games;
-    games = newGames;
-
-    numberOfGames -= numMatches;
+    if (recentGames.full())
+        recentGames.pop();
+    recentGames.push(match);
 
     updateWins();
     updateWinRate();
 }
 
-Match *PlayerStats::getMatches()
+void PlayerStats::removeMatches(int numMatches)
+{
+    if (numMatches <= 0 || numMatches > getMatchesNumber())
+        throw DatabaseException("Numar invalid de meciuri de eliminat", numMatches);
+
+    games.erase(games.end() - numMatches, games.end());
+
+    recentGames.clear();
+    std::size_t start = games.size() > 10 ? games.size() - 10 : 0;
+    for (std::size_t i = start; i < games.size(); ++i)
+        recentGames.push(games[i]);
+
+    updateWins();
+    updateWinRate();
+}
+
+std::vector<Match> &PlayerStats::getMatches() noexcept
 {
     return games;
 }
 
-const Match *PlayerStats::getMatches() const
+const std::vector<Match> &PlayerStats::getMatches() const noexcept
 {
     return games;
+}
+
+const StaticQueue<Match, 10> &PlayerStats::getRecentMatches() const noexcept
+{
+    return recentGames;
 }
 
 float PlayerStats::getWinRate() const
@@ -517,38 +451,42 @@ float PlayerStats::getWinRate() const
 
 void PlayerStats::setWinRate(float winRate)
 {
-    this->winRate = winRate;
+    this->winRate = clampValue(winRate, 0.0f, 1.0f);
 }
 
 void PlayerStats::updateWinRate()
 {
-    int wins = 0;
-    for (int i = 0; i < numberOfGames; ++i)
-        if (games[i].getWinState())
-            wins++;
+    if (games.empty())
+    {
+        setWinRate(0.0f);
+        return;
+    }
 
-    setWinRate((float)wins / numberOfGames);
+    unsigned int wins = 0;
+    std::for_each(games.begin(), games.end(), [&](const Match &match)
+    {
+        if (match.getWinState())
+            ++wins;
+    });
+
+    setWinRate(static_cast<float>(wins) / static_cast<float>(games.size()));
 }
 
 unsigned int PlayerStats::getWins() const
 {
-    // return numberOfWins;
     return (*this)['w'];
 }
 
 void PlayerStats::updateWins()
 {
-    int wins = 0;
-    for (int i = 0; i < numberOfGames; ++i)
-        if (games[i].getWinState())
-            wins++;
-
-    numberOfWins = wins;
+    numberOfWins = static_cast<int>(std::count_if(games.begin(), games.end(), [](const Match &match)
+    {
+        return match.getWinState();
+    }));
 }
 
 int PlayerStats::getMatchesNumber() const
 {
-    // return numberOfGames;
     return (*this)['n'];
 }
 
@@ -557,43 +495,21 @@ PlayerStats &PlayerStats::operator=(const PlayerStats &other)
     if (this == &other)
         return *this;
 
-    setPlayerName(other.playerName);
-
-    delete[] games;
-
-    numberOfGames = other.numberOfGames;
+    playerName = other.playerName;
+    games = other.games;
+    recentGames = other.recentGames;
+    numberOfWins = other.numberOfWins;
     winRate = other.winRate;
-
-    if (numberOfGames > 0 && other.games != nullptr)
-    {
-        games = new Match[numberOfGames];
-        for (int i = 0; i < numberOfGames; ++i)
-            games[i] = other.games[i];
-    }
-    else
-        games = nullptr;
 
     return *this;
 }
 
 bool PlayerStats::operator==(const PlayerStats &other) const
 {
-    if (playerName && other.playerName)
-    {
-        if (strcmp(playerName, other.playerName) != 0)
-            return false;
-    }
-    else if (playerName != other.playerName)
-        return false;
-
-    if (numberOfGames != other.numberOfGames || winRate != other.winRate)
-        return false;
-
-    for (int i = 0; i < numberOfGames; ++i)
-        if (games[i] != other.games[i])
-            return false;
-
-    return true;
+    return playerName == other.playerName &&
+           games == other.games &&
+           numberOfWins == other.numberOfWins &&
+           winRate == other.winRate;
 }
 
 bool PlayerStats::operator!=(const PlayerStats &other) const
@@ -603,7 +519,13 @@ bool PlayerStats::operator!=(const PlayerStats &other) const
 
 bool PlayerStats::operator<(const PlayerStats &other) const
 {
-    return winRate < other.winRate;
+    if (winRate != other.winRate)
+        return winRate < other.winRate;
+
+    if (numberOfWins != other.numberOfWins)
+        return numberOfWins < other.numberOfWins;
+
+    return playerName < other.playerName;
 }
 
 bool PlayerStats::operator>(const PlayerStats &other) const
@@ -645,16 +567,13 @@ unsigned int PlayerStats::operator[](char c) const
     {
     case 'n':
     case 0:
-        return numberOfGames;
-        break;
+        return static_cast<unsigned int>(games.size());
     case 'w':
     case 1:
-        return numberOfWins;
-        break;
+        return static_cast<unsigned int>(numberOfWins);
     case 'r':
     case 2:
-        return winRate;
-        break;
+        return static_cast<unsigned int>(winRate * 100.0f);
     default:
         return 0;
     }
@@ -662,43 +581,42 @@ unsigned int PlayerStats::operator[](char c) const
 
 std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats)
 {
-    os << "Statistics for " << (plrStats.playerName ? plrStats.playerName : "Unknown Player") << "\n";
-
-    os << "Games played: " << plrStats.numberOfGames << "\n";
+    os << "Statistics for " << (plrStats.playerName.empty() ? "Unknown Player" : plrStats.playerName) << "\n";
+    os << "Games played: " << plrStats.getMatchesNumber() << "\n";
     os << "Win Rate: " << plrStats.winRate << "\n";
-
     return os;
 }
 
 std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
 {
-    char name[64];
+    std::string name;
     int numGames;
     float wRate;
 
     if (is >> name >> numGames >> wRate)
     {
         plrStats.setPlayerName(name);
-
-        delete[] plrStats.games;
-        plrStats.numberOfGames = numGames;
+        plrStats.games.clear();
+        plrStats.recentGames.clear();
+        plrStats.numberOfWins = 0;
         plrStats.setWinRate(wRate);
+
         if (numGames > 0)
         {
-            plrStats.games = new Match[numGames];
+            plrStats.games.reserve(numGames);
             for (int i = 0; i < numGames; ++i)
-                is >> plrStats.games[i];
+            {
+                Match match;
+                is >> match;
+                plrStats.addMatch(match);
+            }
         }
-        else
-            plrStats.games = nullptr;
     }
     return is;
 }
 
-PlayerStats *Leaderboard::playerStats = nullptr;
-unsigned int Leaderboard::players = 0;
+std::vector<PlayerStats> Leaderboard::playerStats = {};
 unsigned int Leaderboard::overallGames = 0;
-unsigned int Leaderboard::capacity = 0;
 
 Leaderboard::Leaderboard()
 {
@@ -707,74 +625,53 @@ Leaderboard::Leaderboard()
 Leaderboard::~Leaderboard()
 {
     std::cout << "\n~Leaderboard()\n";
-
-    delete[] playerStats;
 }
 
-void Leaderboard::reallocate(unsigned int newCapacity)
+PlayerStats *Leaderboard::findPlayer(const std::string &name)
 {
-    PlayerStats *newStats = new PlayerStats[newCapacity];
-
-    for (unsigned int i = 0; i < players; ++i)
-        newStats[i] = playerStats[i];
-
-    delete[] playerStats;
-    playerStats = newStats;
-    capacity = newCapacity;
-}
-
-PlayerStats *Leaderboard::findPlayer(const char *name)
-{
-    if (!name || *name == '\0')
+    if (name.empty())
         throw MinesweeperException("Numele jucatorului nu poate fi gol");
 
-    if (players == 0)
+    auto it = std::find_if(playerStats.begin(), playerStats.end(), [&](const PlayerStats &player)
+    {
+        return player.getPlayerName() == name;
+    });
+
+    if (it == playerStats.end())
         return nullptr;
 
-    for (unsigned int i = 0; i < players; ++i)
-    {
-        const char *playerName = playerStats[i].getPlayerName();
-        if (playerName && strcmp(playerName, name) == 0)
-        {
-            return &playerStats[i];
-        }
-    }
-    return nullptr;
+    return &*it;
 }
 
-PlayerStats *Leaderboard::addPlayer(const char *name)
+PlayerStats *Leaderboard::addPlayer(const std::string &name)
 {
-    if (!name || *name == '\0')
+    if (name.empty())
         throw MinesweeperException("Numele jucatorului nu poate fi gol");
 
     PlayerStats *existing = findPlayer(name);
     if (existing)
         return existing;
 
-    if (players >= capacity)
-    {
-        // Comportament similar cu cel din vectorul STL
-        unsigned int newCapacity = capacity == 0 ? 4 : capacity * 2;
-        reallocate(newCapacity);
-    }
-
-    playerStats[players].setPlayerName(name);
-    ++players;
-
-    return &playerStats[players - 1];
+    playerStats.emplace_back(name);
+    return &playerStats.back();
 }
 
 PlayerStats *Leaderboard::getPlayer(unsigned int index)
 {
-    if (index >= players)
+    if (index >= playerStats.size())
         throw DatabaseException("Index invalid in leaderboard", static_cast<int>(index));
 
     return &playerStats[index];
 }
 
+const std::vector<PlayerStats> &Leaderboard::getPlayers()
+{
+    return playerStats;
+}
+
 unsigned int Leaderboard::getPlayerCount()
 {
-    return players;
+    return static_cast<unsigned int>(playerStats.size());
 }
 
 unsigned int Leaderboard::getOverallGames()
@@ -789,38 +686,45 @@ void Leaderboard::addGame()
 
 void Leaderboard::sort(char order, bool equality)
 {
-    if (players <= 1)
+    if (playerStats.size() <= 1)
         return;
 
     if (order != 'a' && order != 'd')
         throw MinesweeperException("Ordinea de sortare este invalida");
 
-    // Bubble Sort :-o
-    for (unsigned int i = 0; i < players - 1; ++i)
-        for (unsigned int j = 0; j < players - i - 1; ++j)
-        {
-            bool condition = false;
-            if (order == 'a')
-            {
-                if (equality)
-                    condition = (playerStats[j] >= playerStats[j + 1]);
-                else
-                    condition = (playerStats[j] > playerStats[j + 1]);
-            }
-            else
-            { // 'd'
-                if (equality)
-                    condition = (playerStats[j] <= playerStats[j + 1]);
-                else
-                    condition = (playerStats[j] < playerStats[j + 1]);
-            }
+    auto comparator = [order](const PlayerStats &lhs, const PlayerStats &rhs)
+    {
+        if (order == 'a')
+            return lhs < rhs;
+        return rhs < lhs;
+    };
 
-            if (condition)
-            {
-                // Swap prin temp
-                PlayerStats temp = playerStats[j];
-                playerStats[j] = playerStats[j + 1];
-                playerStats[j + 1] = temp;
-            }
-        }
+    if (equality)
+        std::stable_sort(playerStats.begin(), playerStats.end(), comparator);
+    else
+        std::sort(playerStats.begin(), playerStats.end(), comparator);
+}
+
+/**
+ * Specializare completa pentru PlayerStats.
+ * Alegem "cel mai bun" jucator dupa win rate, apoi dupa numarul de victorii.
+ */
+template<>
+const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values)
+{
+    if (values.empty())
+        return nullptr;
+
+    auto it = std::max_element(values.begin(), values.end(), [](const PlayerStats &lhs, const PlayerStats &rhs)
+    {
+        if (lhs.getWinRate() != rhs.getWinRate())
+            return lhs.getWinRate() < rhs.getWinRate();
+
+        if (lhs.getWins() != rhs.getWins())
+            return lhs.getWins() < rhs.getWins();
+
+        return lhs.getPlayerName() < rhs.getPlayerName();
+    });
+
+    return &*it;
 }

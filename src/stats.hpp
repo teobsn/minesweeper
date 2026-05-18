@@ -3,9 +3,12 @@
 // Minesweeper headers
 #include "cell.hpp"
 #include "map.hpp"
+#include "templates.hpp"
 
 // C++ standard library
 #include <chrono>
+#include <string>
+#include <vector>
 
 class Match
 {
@@ -101,33 +104,32 @@ std::istream &operator>>(std::istream &os, Match &match);
 class PlayerStats
 {
 private:
-    char *playerName;
-
-protected:
-    Match *games;
-    int numberOfGames;
+    std::string playerName;
+    std::vector<Match> games;
+    StaticQueue<Match, 10> recentGames;
     int numberOfWins;
-
     float winRate;
 
 public:
     PlayerStats();
-    PlayerStats(const char *name);
-    PlayerStats(const char *name, int numberOfGames, int numberOfWins);
-    PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins);
-    PlayerStats(const char *name, Match *games, int numberOfGames, int numberOfWins, float winRate);
-    ~PlayerStats();
-    PlayerStats(const PlayerStats &stats);
+    explicit PlayerStats(const std::string &name);
+    PlayerStats(const std::string &name, int numberOfGames, int numberOfWins);
+    PlayerStats(const std::string &name, const std::vector<Match> &games, int numberOfWins);
+    PlayerStats(const std::string &name, const std::vector<Match> &games, int numberOfWins, float winRate);
+    ~PlayerStats() noexcept = default;
+    PlayerStats(const PlayerStats &stats) = default;
+    PlayerStats(PlayerStats &&stats) noexcept = default;
 
-    char *getPlayerName();
-    const char *getPlayerName() const;
-    void setPlayerName(const char *newName);
+    std::string &getPlayerName() noexcept;
+    const std::string &getPlayerName() const noexcept;
+    void setPlayerName(const std::string &newName);
 
-    void addMatch(Match match);
+    void addMatch(const Match &match);
     void removeMatches(int numMatches);
 
-    Match *getMatches();
-    const Match *getMatches() const;
+    std::vector<Match> &getMatches() noexcept;
+    const std::vector<Match> &getMatches() const noexcept;
+    const StaticQueue<Match, 10> &getRecentMatches() const noexcept;
 
     float getWinRate() const;
     void setWinRate(float winRate);
@@ -140,6 +142,7 @@ public:
 
     // Operatori de comparatie
     PlayerStats &operator=(const PlayerStats &other);
+    PlayerStats &operator=(PlayerStats &&other) noexcept = default;
     bool operator==(const PlayerStats &other) const;
     bool operator!=(const PlayerStats &other) const;
 
@@ -167,22 +170,22 @@ std::istream &operator>>(std::istream &os, PlayerStats &plrStats);
 class Leaderboard
 {
 private:
-    static PlayerStats *playerStats;
-    static unsigned int players;
+    static std::vector<PlayerStats> playerStats;
     static unsigned int overallGames;
-    static unsigned int capacity;
-
-    static void reallocate(unsigned int newCapacity);
 
 public:
     Leaderboard();
     ~Leaderboard();
 
-    static PlayerStats *findPlayer(const char *name);
-    static PlayerStats *addPlayer(const char *name);
+    static PlayerStats *findPlayer(const std::string &name);
+    static PlayerStats *addPlayer(const std::string &name);
     static PlayerStats *getPlayer(unsigned int index);
+    static const std::vector<PlayerStats> &getPlayers();
     static unsigned int getPlayerCount();
     static unsigned int getOverallGames();
     static void addGame();
     static void sort(char order = 'd', bool equality = false);
 };
+
+template<>
+const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values);

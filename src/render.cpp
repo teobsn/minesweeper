@@ -542,7 +542,7 @@ void Render::DrawMyStats()
     DrawTextEx(AdwaitaMono, "MY STATISTICS", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "MY STATISTICS", 48, 0).x / 2.0f, renderPosY}, 48, 0, BLUE);
     renderPosY += 70.0f;
 
-    PlayerStats *player = Leaderboard::findPlayer(playerName.c_str());
+    PlayerStats *player = Leaderboard::findPlayer(playerName);
     if (!player || player->getMatchesNumber() == 0) {
         DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, WHITE);
     } else {
@@ -563,11 +563,11 @@ void Render::DrawMyStats()
         
         unsigned int totalTime = 0;
         unsigned int totalClicks = 0;
-        const Match *matches = player->getMatches();
+        const auto &matches = player->getMatches();
         int totalGames = player->getMatchesNumber();
-        for (int i = 0; i < totalGames; ++i) {
-            totalTime += matches[i].getTimePlayed().count();
-            totalClicks += matches[i].getClicks();
+        for (const Match &match : matches) {
+            totalTime += match.getTimePlayed().count();
+            totalClicks += match.getClicks();
         }
         ss2 << "Total Time: " << (totalTime / 1000) << "s\n";
         ss2 << "Avg Clicks: " << (totalGames > 0 ? totalClicks / totalGames : 0);
@@ -629,7 +629,7 @@ void Render::HandleMyStatsInput()
         Rectangle backButton = {(float)GetScreenWidth() - padding - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
         
         if (CheckCollisionPointRec(mousePos, removeLastButton)) {
-            PlayerStats *player = Leaderboard::findPlayer(playerName.c_str());
+            PlayerStats *player = Leaderboard::findPlayer(playerName);
             if (player && player->getMatchesNumber() > 0) {
                 --(*player);
             }
@@ -649,6 +649,7 @@ void Render::DrawLeaderboard()
 
     Leaderboard::sort();
     unsigned int playerCount = Leaderboard::getPlayerCount();
+    const PlayerStats *bestPlayer = findBest<PlayerStats>(Leaderboard::getPlayers());
 
     if (playerCount == 0) {
         DrawTextEx(AdwaitaMono, "No players yet. Play some games first!", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No players yet. Play some games first!", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, WHITE);
@@ -663,10 +664,11 @@ void Render::DrawLeaderboard()
 
         for (unsigned int i = 0; i < playerCount; ++i) {
             PlayerStats *p = Leaderboard::getPlayer(i);
-            bool isCurrent = (strcmp(p->getPlayerName(), playerName.c_str()) == 0);
-            Color col = isCurrent ? GREEN : WHITE;
+            bool isCurrent = (p->getPlayerName() == playerName);
+            bool isBest = (bestPlayer && p == bestPlayer);
+            Color col = isCurrent ? GREEN : (isBest ? GOLD : WHITE);
 
-            DrawTextEx(AdwaitaMono, p->getPlayerName(), {padding, renderPosY}, 20, 0, col);
+            DrawTextEx(AdwaitaMono, p->getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
             DrawTextEx(AdwaitaMono, std::to_string(p->getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
             DrawTextEx(AdwaitaMono, std::to_string(p->getWins()).c_str(), {padding + nameW + gamesW, renderPosY}, 20, 0, col);
             
@@ -675,8 +677,8 @@ void Render::DrawLeaderboard()
             DrawTextEx(AdwaitaMono, rss.str().c_str(), {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, col);
 
             unsigned int totalTime = 0;
-            const Match *matches = p->getMatches();
-            for (int j = 0; j < p->getMatchesNumber(); ++j) totalTime += matches[j].getTimePlayed().count();
+            const auto &matches = p->getMatches();
+            for (const Match &match : matches) totalTime += match.getTimePlayed().count();
             DrawTextEx(AdwaitaMono, (std::to_string(totalTime / 1000) + "s").c_str(), {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, col);
 
             renderPosY += 25.0f;
@@ -719,7 +721,7 @@ void Render::SaveMatchStats()
         // Functia Raylib SaveFileText cere un pointer non-const.
         SaveFileText("last_player.txt", const_cast<char*>(playerName.c_str()));
 
-        PlayerStats *player = Leaderboard::addPlayer(playerName.c_str());
+        PlayerStats *player = Leaderboard::addPlayer(playerName);
         if (player) {
             *player + match;
             Leaderboard::addGame();
