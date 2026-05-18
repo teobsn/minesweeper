@@ -2,8 +2,11 @@
 
 // C++ standard library
 #include <iostream>
+#include <string>
 
-class Cell
+#include "iobject.hpp"
+
+class Cell : public IObject
 {
     bool bomb;
     bool flagged;
@@ -41,6 +44,8 @@ public:
     Cell operator++(int);
     Cell operator--(int);
     int operator[](char c) const;
+
+    std::string toString() const override;
 
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Cell &cell);

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+#include <sstream>
 
 Match::Match() : mapWidth(0), mapHeight(0), mapSeed(0), mapBombs(0),
                  revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0),
@@ -47,7 +48,7 @@ Match::~Match()
 }
 
 Match::Match(const Match &other)
-    : mapWidth(other.mapWidth), mapHeight(other.mapHeight), mapSeed(other.mapSeed), mapBombs(other.mapBombs)
+    : IObject(other), mapWidth(other.mapWidth), mapHeight(other.mapHeight), mapSeed(other.mapSeed), mapBombs(other.mapBombs)
 {
     this->revealedCells = other.revealedCells;
     this->clicks = other.clicks;
@@ -316,16 +317,21 @@ unsigned int Match::operator[](char c) const
 
 std::ostream &operator<<(std::ostream &os, const Match &match)
 {
-    os << "Match Details:\n"
-       << "  Map: " << match.mapWidth << "x" << match.mapHeight << "\n"
-       << "  Seed: " << match.mapSeed << " | Bombs: " << match.mapBombs << "\n"
-       << "  Status: " << (match.finished ? (match.won ? "Won" : "Lost") : "In Progress") << "\n"
-       << "  Cells Revealed: " << match.revealedCells << "\n"
-       << "  Clicks: " << match.clicks << "\n"
-       << "  Time Played: " << (match.timePlayed.count() / 1000.0) << "s\n"
-       << "  PowerUps Used: " << match.getTotalPowerUpsUsed() << " (S:" << match.shieldsUsed << ", A:" << match.scannersUsed << ", U:" << match.ultimatesUsed << ", D:" << match.defusersUsed << ")\n";
+    return os << match.toString();
+}
 
-    return os;
+std::string Match::toString() const
+{
+    std::ostringstream os;
+    os << "Match #" << getId() << "\n"
+       << "  Map: " << mapWidth << "x" << mapHeight << "\n"
+       << "  Seed: " << mapSeed << " | Bombs: " << mapBombs << "\n"
+       << "  Status: " << (finished ? (won ? "Won" : "Lost") : "In Progress") << "\n"
+       << "  Cells Revealed: " << revealedCells << "\n"
+       << "  Clicks: " << clicks << "\n"
+       << "  Time Played: " << (timePlayed.count() / 1000.0) << "s\n"
+       << "  PowerUps Used: " << getTotalPowerUpsUsed() << " (S:" << shieldsUsed << ", A:" << scannersUsed << ", U:" << ultimatesUsed << ", D:" << defusersUsed << ")";
+    return os.str();
 }
 
 std::istream &operator>>(std::istream &is, Match &match)
@@ -615,7 +621,8 @@ std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
     return is;
 }
 
-std::vector<PlayerStats> Leaderboard::playerStats = {};
+std::unordered_map<std::string, PlayerStats> Leaderboard::playerStats = {};
+std::vector<std::string> Leaderboard::playerOrder = {};
 unsigned int Leaderboard::overallGames = 0;
 
 Leaderboard::Leaderboard()
@@ -632,15 +639,12 @@ PlayerStats *Leaderboard::findPlayer(const std::string &name)
     if (name.empty())
         throw MinesweeperException("Player name cannot be empty");
 
-    auto it = std::find_if(playerStats.begin(), playerStats.end(), [&](const PlayerStats &player)
-    {
-        return player.getPlayerName() == name;
-    });
+    auto it = playerStats.find(name);
 
     if (it == playerStats.end())
         return nullptr;
 
-    return &*it;
+    return &it->second;
 }
 
 PlayerStats *Leaderboard::addPlayer(const std::string &name)
@@ -652,26 +656,35 @@ PlayerStats *Leaderboard::addPlayer(const std::string &name)
     if (existing)
         return existing;
 
-    playerStats.emplace_back(name);
-    return &playerStats.back();
+    auto [it, inserted] = playerStats.emplace(name, PlayerStats(name));
+    if (inserted)
+        playerOrder.push_back(name);
+
+    return &it->second;
 }
 
 PlayerStats *Leaderboard::getPlayer(unsigned int index)
 {
-    if (index >= playerStats.size())
+    if (index >= playerOrder.size())
         throw DatabaseException("Invalid leaderboard index", static_cast<int>(index));
 
-    return &playerStats[index];
+    return &playerStats.at(playerOrder[index]);
 }
 
-const std::vector<PlayerStats> &Leaderboard::getPlayers()
+std::vector<PlayerStats> Leaderboard::getPlayers()
 {
-    return playerStats;
+    std::vector<PlayerStats> players;
+    players.reserve(playerOrder.size());
+
+    for (const std::string &name : playerOrder)
+        players.push_back(playerStats.at(name));
+
+    return players;
 }
 
 unsigned int Leaderboard::getPlayerCount()
 {
-    return static_cast<unsigned int>(playerStats.size());
+    return static_cast<unsigned int>(playerOrder.size());
 }
 
 unsigned int Leaderboard::getOverallGames()
@@ -684,29 +697,51 @@ void Leaderboard::addGame()
     ++overallGames;
 }
 
+void Leaderboard::removePlayer(const std::string &name)
+{
+    if (name.empty())
+        throw MinesweeperException("Player name cannot be empty");
+
+    auto it = playerStats.find(name);
+    if (it == playerStats.end())
+        throw DatabaseException("Player not found in leaderboard", 0);
+
+    if (overallGames >= static_cast<unsigned int>(it->second.getMatchesNumber()))
+        overallGames -= static_cast<unsigned int>(it->second.getMatchesNumber());
+
+    playerStats.erase(it);
+
+    std::erase_if(playerOrder, [&](const std::string &playerName)
+    {
+        return playerName == name;
+    });
+}
+
 void Leaderboard::sort(char order, bool equality)
 {
-    if (playerStats.size() <= 1)
+    if (playerOrder.size() <= 1)
         return;
 
     if (order != 'a' && order != 'd')
         throw MinesweeperException("Invalid sort order");
 
-    auto comparator = [order](const PlayerStats &lhs, const PlayerStats &rhs)
+    auto comparator = [order](const std::string &lhs, const std::string &rhs)
     {
+        const PlayerStats &leftPlayer = playerStats.at(lhs);
+        const PlayerStats &rightPlayer = playerStats.at(rhs);
+
         if (order == 'a')
-            return lhs < rhs;
-        return rhs < lhs;
+            return leftPlayer < rightPlayer;
+        return rightPlayer < leftPlayer;
     };
 
     if (equality)
-        std::stable_sort(playerStats.begin(), playerStats.end(), comparator);
+        std::stable_sort(playerOrder.begin(), playerOrder.end(), comparator);
     else
-        std::sort(playerStats.begin(), playerStats.end(), comparator);
+        std::sort(playerOrder.begin(), playerOrder.end(), comparator);
 }
 
 /**
- * Specializare completa pentru PlayerStats.
  * Alegem "cel mai bun" jucator dupa win rate, apoi dupa numarul de victorii.
  */
 template<>
@@ -715,6 +750,7 @@ const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values)
     if (values.empty())
         return nullptr;
 
+    // lhs = left-hand side, rhs = right-hand side
     auto it = std::max_element(values.begin(), values.end(), [](const PlayerStats &lhs, const PlayerStats &rhs)
     {
         if (lhs.getWinRate() != rhs.getWinRate())

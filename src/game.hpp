@@ -6,6 +6,7 @@
 
 // C++ standard library
 #include <chrono>
+#include <list>
 #include <queue>
 #include <vector>
 
@@ -97,7 +98,7 @@ private:
     std::chrono::steady_clock::time_point startTime;
 
     bool invulnerable = false;
-    std::vector<BasePowerUp*> powerUpHistory;
+    std::list<BasePowerUp*> powerUpHistory;
 
     void clearPowerUpHistory();
     void checkWinCondition();

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <chrono>
 #include <cstring>
+#include <algorithm>
 #include <queue>
 #include <typeinfo>
 
@@ -85,8 +86,10 @@ void Game::reset()
 
 void Game::clearPowerUpHistory()
 {
-    for (BasePowerUp* p : powerUpHistory)
+    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp* p)
+    {
         delete p;
+    });
     powerUpHistory.clear();
 }
 
@@ -157,66 +160,45 @@ void Game::addPowerUpToHistory(BasePowerUp* p) {
 unsigned int Game::getPowerUpCount(const std::string& type) const {
     if (type == "all") return powerUpHistory.size();
 
-    unsigned int count = 0;
-    for (BasePowerUp* p : powerUpHistory) {
-        if (!p) continue;
-        
+    return static_cast<unsigned int>(std::count_if(powerUpHistory.begin(), powerUpHistory.end(), [&](BasePowerUp* p)
+    {
+        if (!p)
+            return false;
+
         // Folosim dynamic_cast cu tratarea exceptiei std::bad_cast
         // Folosim cast pe referinte pentru a prinde std::bad_cast in caz de esec.
-        // Este preferat fata de static_cast deoarece ne permite sa validam 
+        // Este preferat fata de static_cast deoarece ne permite sa validam
         // in siguranta la runtime ce fel de obiect derivat avem in colectie
         // (powerUpHistory contine toate tipurile de power-upuri)
         try {
             if (type == "Shield") {
                 (void)dynamic_cast<ShieldPowerUp&>(*p);
-                count++;
+                return true;
             } else if (type == "Scanner") {
                 (void)dynamic_cast<ScannerPowerUp&>(*p);
-                count++;
+                return true;
             } else if (type == "Ultimate") {
                 (void)dynamic_cast<UltimatePowerUp&>(*p);
-                count++;
+                return true;
             } else if (type == "Defuser") {
                 (void)dynamic_cast<BombDefuser&>(*p);
-                count++;
+                return true;
             }
         } catch (const std::bad_cast&) {
-            // Daca obiectul nu este de tipul asteptat, continuam cautarea in istoric.
-            continue;
+            return false;
         }
 
-
-        /*
-        // Varianta pe pointeri inloc de referinte, caz in care dynamic_cast returneaza nullptr
-        // inloc sa emita exceptia std::bad_cast
-
-        if (type == "Shield") {
-            ShieldPowerUp* casted = dynamic_cast<ShieldPowerUp*>(p);
-            if (casted != nullptr) count++; // Verificare non-null inainte de utilizare
-        } else if (type == "Scanner") {
-            ScannerPowerUp* casted = dynamic_cast<ScannerPowerUp*>(p);
-            if (casted != nullptr) count++;
-        } else if (type == "Ultimate") {
-            UltimatePowerUp* casted = dynamic_cast<UltimatePowerUp*>(p);
-            if (casted != nullptr) count++;
-        } else if (type == "Defuser") {
-            BombDefuser* casted = dynamic_cast<BombDefuser*>(p);
-            if (casted != nullptr) count++;
-        
-        */
-    }
-    return count;
+        return false;
+    }));
 }
 
 void Game::showPowerUpHistory() const {
-    // Colectie de pointeri la baza (cu late binding)
-    // Utilizam typeid si type_info pentru inspectia tipului real
-    for (BasePowerUp* p : powerUpHistory) {
+    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp* p)
+    {
         if (p) {
-            std::cout << "[" << typeid(*p).name() << "] " 
-                      << p->getName() << ": " << p->getDescription() << "\n";
+            std::cout << *p << "\n";
         }
-    }
+    });
 }
 
 void Game::fillReveal(int x, int y)

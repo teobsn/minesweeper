@@ -3,15 +3,17 @@
 #include <string>
 #include <iostream>
 
+#include "iobject.hpp"
+
 class Game;
 
-class BasePowerUp
+class BasePowerUp : public IObject
 {
 protected:
     // Folosim 'protected' pentru a permite claselor derivate (Temporal/Spatial) 
     // acces direct la atributele de baza, mentinandu-le in acelasi timp 
     // incapsulate fata de exterior.
-    int id;
+    const int typeId;
     std::string name;
 
 public:
@@ -27,6 +29,8 @@ public:
     virtual std::string getCategory() const = 0;
 
     std::string getName() const;
+    int getTypeId() const noexcept;
+    std::string toString() const override;
 };
 
 // Utilizam 'virtual public' pentru a preveni duplicarea membrilor clasei BasePowerUp

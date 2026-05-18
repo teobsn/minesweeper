@@ -689,7 +689,8 @@ void Commandline::displayAllPlayersStatistics()
 
         std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAverage Clicks\n";
 
-        const PlayerStats *bestPlayer = findBest<PlayerStats>(Leaderboard::getPlayers());
+        const auto players = Leaderboard::getPlayers();
+        const PlayerStats *bestPlayer = findBest<PlayerStats>(players);
 
         for (unsigned int i = 0; i < playerCount; ++i)
         {
@@ -727,6 +728,22 @@ void Commandline::displayAllPlayersStatistics()
             std::cout << "\nBest player: " << bestPlayer->getPlayerName() << "\n";
 
         std::cout << "\nTotal games played (all players): " << Leaderboard::getOverallGames() << "\n";
+
+        std::cout << "\nOptions:\n";
+        std::cout << "1. Delete Player\n";
+        std::cout << "2. Back\n";
+
+        int choice = readIntInput("Your choice: ", 1, 2);
+        if (choice == 1)
+        {
+            std::string playerName;
+            std::cout << "Enter player name to delete: ";
+            std::getline(std::cin, playerName);
+
+            Leaderboard::removePlayer(playerName);
+            std::cout << "Player deleted.\n";
+        }
+
         std::cout << "\n";
         waitForEnter();
     }

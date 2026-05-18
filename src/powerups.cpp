@@ -1,7 +1,9 @@
 #include "powerups.hpp"
 #include "game.hpp"
 
-BasePowerUp::BasePowerUp(int id, std::string name) : id(id), name(name)
+#include <sstream>
+
+BasePowerUp::BasePowerUp(int id, std::string name) : typeId(id), name(name)
 {
 #ifdef DEBUG
     std::cout << "BasePowerUp() " << name << "\n";
@@ -16,6 +18,16 @@ BasePowerUp::~BasePowerUp()
 }
 
 std::string BasePowerUp::getName() const { return name; }
+
+int BasePowerUp::getTypeId() const noexcept { return typeId; }
+
+std::string BasePowerUp::toString() const
+{
+    std::ostringstream os;
+    os << "PowerUp #" << getId() << " [type " << typeId << "] " << name
+       << " - " << getDescription() << " (" << getCategory() << ")";
+    return os.str();
+}
 
 void BasePowerUp::use(Game &game, int x, int y)
 {

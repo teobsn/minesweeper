@@ -27,7 +27,7 @@ Cell::Cell(bool bomb, bool flagged, bool revealed, short unsigned int adjacentBo
 {
 }
 
-Cell::Cell(const Cell &other) : bomb(other.bomb), flagged(other.flagged), revealed(other.revealed), adjacentBombs(other.adjacentBombs), symbol(other.symbol)
+Cell::Cell(const Cell &other) : IObject(other), bomb(other.bomb), flagged(other.flagged), revealed(other.revealed), adjacentBombs(other.adjacentBombs), symbol(other.symbol)
 {
 }
 
@@ -152,24 +152,23 @@ void Cell::updateSymbol()
 
 std::ostream &operator<<(std::ostream &os, const Cell &cell)
 {
-    if (cell.revealed)
-    {
-        if (cell.bomb)
-            os << "B";
-        else if (cell.adjacentBombs)
-            os << cell.adjacentBombs;
-        else
-            os << " ";
-    }
-    else
-    {
-        if (cell.flagged)
-            os << "P";
-        else
-            os << "■";
-    }
+    return os << cell.toString();
+}
 
-    return os;
+std::string Cell::toString() const
+{
+    if (revealed)
+    {
+        if (bomb)
+            return "B";
+        else if (adjacentBombs)
+            return std::to_string(adjacentBombs);
+        else
+            return " ";
+    }
+    if (flagged)
+        return "P";
+    return "■";
 }
 
 std::istream &operator>>(std::istream &is, Cell &cell)

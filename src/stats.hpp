@@ -2,15 +2,17 @@
 
 // Minesweeper headers
 #include "cell.hpp"
+#include "iobject.hpp"
 #include "map.hpp"
 #include "templates.hpp"
 
 // C++ standard library
 #include <chrono>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-class Match
+class Match : public IObject
 {
 private:
     unsigned int mapWidth, mapHeight;
@@ -93,6 +95,8 @@ public:
     // Operator []
     unsigned int operator[](char c) const;
 
+    std::string toString() const override;
+
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Match &match);
     friend std::istream &operator>>(std::istream &os, Match &match);
@@ -170,7 +174,8 @@ std::istream &operator>>(std::istream &os, PlayerStats &plrStats);
 class Leaderboard
 {
 private:
-    static std::vector<PlayerStats> playerStats;
+    static std::unordered_map<std::string, PlayerStats> playerStats;
+    static std::vector<std::string> playerOrder;
     static unsigned int overallGames;
 
 public:
@@ -180,10 +185,11 @@ public:
     static PlayerStats *findPlayer(const std::string &name);
     static PlayerStats *addPlayer(const std::string &name);
     static PlayerStats *getPlayer(unsigned int index);
-    static const std::vector<PlayerStats> &getPlayers();
+    static std::vector<PlayerStats> getPlayers();
     static unsigned int getPlayerCount();
     static unsigned int getOverallGames();
     static void addGame();
+    static void removePlayer(const std::string &name);
     static void sort(char order = 'd', bool equality = false);
 };
 
