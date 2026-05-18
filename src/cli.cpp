@@ -30,21 +30,44 @@ void MapSettings::generateRandomSeed()
 
 namespace
 {
+Rezultat<int> parseInt(const std::string &line)
+{
+    if (line.empty())
+        return Rezultat<int>::eroare("invalid input");
+
+    try
+    {
+        std::size_t parsedChars = 0;
+        int value = std::stoi(line, &parsedChars);
+        if (parsedChars != line.size())
+            return Rezultat<int>::eroare("invalid input");
+
+        return value;
+    }
+    catch (...)
+    {
+        return Rezultat<int>::eroare("invalid input");
+    }
+}
+
 Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
 {
     if (line.empty())
         return Rezultat<unsigned long long>::eroare("invalid input");
 
-    unsigned long long value = 0;
-    for (char c : line)
+    try
     {
-        if (c < '0' || c > '9')
+        std::size_t parsedChars = 0;
+        unsigned long long value = std::stoull(line, &parsedChars);
+        if (parsedChars != line.size())
             return Rezultat<unsigned long long>::eroare("invalid input");
 
-        value = value * 10 + static_cast<unsigned long long>(c - '0');
+        return value;
     }
-
-    return value;
+    catch (...)
+    {
+        return Rezultat<unsigned long long>::eroare("invalid input");
+    }
 }
 }
 
@@ -222,9 +245,9 @@ int Commandline::readIntInput(const char *prompt, int min, int max)
         // Rezultat<T> is used here to keep input parsing explicit: the value path
         // stays separate from the error path, and the error message can be reused
         // without throwing for normal invalid input.
-        auto parsed = parseUnsignedLongLong(line).transforma([](unsigned long long value)
+        auto parsed = parseInt(line).transforma([](int value)
         {
-            return static_cast<int>(value);
+            return value;
         });
 
         if (parsed.ok())
