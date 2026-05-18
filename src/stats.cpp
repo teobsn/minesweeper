@@ -10,6 +10,26 @@
 #include <algorithm>
 #include <sstream>
 
+namespace
+{
+std::string normalizePlayerName(std::string name)
+{
+    std::size_t pos = 0;
+    while ((pos = name.find_first_of("\t\r\n")) != std::string::npos)
+        name.replace(pos, 1, " ");
+
+    while ((pos = name.find("  ")) != std::string::npos)
+        name.replace(pos, 2, " ");
+
+    std::size_t first = name.find_first_not_of(' ');
+    if (first == std::string::npos)
+        return {};
+
+    std::size_t last = name.find_last_not_of(' ');
+    return name.substr(first, last - first + 1);
+}
+}
+
 Match::Match() : mapWidth(0), mapHeight(0), mapSeed(0), mapBombs(0),
                  revealedCells(0), clicks(0), finished(false), won(false), timePlayed(0),
                  shieldsUsed(0), scannersUsed(0), ultimatesUsed(0), defusersUsed(0) {}
@@ -401,10 +421,12 @@ const std::string &PlayerStats::getPlayerName() const noexcept
 
 void PlayerStats::setPlayerName(const std::string &newName)
 {
-    if (newName.empty())
+    std::string normalized = normalizePlayerName(newName);
+
+    if (normalized.empty())
         throw MinesweeperException("Player name cannot be empty");
 
-    playerName = newName;
+    playerName = std::move(normalized);
 }
 
 void PlayerStats::addMatch(const Match &match)
@@ -596,26 +618,36 @@ std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats)
 std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
 {
     std::string name;
-    int numGames;
-    float wRate;
+    std::string numGamesText;
+    std::string wRateText;
 
-    if (is >> name >> numGames >> wRate)
+    if (is >> name >> numGamesText >> wRateText)
     {
-        plrStats.setPlayerName(name);
-        plrStats.games.clear();
-        plrStats.recentGames.clear();
-        plrStats.numberOfWins = 0;
-        plrStats.setWinRate(wRate);
-
-        if (numGames > 0)
+        try
         {
-            plrStats.games.reserve(numGames);
-            for (int i = 0; i < numGames; ++i)
+            int numGames = std::stoi(numGamesText);
+            double wRate = std::stod(wRateText);
+
+            plrStats.setPlayerName(name);
+            plrStats.games.clear();
+            plrStats.recentGames.clear();
+            plrStats.numberOfWins = 0;
+            plrStats.setWinRate(static_cast<float>(wRate));
+
+            if (numGames > 0)
             {
-                Match match;
-                is >> match;
-                plrStats.addMatch(match);
+                plrStats.games.reserve(numGames);
+                for (int i = 0; i < numGames; ++i)
+                {
+                    Match match;
+                    is >> match;
+                    plrStats.addMatch(match);
+                }
             }
+        }
+        catch (...)
+        {
+            is.setstate(std::ios::failbit);
         }
     }
     return is;
@@ -636,10 +668,12 @@ Leaderboard::~Leaderboard()
 
 PlayerStats *Leaderboard::findPlayer(const std::string &name)
 {
-    if (name.empty())
+    std::string normalized = normalizePlayerName(name);
+
+    if (normalized.empty())
         throw MinesweeperException("Player name cannot be empty");
 
-    auto it = playerStats.find(name);
+    auto it = playerStats.find(normalized);
 
     if (it == playerStats.end())
         return nullptr;
@@ -649,16 +683,18 @@ PlayerStats *Leaderboard::findPlayer(const std::string &name)
 
 PlayerStats *Leaderboard::addPlayer(const std::string &name)
 {
-    if (name.empty())
+    std::string normalized = normalizePlayerName(name);
+
+    if (normalized.empty())
         throw MinesweeperException("Player name cannot be empty");
 
-    PlayerStats *existing = findPlayer(name);
+    PlayerStats *existing = findPlayer(normalized);
     if (existing)
         return existing;
 
-    auto [it, inserted] = playerStats.emplace(name, PlayerStats(name));
+    auto [it, inserted] = playerStats.emplace(normalized, PlayerStats(normalized));
     if (inserted)
-        playerOrder.push_back(name);
+        playerOrder.push_back(normalized);
 
     return &it->second;
 }
@@ -699,10 +735,12 @@ void Leaderboard::addGame()
 
 void Leaderboard::removePlayer(const std::string &name)
 {
-    if (name.empty())
+    std::string normalized = normalizePlayerName(name);
+
+    if (normalized.empty())
         throw MinesweeperException("Player name cannot be empty");
 
-    auto it = playerStats.find(name);
+    auto it = playerStats.find(normalized);
     if (it == playerStats.end())
         throw DatabaseException("Player not found in leaderboard", 0);
 
@@ -713,7 +751,7 @@ void Leaderboard::removePlayer(const std::string &name)
 
     std::erase_if(playerOrder, [&](const std::string &playerName)
     {
-        return playerName == name;
+        return playerName == normalized;
     });
 }
 
