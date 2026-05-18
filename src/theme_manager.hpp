@@ -31,6 +31,9 @@ private:
 public:
     static ThemeManager &instance();
 
+    ThemeManager(const ThemeManager &) = delete;
+    ThemeManager &operator=(const ThemeManager &) = delete;
+
     void setTheme(std::unique_ptr<IThemeFactory> factory);
     void setTheme(ThemeId theme);
     ThemeId getTheme() const noexcept;
