@@ -6,6 +6,7 @@
 #include "stats.hpp"
 #include "render.hpp"
 #include "powerups.hpp"
+#include "theme_manager.hpp"
 #include "exceptions.hpp"
 
 // External libraries
@@ -20,6 +21,20 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
+
+namespace
+{
+const ThemePalette &Theme()
+{
+    return ThemeManager::instance().getPalette();
+}
+
+Color ButtonText(Color background)
+{
+    int luminance = (299 * background.r + 587 * background.g + 114 * background.b) / 1000;
+    return luminance > 140 ? Theme().accentText : Theme().text;
+}
+}
 
 Render::Render()
 {
@@ -84,28 +99,28 @@ void Render::StartRender()
         case GUIState::MENU:
             HandleMenuInput();
             BeginDrawing();
-            ClearBackground(Color{ 12, 12, 12, 255 });
+            ClearBackground(Theme().background);
             DrawMenu();
             EndDrawing();
             break;
         case GUIState::GAME:
             HandleGameInput();
             BeginDrawing();
-            ClearBackground(Color{ 12, 12, 12, 255 });
+            ClearBackground(Theme().background);
             DrawGame();
             EndDrawing();
             break;
         case GUIState::MY_STATS:
             HandleMyStatsInput();
             BeginDrawing();
-            ClearBackground(Color{ 12, 12, 12, 255 });
+            ClearBackground(Theme().background);
             DrawMyStats();
             EndDrawing();
             break;
         case GUIState::LEADERBOARD:
             HandleLeaderboardInput();
             BeginDrawing();
-            ClearBackground(Color{ 12, 12, 12, 255 });
+            ClearBackground(Theme().background);
             DrawLeaderboard();
             EndDrawing();
             break;
@@ -125,14 +140,16 @@ void Render::DrawMenu()
     const float textSize = 32.0f;
     const float rectSize = 40.0f;
     const int screenWidth = GetScreenWidth();
+    const ThemePalette &theme = Theme();
+    Vector2 mousePos = GetMousePosition();
 
-    const Color textColor = WHITE;
-    const Color rectColor = DARKGRAY;
+    const Color textColor = theme.text;
+    const Color rectColor = theme.surface;
 
     float renderPosX = padding, renderPosY = padding, offsetX = screenWidth / 2.0f;
     float sizeX = screenWidth / 2.0f - 2.0f * padding;
 
-    DrawTextEx(AdwaitaMono, "MINESWEEPER", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "MINESWEEPER", 48, 0).x / 2.0f, renderPosY}, 48, 0, RED);
+    DrawTextEx(AdwaitaMono, "MINESWEEPER", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "MINESWEEPER", 48, 0).x / 2.0f, renderPosY}, 48, 0, theme.accent);
     renderPosY += 80.0f;
 
     DrawTextEx(AdwaitaMono, "Player Name", {renderPosX, renderPosY}, textSize, 0, textColor);
@@ -163,32 +180,61 @@ void Render::DrawMenu()
     Rectangle textBoxMapSeed = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxMapSeed, rectColor);
     if (strlen(mapSeedText) == 0) {
-        DrawTextEx(AdwaitaMono, "(optional)", {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, GRAY);
+        DrawTextEx(AdwaitaMono, "(optional)", {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, theme.muted);
     } else {
         DrawTextEx(AdwaitaMono, mapSeedText, {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, textColor);
     }
 
     renderPosY += 80.0f;
     Rectangle startButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
-    DrawRectangleRec(startButton, GREEN);
-    DrawTextEx(AdwaitaMono, "START GAME", {startButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "START GAME", textSize, 0).x / 2.0f, startButton.y + 10.0f}, textSize, 0, BLACK);
+    DrawRectangleRec(startButton, theme.success);
+    DrawTextEx(AdwaitaMono, "START GAME", {startButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "START GAME", textSize, 0).x / 2.0f, startButton.y + 10.0f}, textSize, 0, ButtonText(theme.success));
 
     renderPosY += 70.0f;
     Rectangle myStatsButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
-    DrawRectangleRec(myStatsButton, BLUE);
-    DrawTextEx(AdwaitaMono, "MY STATISTICS", {myStatsButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "MY STATISTICS", textSize, 0).x / 2.0f, myStatsButton.y + 10.0f}, textSize, 0, WHITE);
+    DrawRectangleRec(myStatsButton, theme.accent);
+    DrawTextEx(AdwaitaMono, "MY STATISTICS", {myStatsButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "MY STATISTICS", textSize, 0).x / 2.0f, myStatsButton.y + 10.0f}, textSize, 0, ButtonText(theme.accent));
 
     renderPosY += 70.0f;
     Rectangle leaderboardButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
-    DrawRectangleRec(leaderboardButton, PURPLE);
-    DrawTextEx(AdwaitaMono, "LEADERBOARD", {leaderboardButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "LEADERBOARD", textSize, 0).x / 2.0f, leaderboardButton.y + 10.0f}, textSize, 0, WHITE);
+    DrawRectangleRec(leaderboardButton, theme.highlight);
+    DrawTextEx(AdwaitaMono, "LEADERBOARD", {leaderboardButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "LEADERBOARD", textSize, 0).x / 2.0f, leaderboardButton.y + 10.0f}, textSize, 0, ButtonText(theme.highlight));
 
     renderPosY += 70.0f;
     Rectangle exitButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
-    DrawRectangleRec(exitButton, MAROON);
-    DrawTextEx(AdwaitaMono, "EXIT", {exitButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "EXIT", textSize, 0).x / 2.0f, exitButton.y + 10.0f}, textSize, 0, WHITE);
+    DrawRectangleRec(exitButton, theme.danger);
+    DrawTextEx(AdwaitaMono, "EXIT", {exitButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "EXIT", textSize, 0).x / 2.0f, exitButton.y + 10.0f}, textSize, 0, ButtonText(theme.danger));
 
-    Vector2 mousePos = GetMousePosition();
+    renderPosY += 95.0f;
+    DrawTextEx(AdwaitaMono, "THEME", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "THEME", 24, 0).x / 2.0f, renderPosY}, 24, 0, theme.text);
+    renderPosY += 40.0f;
+    std::string currentThemeStr = "Current theme: " + ThemeManager::instance().getThemeName();
+    DrawTextEx(AdwaitaMono, currentThemeStr.c_str(), {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, currentThemeStr.c_str(), 18, 0).x / 2.0f, renderPosY - 22.0f}, 18, 0, theme.muted);
+
+    const float themeButtonW = 145.0f;
+    const float themeButtonH = 36.0f;
+    const float themeLeft = screenWidth / 2.0f - 150.0f;
+    const float themeRight = themeLeft + 155.0f;
+
+    Rectangle tokyoNightButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
+    Rectangle oledBlackButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
+    renderPosY += 46.0f;
+    Rectangle adwaitaButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
+    Rectangle monokaiButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
+
+    auto drawThemeButton = [&](const Rectangle &button, const char *label, ThemeId themeId)
+    {
+        const bool selected = ThemeManager::instance().getTheme() == themeId;
+        DrawRectangleRec(button, selected ? theme.surfaceAlt : theme.surface);
+        DrawTextEx(AdwaitaMono, label, {button.x + button.width / 2.0f - MeasureTextEx(AdwaitaMono, label, 18, 0).x / 2.0f, button.y + 8.0f}, 18.0f, 0, selected ? ButtonText(theme.surfaceAlt) : ButtonText(theme.surface));
+        if (CheckCollisionPointRec(mousePos, button)) DrawRectangleLinesEx(button, 2, theme.accent);
+    };
+
+    drawThemeButton(tokyoNightButton, "TOKYO NIGHT", ThemeId::TokyoNight);
+    drawThemeButton(oledBlackButton, "OLED BLACK", ThemeId::OledBlack);
+    drawThemeButton(adwaitaButton, "ADWAITA", ThemeId::Adwaita);
+    drawThemeButton(monokaiButton, "MONOKAI", ThemeId::Monokai);
+
     if (CheckCollisionPointRec(mousePos, textBoxPlayerName)) DrawRectangleLinesEx(textBoxPlayerName, 2, YELLOW);
     if (CheckCollisionPointRec(mousePos, textBoxMapWidth)) DrawRectangleLinesEx(textBoxMapWidth, 2, YELLOW);
     if (CheckCollisionPointRec(mousePos, textBoxMapHeight)) DrawRectangleLinesEx(textBoxMapHeight, 2, YELLOW);
@@ -197,7 +243,7 @@ void Render::DrawMenu()
     if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleLinesEx(startButton, 2, WHITE);
     if (CheckCollisionPointRec(mousePos, myStatsButton)) DrawRectangleLinesEx(myStatsButton, 2, WHITE);
     if (CheckCollisionPointRec(mousePos, leaderboardButton)) DrawRectangleLinesEx(leaderboardButton, 2, WHITE);
-    if (CheckCollisionPointRec(mousePos, exitButton)) DrawRectangleLinesEx(exitButton, 2, WHITE);
+    if (CheckCollisionPointRec(mousePos, exitButton)) DrawRectangleLinesEx(exitButton, 2, theme.text);
 }
 
 void Render::HandleMenuInput()
@@ -227,6 +273,17 @@ void Render::HandleMenuInput()
     Rectangle leaderboardButton = {(float)screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
     renderPosY += 70.0f;
     Rectangle exitButton = {(float)screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
+    renderPosY += 95.0f;
+    renderPosY += 40.0f;
+    const float themeButtonW = 145.0f;
+    const float themeButtonH = 36.0f;
+    const float themeLeft = screenWidth / 2.0f - 150.0f;
+    const float themeRight = themeLeft + 155.0f;
+    Rectangle tokyoNightButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
+    Rectangle oledBlackButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
+    renderPosY += 46.0f;
+    Rectangle adwaitaButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
+    Rectangle monokaiButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
 
     auto handleTextInput = [](char* text, int maxLen, bool numericOnly) {
         int key = GetCharPressed();
@@ -290,6 +347,18 @@ void Render::HandleMenuInput()
             CloseWindow();
             std::exit(0);
         }
+    } else if (CheckCollisionPointRec(mousePos, tokyoNightButton)) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::TokyoNight);
+    } else if (CheckCollisionPointRec(mousePos, oledBlackButton)) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::OledBlack);
+    } else if (CheckCollisionPointRec(mousePos, adwaitaButton)) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::Adwaita);
+    } else if (CheckCollisionPointRec(mousePos, monokaiButton)) {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::Monokai);
     } else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 }
 
@@ -297,6 +366,7 @@ void Render::DrawGame()
 {
     // Capture reference to avoid copies
     const Map& map = game.getMap();
+    const ThemePalette &theme = Theme();
     unsigned int width = map.getWidth();
     unsigned int height = map.getHeight();
     int screenWidth = GetScreenWidth();
@@ -315,7 +385,7 @@ void Render::DrawGame()
     }
 
     float statsHeight = 60.0f;
-    DrawRectangle(0, 0, screenWidth, (int)statsHeight, DARKGRAY);
+    DrawRectangle(0, 0, screenWidth, (int)statsHeight, theme.surface);
     
     long long displayTime = finalTime > 0 ? finalTime : game.getElapsedTime().count();
     std::string timeStr;
@@ -330,13 +400,13 @@ void Render::DrawGame()
     DrawTextEx(AdwaitaMono, flagsStr.c_str(), {(float)screenWidth - MeasureTextEx(AdwaitaMono, flagsStr.c_str(), 30, 0).x - 20.0f, 15.0f}, 30.0f, 0, WHITE);
 
     if (game.isInvulnerable()) {
-        DrawTextEx(AdwaitaMono, "SHIELD ACTIVE", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "SHIELD ACTIVE", 20, 0).x / 2.0f, 45.0f}, 20.0f, 0, GOLD);
+        DrawTextEx(AdwaitaMono, "SHIELD ACTIVE", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "SHIELD ACTIVE", 20, 0).x / 2.0f, 45.0f}, 20.0f, 0, theme.warning);
     }
 
     if (game.getCurrentState() == Game::GameState::WON) {
-        DrawTextEx(AdwaitaMono, "YOU WON!", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "YOU WON!", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, GREEN);
+        DrawTextEx(AdwaitaMono, "YOU WON!", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "YOU WON!", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, theme.success);
     } else if (game.getCurrentState() == Game::GameState::LOST) {
-        DrawTextEx(AdwaitaMono, "GAME OVER", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "GAME OVER", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, RED);
+        DrawTextEx(AdwaitaMono, "GAME OVER", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "GAME OVER", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, theme.danger);
     }
 
     float gridPadding = 20.0f;
@@ -352,9 +422,9 @@ void Render::DrawGame()
         for (unsigned int x = 0; x < width; ++x) {
             Rectangle cellRect = {startX + (float)x * cellSize, startY + (float)y * cellSize, cellSize, cellSize};
             if (map.isRevealedAt(x, y)) {
-                DrawRectangleRec(cellRect, LIGHTGRAY);
+                DrawRectangleRec(cellRect, theme.surface);
                 if (map.isBombAt(x, y)) {
-                    DrawRectangleRec(cellRect, RED);
+                    DrawRectangleRec(cellRect, theme.danger);
                     DrawTexturePro(bombTexture, {0, 0, (float)bombTexture.width, (float)bombTexture.height}, cellRect, {0, 0}, 0, WHITE);
                 } else {
                     unsigned int adj = map.getAdjacentBombsAt(x, y);
@@ -365,10 +435,10 @@ void Render::DrawGame()
                     }
                 }
             } else {
-                DrawRectangleRec(cellRect, GRAY);
+                DrawRectangleRec(cellRect, theme.surfaceAlt);
                 if (map.isFlaggedAt(x, y)) DrawTexturePro(flagTexture, {0, 0, (float)flagTexture.width, (float)flagTexture.height}, cellRect, {0, 0}, 0, WHITE);
             }
-            DrawRectangleLinesEx(cellRect, 1, DARKGRAY);
+            DrawRectangleLinesEx(cellRect, 1, theme.grid);
         }
     }
     // Interface buttons
@@ -376,56 +446,56 @@ void Render::DrawGame()
     
     // Left side buttons: +, *0.75, *1.5
     Rectangle addBombButton = {20.0f, (float)screenHeight - 40.0f, 40.0f, 30.0f};
-    DrawRectangleRec(addBombButton, DARKGRAY);
-    DrawTextEx(AdwaitaMono, "+", {addBombButton.x + 20.0f - MeasureTextEx(AdwaitaMono, "+", 20, 0).x / 2.0f, addBombButton.y + 5.0f}, 20.0f, 0, WHITE);
-    if (CheckCollisionPointRec(mousePos, addBombButton)) DrawRectangleLinesEx(addBombButton, 2, WHITE);
+    DrawRectangleRec(addBombButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "+", {addBombButton.x + 20.0f - MeasureTextEx(AdwaitaMono, "+", 20, 0).x / 2.0f, addBombButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
+    if (CheckCollisionPointRec(mousePos, addBombButton)) DrawRectangleLinesEx(addBombButton, 2, theme.accent);
 
     Rectangle scaleDownButton = {65.0f, (float)screenHeight - 40.0f, 60.0f, 30.0f};
-    DrawRectangleRec(scaleDownButton, DARKGRAY);
-    DrawTextEx(AdwaitaMono, "*0.75", {scaleDownButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*0.75", 20, 0).x / 2.0f, scaleDownButton.y + 5.0f}, 20.0f, 0, WHITE);
-    if (CheckCollisionPointRec(mousePos, scaleDownButton)) DrawRectangleLinesEx(scaleDownButton, 2, WHITE);
+    DrawRectangleRec(scaleDownButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "*0.75", {scaleDownButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*0.75", 20, 0).x / 2.0f, scaleDownButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
+    if (CheckCollisionPointRec(mousePos, scaleDownButton)) DrawRectangleLinesEx(scaleDownButton, 2, theme.accent);
 
     Rectangle scaleBombsButton = {130.0f, (float)screenHeight - 40.0f, 60.0f, 30.0f};
-    DrawRectangleRec(scaleBombsButton, DARKGRAY);
-    DrawTextEx(AdwaitaMono, "*1.5", {scaleBombsButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*1.5", 20, 0).x / 2.0f, scaleBombsButton.y + 5.0f}, 20.0f, 0, WHITE);
-    if (CheckCollisionPointRec(mousePos, scaleBombsButton)) DrawRectangleLinesEx(scaleBombsButton, 2, WHITE);
+    DrawRectangleRec(scaleBombsButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "*1.5", {scaleBombsButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*1.5", 20, 0).x / 2.0f, scaleBombsButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
+    if (CheckCollisionPointRec(mousePos, scaleBombsButton)) DrawRectangleLinesEx(scaleBombsButton, 2, theme.accent);
 
     // Power-up buttons
     Rectangle shieldBtn = {200.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
-    DrawRectangleRec(shieldBtn, DARKBLUE);
-    DrawTextEx(AdwaitaMono, "SHIELD", {shieldBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "SHIELD", 18, 0).x / 2.0f, shieldBtn.y + 6.0f}, 18.0f, 0, WHITE);
+    DrawRectangleRec(shieldBtn, theme.accent);
+    DrawTextEx(AdwaitaMono, "SHIELD", {shieldBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "SHIELD", 18, 0).x / 2.0f, shieldBtn.y + 6.0f}, 18.0f, 0, ButtonText(theme.accent));
     if (CheckCollisionPointRec(mousePos, shieldBtn)) {
-        DrawRectangleLinesEx(shieldBtn, 2, GOLD);
+        DrawRectangleLinesEx(shieldBtn, 2, theme.warning);
         BasePowerUp* temp = new ShieldPowerUp(0, 0);
-        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {shieldBtn.x, shieldBtn.y - 25.0f}, 16, 0, GOLD);
+        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {shieldBtn.x, shieldBtn.y - 25.0f}, 16, 0, theme.warning);
         delete temp;
     }
 
     Rectangle ultiBtn = {290.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
-    DrawRectangleRec(ultiBtn, MAROON);
-    DrawTextEx(AdwaitaMono, "ULTI", {ultiBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "ULTI", 18, 0).x / 2.0f, ultiBtn.y + 6.0f}, 18.0f, 0, WHITE);
+    DrawRectangleRec(ultiBtn, theme.highlight);
+    DrawTextEx(AdwaitaMono, "ULTI", {ultiBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "ULTI", 18, 0).x / 2.0f, ultiBtn.y + 6.0f}, 18.0f, 0, ButtonText(theme.highlight));
     if (CheckCollisionPointRec(mousePos, ultiBtn)) {
-        DrawRectangleLinesEx(ultiBtn, 2, PURPLE);
+        DrawRectangleLinesEx(ultiBtn, 2, theme.accent);
         BasePowerUp* temp = new UltimatePowerUp(0, 0, 0);
-        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {ultiBtn.x, ultiBtn.y - 25.0f}, 16, 0, PURPLE);
+        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {ultiBtn.x, ultiBtn.y - 25.0f}, 16, 0, theme.accent);
         delete temp;
     }
 
     Rectangle defuseBtn = {380.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
-    DrawRectangleRec(defuseBtn, DARKPURPLE);
-    DrawTextEx(AdwaitaMono, "DEFUSE", {defuseBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "DEFUSE", 18, 0).x / 2.0f, defuseBtn.y + 6.0f}, 18.0f, 0, WHITE);
+    DrawRectangleRec(defuseBtn, theme.surfaceAlt);
+    DrawTextEx(AdwaitaMono, "DEFUSE", {defuseBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "DEFUSE", 18, 0).x / 2.0f, defuseBtn.y + 6.0f}, 18.0f, 0, ButtonText(theme.surfaceAlt));
     if (CheckCollisionPointRec(mousePos, defuseBtn)) {
-        DrawRectangleLinesEx(defuseBtn, 2, WHITE);
+        DrawRectangleLinesEx(defuseBtn, 2, theme.text);
         BasePowerUp* temp = new BombDefuser(0, 0);
-        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {defuseBtn.x, defuseBtn.y - 25.0f}, 16, 0, WHITE);
+        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {defuseBtn.x, defuseBtn.y - 25.0f}, 16, 0, theme.text);
         delete temp;
     }
 
     // Right side button: MENU
     Rectangle backButton = {(float)screenWidth - 220.0f, (float)screenHeight - 40.0f, 200.0f, 30.0f};
-    DrawRectangleRec(backButton, DARKGRAY);
-    DrawTextEx(AdwaitaMono, "MENU", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "MENU", 20, 0).x / 2.0f, backButton.y + 5.0f}, 20.0f, 0, WHITE);
-    if (CheckCollisionPointRec(mousePos, backButton)) DrawRectangleLinesEx(backButton, 2, WHITE);
+    DrawRectangleRec(backButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "MENU", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "MENU", 20, 0).x / 2.0f, backButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
+    if (CheckCollisionPointRec(mousePos, backButton)) DrawRectangleLinesEx(backButton, 2, theme.accent);
 }
 
 void Render::HandleGameInput()
@@ -576,14 +646,15 @@ void Render::DrawMyStats()
 {
     const int screenWidth = GetScreenWidth();
     const float padding = 40.0f;
+    const ThemePalette &theme = Theme();
     float renderPosY = padding;
 
-    DrawTextEx(AdwaitaMono, "MY STATISTICS", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "MY STATISTICS", 48, 0).x / 2.0f, renderPosY}, 48, 0, BLUE);
+    DrawTextEx(AdwaitaMono, "MY STATISTICS", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "MY STATISTICS", 48, 0).x / 2.0f, renderPosY}, 48, 0, theme.accent);
     renderPosY += 70.0f;
 
     PlayerStats *player = Leaderboard::findPlayer(playerName);
     if (!player || player->getMatchesNumber() == 0) {
-        DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, WHITE);
+        DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
     } else {
         // Two-column layout for general stats
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
@@ -593,7 +664,7 @@ void Render::DrawMyStats()
         ss1 << "Player: " << player->getPlayerName() << "\n";
         ss1 << "Total Games: " << player->getMatchesNumber() << "\n";
         ss1 << "Win Rate: " << std::fixed << std::setprecision(1) << player->getWinRate() * 100.0f << "%";
-        DrawTextEx(AdwaitaMono, ss1.str().c_str(), {padding, renderPosY}, 24, 0, WHITE);
+        DrawTextEx(AdwaitaMono, ss1.str().c_str(), {padding, renderPosY}, 24, 0, theme.text);
 
         // Column 2
         std::stringstream ss2;
@@ -610,29 +681,29 @@ void Render::DrawMyStats()
         }
         ss2 << "Total Time: " << (totalTime / 1000) << "s\n";
         ss2 << "Avg Clicks: " << (totalGames > 0 ? totalClicks / totalGames : 0);
-        DrawTextEx(AdwaitaMono, ss2.str().c_str(), {padding + colWidth, renderPosY}, 24, 0, WHITE);
+        DrawTextEx(AdwaitaMono, ss2.str().c_str(), {padding + colWidth, renderPosY}, 24, 0, theme.text);
 
         renderPosY += 140.0f;
 
         // Recent Games Table
-        DrawTextEx(AdwaitaMono, "RECENT GAMES", {padding, renderPosY}, 28, 0, YELLOW);
+        DrawTextEx(AdwaitaMono, "RECENT GAMES", {padding, renderPosY}, 28, 0, theme.highlight);
         renderPosY += 40.0f;
 
         // Table Legend
         float resW = 70, sizeW = 90, bombsW = 70, timeW = 70, clickW = 70;
-        DrawTextEx(AdwaitaMono, "Result", {padding, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Size", {padding + resW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Bombs", {padding + resW + sizeW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Time", {padding + resW + sizeW + bombsW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Clicks", {padding + resW + sizeW + bombsW + timeW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Powers", {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 20, 0, GRAY);
+        DrawTextEx(AdwaitaMono, "Result", {padding, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Size", {padding + resW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Bombs", {padding + resW + sizeW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Time", {padding + resW + sizeW + bombsW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Clicks", {padding + resW + sizeW + bombsW + timeW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Powers", {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 20, 0, theme.muted);
         
         renderPosY += 30.0f;
-        DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, DARKGRAY);
+        DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, theme.grid);
 
         int start = std::max(0, totalGames - 12);
         for (int i = totalGames - 1; i >= start; --i) {
-            Color resColor = matches[i].getWinState() ? GREEN : RED;
+            Color resColor = matches[i].getWinState() ? theme.success : theme.danger;
             DrawTextEx(AdwaitaMono, matches[i].getWinState() ? "WIN" : "LOSS", {padding, renderPosY}, 18, 0, resColor);
             
             std::string sizeStr = std::to_string(matches[i].getMapWidth()) + "x" + std::to_string(matches[i].getMapHeight());
@@ -640,21 +711,21 @@ void Render::DrawMyStats()
             DrawTextEx(AdwaitaMono, std::to_string(matches[i].getMapBombs()).c_str(), {padding + resW + sizeW, renderPosY}, 18, 0, WHITE);
             DrawTextEx(AdwaitaMono, (std::to_string(matches[i].getTimePlayed().count() / 1000) + "s").c_str(), {padding + resW + sizeW + bombsW, renderPosY}, 18, 0, WHITE);
             DrawTextEx(AdwaitaMono, std::to_string(matches[i].getClicks()).c_str(), {padding + resW + sizeW + bombsW + timeW, renderPosY}, 18, 0, WHITE);
-            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getTotalPowerUpsUsed()).c_str(), {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 18, 0, SKYBLUE);
+            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getTotalPowerUpsUsed()).c_str(), {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 18, 0, theme.highlight);
             
             renderPosY += 22.0f;
         }
     }
 
     Rectangle removeLastButton = {padding, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
-    DrawRectangleRec(removeLastButton, RED);
-    DrawTextEx(AdwaitaMono, "REMOVE LAST MATCH", {removeLastButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "REMOVE LAST MATCH", 20, 0).x / 2.0f, removeLastButton.y + 10.0f}, 20.0f, 0, WHITE);
-    if (CheckCollisionPointRec(GetMousePosition(), removeLastButton)) DrawRectangleLinesEx(removeLastButton, 2, WHITE);
+    DrawRectangleRec(removeLastButton, theme.danger);
+    DrawTextEx(AdwaitaMono, "REMOVE LAST MATCH", {removeLastButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "REMOVE LAST MATCH", 20, 0).x / 2.0f, removeLastButton.y + 10.0f}, 20.0f, 0, theme.accentText);
+    if (CheckCollisionPointRec(GetMousePosition(), removeLastButton)) DrawRectangleLinesEx(removeLastButton, 2, theme.accent);
 
     Rectangle backButton = {(float)screenWidth - padding - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
-    DrawRectangleRec(backButton, DARKGRAY);
-    DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, WHITE);
-    if (CheckCollisionPointRec(GetMousePosition(), backButton)) DrawRectangleLinesEx(backButton, 2, WHITE);
+    DrawRectangleRec(backButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, theme.text);
+    if (CheckCollisionPointRec(GetMousePosition(), backButton)) DrawRectangleLinesEx(backButton, 2, theme.accent);
 }
 
 void Render::HandleMyStatsInput()
@@ -681,9 +752,10 @@ void Render::DrawLeaderboard()
 {
     const int screenWidth = GetScreenWidth();
     const float padding = 40.0f;
+    const ThemePalette &theme = Theme();
     float renderPosY = padding;
 
-    DrawTextEx(AdwaitaMono, "LEADERBOARD", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "LEADERBOARD", 48, 0).x / 2.0f, renderPosY}, 48, 0, PURPLE);
+    DrawTextEx(AdwaitaMono, "LEADERBOARD", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "LEADERBOARD", 48, 0).x / 2.0f, renderPosY}, 48, 0, theme.accent);
     renderPosY += 70.0f;
 
     Leaderboard::sort();
@@ -692,7 +764,7 @@ void Render::DrawLeaderboard()
     const PlayerStats *bestPlayer = findBest<PlayerStats>(players);
 
     if (playerCount == 0) {
-        DrawTextEx(AdwaitaMono, "No players yet. Play some games first!", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No players yet. Play some games first!", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, WHITE);
+        DrawTextEx(AdwaitaMono, "No players yet. Play some games first!", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No players yet. Play some games first!", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
     } else {
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
         
@@ -700,7 +772,7 @@ void Render::DrawLeaderboard()
         ss1 << "Players: " << playerCount << "\n";
         ss1 << "Total Games: " << Leaderboard::getOverallGames() << "\n";
         ss1 << "Best Player: " << (bestPlayer ? bestPlayer->getPlayerName() : "Unknown");
-        DrawTextEx(AdwaitaMono, ss1.str().c_str(), {padding, renderPosY}, 24, 0, WHITE);
+        DrawTextEx(AdwaitaMono, ss1.str().c_str(), {padding, renderPosY}, 24, 0, theme.text);
 
         std::stringstream ss2;
         if (bestPlayer)
@@ -709,27 +781,27 @@ void Render::DrawLeaderboard()
             ss2 << "Best Win Rate: 0.0%\n";
         ss2 << "Current Player: " << (playerName.empty() ? "None" : playerName) << "\n";
         ss2 << "Sorted: By score";
-        DrawTextEx(AdwaitaMono, ss2.str().c_str(), {padding + colWidth, renderPosY}, 24, 0, WHITE);
+        DrawTextEx(AdwaitaMono, ss2.str().c_str(), {padding + colWidth, renderPosY}, 24, 0, theme.text);
 
         renderPosY += 140.0f;
 
-        DrawTextEx(AdwaitaMono, "PLAYER RANKING", {padding, renderPosY}, 28, 0, YELLOW);
+        DrawTextEx(AdwaitaMono, "PLAYER RANKING", {padding, renderPosY}, 28, 0, theme.highlight);
         renderPosY += 40.0f;
 
         float nameW = 200, gamesW = 80, winsW = 80, rateW = 100;
-        DrawTextEx(AdwaitaMono, "Player", {padding, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Games", {padding + nameW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Wins", {padding + nameW + gamesW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Win Rate", {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, GRAY);
-        DrawTextEx(AdwaitaMono, "Time", {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, GRAY);
+        DrawTextEx(AdwaitaMono, "Player", {padding, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Games", {padding + nameW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Wins", {padding + nameW + gamesW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Win Rate", {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, theme.muted);
+        DrawTextEx(AdwaitaMono, "Time", {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, theme.muted);
         renderPosY += 30.0f;
-        DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, DARKGRAY);
+        DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, theme.grid);
 
         for (unsigned int i = 0; i < playerCount; ++i) {
             PlayerStats *p = Leaderboard::getPlayer(i);
             bool isCurrent = (p->getPlayerName() == playerName);
             bool isBest = (bestPlayer && p == bestPlayer);
-            Color col = isCurrent ? GREEN : (isBest ? GOLD : WHITE);
+            Color col = isCurrent ? theme.success : (isBest ? theme.warning : theme.text);
 
             DrawTextEx(AdwaitaMono, p->getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
             DrawTextEx(AdwaitaMono, std::to_string(p->getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
@@ -751,12 +823,12 @@ void Render::DrawLeaderboard()
 
     Rectangle deleteButton = {padding, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
     Rectangle backButton = {(float)screenWidth - padding - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
-    DrawRectangleRec(deleteButton, MAROON);
-    DrawTextEx(AdwaitaMono, "DELETE PLAYER", {deleteButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "DELETE PLAYER", 20, 0).x / 2.0f, deleteButton.y + 10.0f}, 20.0f, 0, WHITE);
-    DrawRectangleRec(backButton, DARKGRAY);
-    DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, WHITE);
-    if (CheckCollisionPointRec(GetMousePosition(), deleteButton)) DrawRectangleLinesEx(deleteButton, 2, WHITE);
-    if (CheckCollisionPointRec(GetMousePosition(), backButton)) DrawRectangleLinesEx(backButton, 2, WHITE);
+    DrawRectangleRec(deleteButton, theme.danger);
+    DrawTextEx(AdwaitaMono, "DELETE PLAYER", {deleteButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "DELETE PLAYER", 20, 0).x / 2.0f, deleteButton.y + 10.0f}, 20.0f, 0, ButtonText(theme.danger));
+    DrawRectangleRec(backButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, theme.text);
+    if (CheckCollisionPointRec(GetMousePosition(), deleteButton)) DrawRectangleLinesEx(deleteButton, 2, theme.accent);
+    if (CheckCollisionPointRec(GetMousePosition(), backButton)) DrawRectangleLinesEx(backButton, 2, theme.accent);
 }
 
 void Render::HandleLeaderboardInput()
