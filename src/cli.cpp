@@ -15,6 +15,26 @@
 #include <cstdlib>
 #include <ctime>
 
+namespace
+{
+Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
+{
+    if (line.empty())
+        return Rezultat<unsigned long long>::eroare("invalid input");
+
+    unsigned long long value = 0;
+    for (char c : line)
+    {
+        if (c < '0' || c > '9')
+            return Rezultat<unsigned long long>::eroare("invalid input");
+
+        value = value * 10 + static_cast<unsigned long long>(c - '0');
+    }
+
+    return value;
+}
+}
+
 MapSettings::MapSettings() : width(8), height(8), bombs(8), seed(0)
 {
     generateRandomSeed();
@@ -199,20 +219,20 @@ int Commandline::readIntInput(const char *prompt, int min, int max)
         std::cout << prompt;
         std::getline(std::cin, line);
 
-        int value = 0;
-        bool valid = !line.empty();
-        for (char c : line)
+        // Rezultat<T> is used here to keep input parsing explicit: the value path
+        // stays separate from the error path, and the error message can be reused
+        // without throwing for normal invalid input.
+        auto parsed = parseUnsignedLongLong(line).transforma([](unsigned long long value)
         {
-            if (c < '0' || c > '9')
-            {
-                valid = false;
-                break;
-            }
-            value = value * 10 + (c - '0');
-        }
+            return static_cast<int>(value);
+        });
 
-        if (valid && value >= min && value <= max)
-            return value;
+        if (parsed.ok())
+        {
+            int value = parsed.get();
+            if (value >= min && value <= max)
+                return value;
+        }
 
         std::cout << "Enter a number between " << min << " and " << max << ".\n";
     }
@@ -226,24 +246,11 @@ unsigned long long Commandline::readULLInput(const char *prompt)
         std::cout << prompt;
         std::getline(std::cin, line);
 
-        unsigned long long value = 0;
-        bool valid = !line.empty();
+        auto parsed = parseUnsignedLongLong(line);
+        if (parsed.ok())
+            return parsed.get();
 
-        // Verificam inputul manual - exista doar stoi, nu si stoull :|
-        for (char c : line)
-        {
-            if (c < '0' || c > '9')
-            {
-                valid = false;
-                break;
-            }
-            value = value * 10 + (c - '0');
-        }
-
-        if (valid)
-            return value;
-
-        std::cout << "Enter a positive number.\n";
+        std::cout << parsed.getEroare() << "\n";
     }
 }
 

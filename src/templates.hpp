@@ -2,8 +2,13 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
+#include <initializer_list>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -26,6 +31,76 @@ const T *findBest(const std::vector<T> &values)
     return &*std::max_element(values.begin(), values.end());
 }
 
+template<typename T>
+class Rezultat
+{
+private:
+    bool success;
+    std::optional<T> value;
+    std::string error;
+
+public:
+    // wrapper generic de rezultat: tine fie valoarea buna, fie mesajul de eroare,
+    // ca sa putem trata fail-urile asteptate fara exceptii
+    Rezultat(const T &value) : success(true), value(value), error() {}
+    Rezultat(T &&value) : success(true), value(std::move(value)), error() {}
+
+    static Rezultat eroare(const std::string &error)
+    {
+        Rezultat result;
+        result.success = false;
+        result.error = error;
+        return result;
+    }
+
+    static Rezultat eroare(std::string &&error)
+    {
+        Rezultat result;
+        result.success = false;
+        result.error = std::move(error);
+        return result;
+    }
+
+private:
+    Rezultat() : success(false), value(std::nullopt), error() {}
+
+public:
+    bool ok() const noexcept
+    {
+        return success;
+    }
+
+    const T &get() const
+    {
+        if (!success || !value.has_value())
+            throw std::logic_error(error);
+        return *value;
+    }
+
+    T &get()
+    {
+        if (!success || !value.has_value())
+            throw std::logic_error(error);
+        return *value;
+    }
+
+    const std::string &getEroare() const noexcept
+    {
+        return error;
+    }
+
+    template<typename F>
+    auto transforma(F f) const -> Rezultat<std::invoke_result_t<F, T>>
+    {
+        using U = std::invoke_result_t<F, T>;
+
+        if (!success)
+            return Rezultat<U>::eroare(error);
+
+        return Rezultat<U>(f(*value));
+    }
+};
+
 template<typename T, std::size_t Capacity>
 class StaticQueue
 {
@@ -34,8 +109,19 @@ private:
     std::size_t count;
 
 public:
+    // queue cu capacitate fixa prin parametru de template; merge bine pentru
+    // istoric de meciuri si alte buffere mici
     StaticQueue() : data(new T[Capacity]), count(0)
     {
+    }
+
+    StaticQueue(std::initializer_list<T> init) : data(new T[Capacity]), count(0)
+    {
+        if (init.size() > Capacity)
+            throw std::overflow_error("StaticQueue init list exceeds capacity");
+
+        for (const T &value : init)
+            push(value);
     }
 
     StaticQueue(const StaticQueue &other) : data(new T[Capacity]), count(other.count)

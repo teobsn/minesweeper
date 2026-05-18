@@ -34,6 +34,23 @@ Color ButtonText(Color background)
     int luminance = (299 * background.r + 587 * background.g + 114 * background.b) / 1000;
     return luminance > 140 ? Theme().accentText : Theme().text;
 }
+
+const char *ThemeLabel(ThemeId theme)
+{
+    switch (theme)
+    {
+    case ThemeId::TokyoNight:
+        return "TOKYO NIGHT";
+    case ThemeId::OledBlack:
+        return "OLED BLACK";
+    case ThemeId::Adwaita:
+        return "ADWAITA";
+    case ThemeId::Monokai:
+        return "MONOKAI";
+    }
+
+    return "UNKNOWN";
+}
 }
 
 Render::Render()
@@ -215,25 +232,20 @@ void Render::DrawMenu()
     const float themeButtonH = 36.0f;
     const float themeLeft = screenWidth / 2.0f - 150.0f;
     const float themeRight = themeLeft + 155.0f;
+    const StaticQueue<ThemeId, 4> themeChoices = {ThemeId::TokyoNight, ThemeId::OledBlack, ThemeId::Adwaita, ThemeId::Monokai};
 
-    Rectangle tokyoNightButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
-    Rectangle oledBlackButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
-    renderPosY += 46.0f;
-    Rectangle adwaitaButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
-    Rectangle monokaiButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
-
-    auto drawThemeButton = [&](const Rectangle &button, const char *label, ThemeId themeId)
+    for (std::size_t i = 0; i < themeChoices.size(); ++i)
     {
+        ThemeId themeId = themeChoices[i];
+        float x = (i % 2 == 0) ? themeLeft : themeRight;
+        float y = renderPosY + static_cast<float>(i / 2) * 46.0f;
+        Rectangle button = {x, y, themeButtonW, themeButtonH};
         const bool selected = ThemeManager::instance().getTheme() == themeId;
         DrawRectangleRec(button, selected ? theme.surfaceAlt : theme.surface);
+        const char *label = ThemeLabel(themeId);
         DrawTextEx(AdwaitaMono, label, {button.x + button.width / 2.0f - MeasureTextEx(AdwaitaMono, label, 18, 0).x / 2.0f, button.y + 8.0f}, 18.0f, 0, selected ? ButtonText(theme.surfaceAlt) : ButtonText(theme.surface));
         if (CheckCollisionPointRec(mousePos, button)) DrawRectangleLinesEx(button, 2, theme.accent);
-    };
-
-    drawThemeButton(tokyoNightButton, "TOKYO NIGHT", ThemeId::TokyoNight);
-    drawThemeButton(oledBlackButton, "OLED BLACK", ThemeId::OledBlack);
-    drawThemeButton(adwaitaButton, "ADWAITA", ThemeId::Adwaita);
-    drawThemeButton(monokaiButton, "MONOKAI", ThemeId::Monokai);
+    }
 
     if (CheckCollisionPointRec(mousePos, textBoxPlayerName)) DrawRectangleLinesEx(textBoxPlayerName, 2, YELLOW);
     if (CheckCollisionPointRec(mousePos, textBoxMapWidth)) DrawRectangleLinesEx(textBoxMapWidth, 2, YELLOW);
@@ -279,11 +291,7 @@ void Render::HandleMenuInput()
     const float themeButtonH = 36.0f;
     const float themeLeft = screenWidth / 2.0f - 150.0f;
     const float themeRight = themeLeft + 155.0f;
-    Rectangle tokyoNightButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
-    Rectangle oledBlackButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
-    renderPosY += 46.0f;
-    Rectangle adwaitaButton = {themeLeft, renderPosY, themeButtonW, themeButtonH};
-    Rectangle monokaiButton = {themeRight, renderPosY, themeButtonW, themeButtonH};
+    const StaticQueue<ThemeId, 4> themeChoices = {ThemeId::TokyoNight, ThemeId::OledBlack, ThemeId::Adwaita, ThemeId::Monokai};
 
     auto handleTextInput = [](char* text, int maxLen, bool numericOnly) {
         int key = GetCharPressed();
@@ -347,19 +355,22 @@ void Render::HandleMenuInput()
             CloseWindow();
             std::exit(0);
         }
-    } else if (CheckCollisionPointRec(mousePos, tokyoNightButton)) {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::TokyoNight));
-    } else if (CheckCollisionPointRec(mousePos, oledBlackButton)) {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::OledBlack));
-    } else if (CheckCollisionPointRec(mousePos, adwaitaButton)) {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::Adwaita));
-    } else if (CheckCollisionPointRec(mousePos, monokaiButton)) {
-        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::Monokai));
     } else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+
+    for (std::size_t i = 0; i < themeChoices.size(); ++i)
+    {
+        ThemeId themeId = themeChoices[i];
+        float x = (i % 2 == 0) ? themeLeft : themeRight;
+        float y = renderPosY + static_cast<float>(i / 2) * 46.0f;
+        Rectangle button = {x, y, themeButtonW, themeButtonH};
+        if (CheckCollisionPointRec(mousePos, button))
+        {
+            SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                ThemeManager::instance().setTheme(makeThemeFactory(themeId));
+            break;
+        }
+    }
 }
 
 void Render::DrawGame()
