@@ -15,6 +15,19 @@
 #include <cstdlib>
 #include <ctime>
 
+MapSettings::MapSettings() : width(8), height(8), bombs(8), seed(0)
+{
+    generateRandomSeed();
+}
+
+void MapSettings::generateRandomSeed()
+{
+    // seed rand
+    srand(time(nullptr));
+
+    seed = (static_cast<unsigned long long>(std::rand()) << 32) | std::rand();
+}
+
 namespace
 {
 Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
@@ -33,19 +46,6 @@ Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
 
     return value;
 }
-}
-
-MapSettings::MapSettings() : width(8), height(8), bombs(8), seed(0)
-{
-    generateRandomSeed();
-}
-
-void MapSettings::generateRandomSeed()
-{
-    // Seed rand
-    srand(time(nullptr));
-
-    seed = (static_cast<unsigned long long>(std::rand()) << 32) | std::rand();
 }
 
 void Commandline::generateRandomSeed()
@@ -329,8 +329,16 @@ void Commandline::startNewGame()
     {
         bool playAgain = false;
         
+        // builder-ul tine setup-ul curat inainte sa construim harta noua
+        GameSetup gameSetup = GameSetupBuilder()
+            .setWidth(settings.width)
+            .setHeight(settings.height)
+            .setBombs(settings.bombs)
+            .setSeed(settings.seed)
+            .build();
+
         // Harta, joc nou
-        Map gameMap(settings.width, settings.height, settings.seed, settings.bombs);
+        Map gameMap(gameSetup.width, gameSetup.height, gameSetup.seed, gameSetup.bombs);
         Game game(Game::GameState::NOT_STARTED, gameMap);
 
         do {

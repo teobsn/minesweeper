@@ -70,12 +70,12 @@ Render::~Render()
 {
 }
 
-void Render::InitializeGame(unsigned int width, unsigned int height, unsigned int bombs, unsigned long long seed)
+void Render::InitializeGame(const GameSetup &setup)
 {
     // Informatiile sunt logate pentru debug
-    std::cout << "Generating map: " << width << "x" << height << ", Bombs: " << bombs << ", Seed: " << seed << "\n";
+    std::cout << "Generating map: " << setup.width << "x" << setup.height << ", Bombs: " << setup.bombs << ", Seed: " << setup.seed << "\n";
 
-    Map newMap(width, height, seed, bombs);
+    Map newMap(setup.width, setup.height, setup.seed, setup.bombs);
     game = Game(Game::GameState::NOT_STARTED, newMap);
     guiState = GUIState::GAME;
     statsSaved = false;
@@ -85,8 +85,8 @@ void Render::InitializeGame(unsigned int width, unsigned int height, unsigned in
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
     
-    int minWidth = (int)width * 30 + 40;
-    int minHeight = (int)height * 30 + 100;
+    int minWidth = (int)setup.width * 30 + 40;
+    int minHeight = (int)setup.height * 30 + 100;
     if (screenWidth < minWidth || screenHeight < minHeight) {
         SetWindowSize(std::max(screenWidth, minWidth), std::max(screenHeight, minHeight));
     }
@@ -341,7 +341,16 @@ void Render::HandleMenuInput()
             if (strlen(mapSeedText) > 0) {
                 try { s = std::stoull(mapSeedText); } catch (...) { s = (unsigned long long)time(nullptr); }
             } else s = (unsigned long long)time(nullptr);
-            if (w > 0 && h > 0) InitializeGame(w, h, b, s);
+            if (w > 0 && h > 0)
+            {
+                GameSetup setup = GameSetupBuilder()
+                    .setWidth(w)
+                    .setHeight(h)
+                    .setBombs(b)
+                    .setSeed(s)
+                    .build();
+                InitializeGame(setup);
+            }
         }
     } else if (CheckCollisionPointRec(mousePos, myStatsButton)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);

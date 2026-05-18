@@ -2,6 +2,7 @@
 // Minesweeper headers
 #include "game.hpp"
 #include "cell.hpp"
+#include "game_setup.hpp"
 #include "map.hpp"
 #include "stats.hpp"
 
@@ -57,5 +58,5 @@ public:
     ~Render();
 
     void StartRender();
-    void InitializeGame(unsigned int width, unsigned int height, unsigned int bombs, unsigned long long seed);
+    void InitializeGame(const GameSetup &setup);
 };

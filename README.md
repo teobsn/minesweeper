@@ -16,6 +16,7 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 - `IObject` interface with unique ids and polymorphic `toString()`
 - singleton `ThemeManager` implemented as a Meyers singleton
 - abstract factory for runtime theme selection
+- builder for game setup creation
 - bonus utilities:
   - `Rezultat<T>`
   - `StaticQueue<T, Capacity>`
@@ -41,11 +42,17 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 ### `StaticQueue<T, Capacity>`
 
 - queue-ul cu capacitate fixa e util pentru istorii mici si limitate, fara alocare dinamica.
+- parametrul non-tip face capacitatea parte din tip si pastreaza structura lightweight.
+
+### Builder
+
+- `GameSetupBuilder` e folosit cand construim configuratia unui joc nou din input-ul meniului.
+- mentine setup-ul explicit si lasa CLI-ul si GUI-ul sa normalizeze acelasi path inainte sa creeze harta.
 
 ### Bonus patterns
 
 - `Rezultat<T>` ramane pentru tratarea explicita a succesului si erorii in parsing-ul de input.
-- `std::initializer_list<T>` face initializarea cu acolade (cand colectia e relativ mica si "fixa").
+- `std::initializer_list<T>` face initializarea cu acolade mai clean cand colectia e mica si fixa.
 - parametrii non-tip sunt folositi cand dimensiunea colectiei trebuie impusa la compile time.
 
 ## Build

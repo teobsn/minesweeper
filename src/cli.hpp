@@ -2,6 +2,7 @@
 
 // Minesweeper headers
 #include "cell.hpp"
+#include "game_setup.hpp"
 #include "map.hpp"
 #include "game.hpp"
 #include "stats.hpp"
@@ -19,7 +20,7 @@ struct MapSettings
     MapSettings();
     MapSettings(unsigned int w, unsigned int h, unsigned int b, unsigned long long s)
         : width(w), height(h), bombs(b), seed(s) {}
-    
+
     void generateRandomSeed();
 };
 
