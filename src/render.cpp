@@ -349,16 +349,16 @@ void Render::HandleMenuInput()
         }
     } else if (CheckCollisionPointRec(mousePos, tokyoNightButton)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::TokyoNight);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::TokyoNight));
     } else if (CheckCollisionPointRec(mousePos, oledBlackButton)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::OledBlack);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::OledBlack));
     } else if (CheckCollisionPointRec(mousePos, adwaitaButton)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::Adwaita);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::Adwaita));
     } else if (CheckCollisionPointRec(mousePos, monokaiButton)) {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(ThemeId::Monokai);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) ThemeManager::instance().setTheme(makeThemeFactory(ThemeId::Monokai));
     } else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 }
 
