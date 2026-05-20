@@ -16,6 +16,7 @@
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
+#include <array>
 #include <string>
 #include <algorithm>
 #include <iomanip>
@@ -52,6 +53,26 @@ namespace
         }
 
         return "UNKNOWN";
+    }
+
+    enum class PowerUpTooltipId
+    {
+        Shield,
+        Ultimate,
+        Defuser
+    };
+
+    const std::string &PowerUpTooltip(PowerUpTooltipId id)
+    {
+        static const std::array<std::string, 3> tooltips = []()
+        {
+            return std::array<std::string, 3>{
+                ShieldPowerUp(0, 0.0f).getDescription(),
+                UltimatePowerUp(0, 0.0f, 0).getDescription(),
+                BombDefuser(0, 0.0).getDescription()};
+        }();
+
+        return tooltips[static_cast<std::size_t>(id)];
     }
 }
 
@@ -577,9 +598,8 @@ void Render::DrawGame()
     if (CheckCollisionPointRec(mousePos, shieldBtn))
     {
         DrawRectangleLinesEx(shieldBtn, 2, theme.warning);
-        BasePowerUp *temp = new ShieldPowerUp(0, 0);
-        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {shieldBtn.x, shieldBtn.y - 25.0f}, 16, 0, theme.warning);
-        delete temp;
+        const std::string &tooltip = PowerUpTooltip(PowerUpTooltipId::Shield);
+        DrawTextEx(AdwaitaMono, tooltip.c_str(), {shieldBtn.x, shieldBtn.y - 25.0f}, 16, 0, theme.warning);
     }
 
     Rectangle ultiBtn = {290.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
@@ -588,9 +608,8 @@ void Render::DrawGame()
     if (CheckCollisionPointRec(mousePos, ultiBtn))
     {
         DrawRectangleLinesEx(ultiBtn, 2, theme.accent);
-        BasePowerUp *temp = new UltimatePowerUp(0, 0, 0);
-        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {ultiBtn.x, ultiBtn.y - 25.0f}, 16, 0, theme.accent);
-        delete temp;
+        const std::string &tooltip = PowerUpTooltip(PowerUpTooltipId::Ultimate);
+        DrawTextEx(AdwaitaMono, tooltip.c_str(), {ultiBtn.x, ultiBtn.y - 25.0f}, 16, 0, theme.accent);
     }
 
     Rectangle defuseBtn = {380.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
@@ -599,9 +618,8 @@ void Render::DrawGame()
     if (CheckCollisionPointRec(mousePos, defuseBtn))
     {
         DrawRectangleLinesEx(defuseBtn, 2, theme.text);
-        BasePowerUp *temp = new BombDefuser(0, 0);
-        DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {defuseBtn.x, defuseBtn.y - 25.0f}, 16, 0, theme.text);
-        delete temp;
+        const std::string &tooltip = PowerUpTooltip(PowerUpTooltipId::Defuser);
+        DrawTextEx(AdwaitaMono, tooltip.c_str(), {defuseBtn.x, defuseBtn.y - 25.0f}, 16, 0, theme.text);
     }
 
     // Right side button: MENU
