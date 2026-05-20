@@ -954,7 +954,6 @@ void Render::DrawLeaderboard()
     Leaderboard::sort();
     unsigned int playerCount = Leaderboard::getPlayerCount();
     const auto players = Leaderboard::getPlayers();
-    const PlayerStats *bestPlayer = findBest<PlayerStats>(players);
 
     if (playerCount == 0)
     {
@@ -962,6 +961,7 @@ void Render::DrawLeaderboard()
     }
     else
     {
+        const PlayerStats *bestPlayer = findBest<PlayerStats>(players);
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
 
         std::stringstream ss1;
