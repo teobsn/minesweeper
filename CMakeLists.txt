@@ -9,9 +9,6 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Use the standard CMake Debug configuration to enable project debug macros.
-add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
-
 # Options
 if(WIN32)
     option(BUILD_CLI "Build CLI version" OFF)
@@ -38,6 +35,12 @@ endif()
 
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(RAYLIB_INCLUDE_PATH)
+    include_directories(${RAYLIB_INCLUDE_PATH})
+endif()
+if(RAYLIB_LIB_PATH)
+    link_directories(${RAYLIB_LIB_PATH})
+endif()
 
 # Source groups
 set(SOURCES-COMMON
