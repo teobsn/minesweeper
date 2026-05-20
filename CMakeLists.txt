@@ -9,6 +9,9 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Use the standard CMake Debug configuration to enable project debug macros.
+add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
+
 # Options
 if(WIN32)
     option(BUILD_CLI "Build CLI version" OFF)
