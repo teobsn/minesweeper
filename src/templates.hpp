@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-template<typename T>
+template <typename T>
 T clampValue(const T &value, const T &low, const T &high)
 {
     if (value < low)
@@ -22,7 +22,7 @@ T clampValue(const T &value, const T &low, const T &high)
     return value;
 }
 
-template<typename T>
+template <typename T>
 const T *findBest(const std::vector<T> &values)
 {
     if (values.empty())
@@ -31,7 +31,7 @@ const T *findBest(const std::vector<T> &values)
     return &*std::max_element(values.begin(), values.end());
 }
 
-template<typename T>
+template <typename T>
 class Rezultat
 {
 private:
@@ -89,7 +89,7 @@ public:
         return error;
     }
 
-    template<typename F>
+    template <typename F>
     auto transforma(F f) const -> Rezultat<std::invoke_result_t<F, T>>
     {
         using U = std::invoke_result_t<F, T>;
@@ -101,7 +101,7 @@ public:
     }
 };
 
-template<typename T, std::size_t Capacity>
+template <typename T, std::size_t Capacity>
 class StaticQueue
 {
 private:
@@ -212,7 +212,7 @@ public:
         return data.get() + count;
     }
 
-    template<typename U, typename Mapper>
+    template <typename U, typename Mapper>
     StaticQueue<U, Capacity> transform(Mapper mapper) const
     {
         StaticQueue<U, Capacity> result;

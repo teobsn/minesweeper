@@ -11,15 +11,14 @@ protected:
     std::string message;
 
 public:
-    explicit MinesweeperException(const std::string& msg) : message(msg) {}
+    explicit MinesweeperException(const std::string &msg) : message(msg) {}
     virtual ~MinesweeperException() noexcept = default;
 
-    virtual const char* what() const noexcept override
+    virtual const char *what() const noexcept override
     {
         return message.c_str();
     }
 };
-
 
 class InvalidMoveException : public MinesweeperException
 {
@@ -27,8 +26,8 @@ private:
     int x, y;
 
 public:
-    InvalidMoveException(const std::string& msg, int x, int y) 
-        : MinesweeperException(msg), x(x), y(y) 
+    InvalidMoveException(const std::string &msg, int x, int y)
+        : MinesweeperException(msg), x(x), y(y)
     {
         std::ostringstream oss;
         oss << message << " at coordinates (" << x << ", " << y << ")";
@@ -39,15 +38,14 @@ public:
     int getY() const { return y; }
 };
 
-
 class GameConfigException : public MinesweeperException
 {
 private:
     int width, height, bombs;
 
 public:
-    GameConfigException(const std::string& msg, int w, int h, int b) 
-        : MinesweeperException(msg), width(w), height(h), bombs(b) 
+    GameConfigException(const std::string &msg, int w, int h, int b)
+        : MinesweeperException(msg), width(w), height(h), bombs(b)
     {
         std::ostringstream oss;
         oss << message << " [Map: " << w << "x" << h << ", Bombs: " << b << "]";
@@ -59,15 +57,14 @@ public:
     int getBombs() const { return bombs; }
 };
 
-
 class DatabaseException : public MinesweeperException
 {
 private:
     int sqliteErrorCode;
 
 public:
-    DatabaseException(const std::string& msg, int errorCode) 
-        : MinesweeperException(msg), sqliteErrorCode(errorCode) 
+    DatabaseException(const std::string &msg, int errorCode)
+        : MinesweeperException(msg), sqliteErrorCode(errorCode)
     {
         std::ostringstream oss;
         oss << message << " (SQLite error code: " << errorCode << ")";
@@ -84,7 +81,7 @@ private:
     std::string resourceName;
 
 public:
-    explicit ResourceGuard(const std::string& name) : resourceName(name) {}
+    explicit ResourceGuard(const std::string &name) : resourceName(name) {}
     ~ResourceGuard() noexcept
     {
         std::cout << "[Stack Unwinding] Releasing resource: " << resourceName << "\n";

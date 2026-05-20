@@ -16,7 +16,8 @@
 class Render
 {
 public:
-    enum class GUIState {
+    enum class GUIState
+    {
         MENU,
         GAME,
         MY_STATS,

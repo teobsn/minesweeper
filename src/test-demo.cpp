@@ -7,7 +7,8 @@
 
 using namespace std;
 
-void demoCell() {
+void demoCell()
+{
     cout << "\n------ Demo Cell ------\n";
 
     Cell c1;
@@ -62,7 +63,8 @@ void demoCell() {
     cout << c5['?'] << endl;
 }
 
-void demoMap() {
+void demoMap()
+{
     cout << "\n------ Demo Map ------\n";
 
     Map map;
@@ -127,7 +129,8 @@ void demoMap() {
     cout << map8['?'];
 }
 
-void demoMatch() {
+void demoMatch()
+{
     cout << "\n------ Demo Match ------\n";
 
     Map map1(10, 10, 0, 10);
@@ -180,7 +183,8 @@ void demoMatch() {
     cout << match2['?'] << endl;
 }
 
-void demoPlayerStats() {
+void demoPlayerStats()
+{
     cout << "\n------ Demo Player Stats ------\n";
 
     PlayerStats playerstat1;
@@ -223,7 +227,8 @@ void demoPlayerStats() {
     cout << playerstat3 << endl;
 }
 
-int main() {
+int main()
+{
     demoCell();
     demoMap();
     demoMatch();

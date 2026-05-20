@@ -71,8 +71,7 @@ inline void ThemeManager::applyFactory(const IThemeFactory &factory)
         accent->warning(),
         accent->danger(),
         surface->grid(),
-        surface->muted()
-    };
+        surface->muted()};
 }
 
 inline void ThemeManager::setTheme(std::unique_ptr<IThemeFactory> factory)

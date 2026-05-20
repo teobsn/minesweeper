@@ -82,7 +82,8 @@ int SpatialEffect::getRadius() const
 ShieldPowerUp::ShieldPowerUp(int id, float duration)
     : BasePowerUp(id, "Shield"), TemporalEffect(id, "Shield", duration) {}
 
-ShieldPowerUp::~ShieldPowerUp() {
+ShieldPowerUp::~ShieldPowerUp()
+{
     std::cout << "~ShieldPowerUp()\n";
 }
 
@@ -105,7 +106,8 @@ std::string ShieldPowerUp::getCategory() const
 ScannerPowerUp::ScannerPowerUp(int id, int radius)
     : BasePowerUp(id, "Scanner"), SpatialEffect(id, "Scanner", radius) {}
 
-ScannerPowerUp::~ScannerPowerUp() {
+ScannerPowerUp::~ScannerPowerUp()
+{
     std::cout << "~ScannerPowerUp()\n";
 }
 
@@ -128,7 +130,8 @@ std::string ScannerPowerUp::getCategory() const
 UltimatePowerUp::UltimatePowerUp(int id, float duration, int radius)
     : BasePowerUp(id, "Ultimate"), TemporalEffect(id, "Ultimate", duration), SpatialEffect(id, "Ultimate", radius) {}
 
-UltimatePowerUp::~UltimatePowerUp() {
+UltimatePowerUp::~UltimatePowerUp()
+{
     std::cout << "~UltimatePowerUp()\n";
 }
 
@@ -152,14 +155,15 @@ std::string UltimatePowerUp::getCategory() const
 BombDefuser::BombDefuser(int id, double ratio)
     : BasePowerUp(id, "Bomb Defuser"), ratio(ratio) {}
 
-BombDefuser::~BombDefuser() {
+BombDefuser::~BombDefuser()
+{
     std::cout << "~BombDefuser()\n";
 }
 
 void BombDefuser::activate(Game &game, int x, int y)
 {
     BasePowerUp::activate(game, x, y);
-    game * ratio; // operator overload :)
+    game *ratio; // operator overload :)
 }
 
 std::string BombDefuser::getDescription() const

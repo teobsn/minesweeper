@@ -76,7 +76,7 @@ public:
     bool isRevealedAt(const int x, const int y) const;
     bool isFlaggedAt(const int x, const int y) const;
 
-    void updateAdjacentBombs(const bool reset = true);  // Actualizeaza toata harta
+    void updateAdjacentBombs(const bool reset = true);        // Actualizeaza toata harta
     void updateAdjacentBombs(const int x, const int y);       // Actualizeaza indicatorul celulei aflate la x, y
     void updateAdjacentBombsAround(const int x, const int y); // Actualizaza indicatorul celulelor din jurul celei aflate la x, y
 
@@ -86,7 +86,7 @@ public:
 
     void revealAll();
     void revealArea(int x, int y, int radius);
-    
+
     void clearGrid();
 };
 

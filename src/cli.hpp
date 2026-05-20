@@ -28,7 +28,7 @@ class Commandline
 {
 public:
     enum class MenuOption
-    {   
+    {
         START_GAME = 1,
         CHANGE_SETTINGS,
         VIEW_STATS,

@@ -30,45 +30,45 @@ void MapSettings::generateRandomSeed()
 
 namespace
 {
-Rezultat<int> parseInt(const std::string &line)
-{
-    if (line.empty())
-        return Rezultat<int>::eroare("invalid input");
-
-    try
+    Rezultat<int> parseInt(const std::string &line)
     {
-        std::size_t parsedChars = 0;
-        int value = std::stoi(line, &parsedChars);
-        if (parsedChars != line.size())
+        if (line.empty())
             return Rezultat<int>::eroare("invalid input");
 
-        return value;
-    }
-    catch (...)
-    {
-        return Rezultat<int>::eroare("invalid input");
-    }
-}
+        try
+        {
+            std::size_t parsedChars = 0;
+            int value = std::stoi(line, &parsedChars);
+            if (parsedChars != line.size())
+                return Rezultat<int>::eroare("invalid input");
 
-Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
-{
-    if (line.empty())
-        return Rezultat<unsigned long long>::eroare("invalid input");
+            return value;
+        }
+        catch (...)
+        {
+            return Rezultat<int>::eroare("invalid input");
+        }
+    }
 
-    try
+    Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
     {
-        std::size_t parsedChars = 0;
-        unsigned long long value = std::stoull(line, &parsedChars);
-        if (parsedChars != line.size())
+        if (line.empty())
             return Rezultat<unsigned long long>::eroare("invalid input");
 
-        return value;
+        try
+        {
+            std::size_t parsedChars = 0;
+            unsigned long long value = std::stoull(line, &parsedChars);
+            if (parsedChars != line.size())
+                return Rezultat<unsigned long long>::eroare("invalid input");
+
+            return value;
+        }
+        catch (...)
+        {
+            return Rezultat<unsigned long long>::eroare("invalid input");
+        }
     }
-    catch (...)
-    {
-        return Rezultat<unsigned long long>::eroare("invalid input");
-    }
-}
 }
 
 void Commandline::generateRandomSeed()
@@ -246,9 +246,7 @@ int Commandline::readIntInput(const char *prompt, int min, int max)
         // stays separate from the error path, and the error message can be reused
         // without throwing for normal invalid input.
         auto parsed = parseInt(line).transforma([](int value)
-        {
-            return value;
-        });
+                                                { return value; });
 
         if (parsed.ok())
         {
@@ -351,20 +349,21 @@ void Commandline::startNewGame()
     try
     {
         bool playAgain = false;
-        
+
         // builder-ul tine setup-ul curat inainte sa construim harta noua
         GameSetup gameSetup = GameSetupBuilder()
-            .setWidth(settings.width)
-            .setHeight(settings.height)
-            .setBombs(settings.bombs)
-            .setSeed(settings.seed)
-            .build();
+                                  .setWidth(settings.width)
+                                  .setHeight(settings.height)
+                                  .setBombs(settings.bombs)
+                                  .setSeed(settings.seed)
+                                  .build();
 
         // Harta, joc nou
         Map gameMap(gameSetup.width, gameSetup.height, gameSetup.seed, gameSetup.bombs);
         Game game(Game::GameState::NOT_STARTED, gameMap);
 
-        do {
+        do
+        {
             clearScreen();
 
             // Game Loop
@@ -410,14 +409,17 @@ void Commandline::startNewGame()
             std::cout << "1. Yes\n";
             std::cout << "2. No\n";
             int choice = readIntInput("", 1, 2);
-            
-            if (choice == 1) {
+
+            if (choice == 1)
+            {
                 playAgain = true;
                 generateRandomSeed();
                 game.reset();
                 game.getMap().setSeed(settings.seed);
                 game.getMap() + settings.bombs;
-            } else {
+            }
+            else
+            {
                 playAgain = false;
             }
 
@@ -505,25 +507,25 @@ void Commandline::processGameInput(Game &game)
                 break;
             case '1':
             {
-                BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+                BasePowerUp *p = new ShieldPowerUp(1, 15.0f);
                 p->use(game, cursorX, cursorY); // Valid (metoda 'use' este publica)
                 break;
             }
             case '2':
             {
-                BasePowerUp* p = new ScannerPowerUp(2, 3);
+                BasePowerUp *p = new ScannerPowerUp(2, 3);
                 p->use(game, cursorX, cursorY); // Valid (metoda publica)
                 break;
             }
             case '3':
             {
-                BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+                BasePowerUp *p = new UltimatePowerUp(3, 10.0f, 5);
                 p->use(game, cursorX, cursorY);
                 break;
             }
             case '4':
             {
-                BasePowerUp* p = new BombDefuser(4, 0.5);
+                BasePowerUp *p = new BombDefuser(4, 0.5);
                 p->use(game, cursorX, cursorY);
                 break;
             }
@@ -647,13 +649,11 @@ void Commandline::displayStatistics()
 
             std::cout << "\nRecent Games:\n";
             const auto recentSummaries = player->getRecentMatches().template transform<std::string>([](const Match &record)
-            {
-                return std::string(record.getWinState() ? "Win" : "Loss") + " | " +
-                       std::to_string(record.getMapWidth()) + "x" + std::to_string(record.getMapHeight()) + " | " +
-                       std::to_string(record.getMapBombs()) + " bombs | Seed: " + std::to_string(record.getMapSeed()) + " | " +
-                       std::to_string(record.getTimePlayed().count() / 1000) + "s | " +
-                       std::to_string(record.getClicks()) + " clicks";
-            });
+                                                                                                    { return std::string(record.getWinState() ? "Win" : "Loss") + " | " +
+                                                                                                             std::to_string(record.getMapWidth()) + "x" + std::to_string(record.getMapHeight()) + " | " +
+                                                                                                             std::to_string(record.getMapBombs()) + " bombs | Seed: " + std::to_string(record.getMapSeed()) + " | " +
+                                                                                                             std::to_string(record.getTimePlayed().count() / 1000) + "s | " +
+                                                                                                             std::to_string(record.getClicks()) + " clicks"; });
 
             for (std::size_t i = 0; i < recentSummaries.size(); ++i)
                 std::cout << recentSummaries[i] << "\n";

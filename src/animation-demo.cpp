@@ -15,7 +15,7 @@ using namespace std;
 int main()
 {
     Map map;
-    
+
     for (int seed = 0; seed < 1000; ++seed)
     {
         map = Map(16, 16, seed, 0);

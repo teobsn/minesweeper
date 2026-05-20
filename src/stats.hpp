@@ -193,5 +193,5 @@ public:
     static void sort(char order = 'd', bool equality = false);
 };
 
-template<>
+template <>
 const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values);

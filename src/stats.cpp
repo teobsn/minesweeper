@@ -12,22 +12,22 @@
 
 namespace
 {
-std::string normalizePlayerName(std::string name)
-{
-    std::size_t pos = 0;
-    while ((pos = name.find_first_of("\t\r\n")) != std::string::npos)
-        name.replace(pos, 1, " ");
+    std::string normalizePlayerName(std::string name)
+    {
+        std::size_t pos = 0;
+        while ((pos = name.find_first_of("\t\r\n")) != std::string::npos)
+            name.replace(pos, 1, " ");
 
-    while ((pos = name.find("  ")) != std::string::npos)
-        name.replace(pos, 2, " ");
+        while ((pos = name.find("  ")) != std::string::npos)
+            name.replace(pos, 2, " ");
 
-    std::size_t first = name.find_first_not_of(' ');
-    if (first == std::string::npos)
-        return {};
+        std::size_t first = name.find_first_not_of(' ');
+        if (first == std::string::npos)
+            return {};
 
-    std::size_t last = name.find_last_not_of(' ');
-    return name.substr(first, last - first + 1);
-}
+        std::size_t last = name.find_last_not_of(' ');
+        return name.substr(first, last - first + 1);
+    }
 }
 
 Match::Match() : mapWidth(0), mapHeight(0), mapSeed(0), mapBombs(0),
@@ -492,10 +492,9 @@ void PlayerStats::updateWinRate()
 
     unsigned int wins = 0;
     std::for_each(games.begin(), games.end(), [&](const Match &match)
-    {
+                  {
         if (match.getWinState())
-            ++wins;
-    });
+            ++wins; });
 
     setWinRate(static_cast<float>(wins) / static_cast<float>(games.size()));
 }
@@ -508,9 +507,7 @@ unsigned int PlayerStats::getWins() const
 void PlayerStats::updateWins()
 {
     numberOfWins = static_cast<int>(std::count_if(games.begin(), games.end(), [](const Match &match)
-    {
-        return match.getWinState();
-    }));
+                                                  { return match.getWinState(); }));
 }
 
 int PlayerStats::getMatchesNumber() const
@@ -750,9 +747,7 @@ void Leaderboard::removePlayer(const std::string &name)
     playerStats.erase(it);
 
     std::erase_if(playerOrder, [&](const std::string &playerName)
-    {
-        return playerName == normalized;
-    });
+                  { return playerName == normalized; });
 }
 
 void Leaderboard::sort(char order, bool equality)
@@ -782,7 +777,7 @@ void Leaderboard::sort(char order, bool equality)
 /**
  * Alegem "cel mai bun" jucator dupa win rate, apoi dupa numarul de victorii.
  */
-template<>
+template <>
 const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values)
 {
     if (values.empty())
@@ -790,15 +785,14 @@ const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values)
 
     // lhs = left-hand side, rhs = right-hand side
     auto it = std::max_element(values.begin(), values.end(), [](const PlayerStats &lhs, const PlayerStats &rhs)
-    {
+                               {
         if (lhs.getWinRate() != rhs.getWinRate())
             return lhs.getWinRate() < rhs.getWinRate();
 
         if (lhs.getWins() != rhs.getWins())
             return lhs.getWins() < rhs.getWins();
 
-        return lhs.getPlayerName() < rhs.getPlayerName();
-    });
+        return lhs.getPlayerName() < rhs.getPlayerName(); });
 
     return &*it;
 }

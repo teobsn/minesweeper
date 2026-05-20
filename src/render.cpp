@@ -23,36 +23,36 @@
 
 namespace
 {
-// folosim un namespace anonim:
-// helperele sunt locale acestui fisier ca sa nu poluam namespace-ul global
-// poate exista variante mai bune (to do?)
-const ThemePalette &Theme()
-{
-    return ThemeManager::instance().getPalette();
-}
-
-Color ButtonText(Color background)
-{
-    int luminance = (299 * background.r + 587 * background.g + 114 * background.b) / 1000;
-    return luminance > 140 ? Theme().accentText : Theme().text;
-}
-
-const char *ThemeLabel(ThemeId theme)
-{
-    switch (theme)
+    // folosim un namespace anonim:
+    // helperele sunt locale acestui fisier ca sa nu poluam namespace-ul global
+    // poate exista variante mai bune (to do?)
+    const ThemePalette &Theme()
     {
-    case ThemeId::TokyoNight:
-        return "TOKYO NIGHT";
-    case ThemeId::OledBlack:
-        return "OLED BLACK";
-    case ThemeId::Adwaita:
-        return "ADWAITA";
-    case ThemeId::Monokai:
-        return "MONOKAI";
+        return ThemeManager::instance().getPalette();
     }
 
-    return "UNKNOWN";
-}
+    Color ButtonText(Color background)
+    {
+        int luminance = (299 * background.r + 587 * background.g + 114 * background.b) / 1000;
+        return luminance > 140 ? Theme().accentText : Theme().text;
+    }
+
+    const char *ThemeLabel(ThemeId theme)
+    {
+        switch (theme)
+        {
+        case ThemeId::TokyoNight:
+            return "TOKYO NIGHT";
+        case ThemeId::OledBlack:
+            return "OLED BLACK";
+        case ThemeId::Adwaita:
+            return "ADWAITA";
+        case ThemeId::Monokai:
+            return "MONOKAI";
+        }
+
+        return "UNKNOWN";
+    }
 }
 
 Render::Render()
@@ -86,10 +86,11 @@ void Render::InitializeGame(const GameSetup &setup)
     // Resize window based on map size
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
-    
+
     int minWidth = (int)setup.width * 30 + 40;
     int minHeight = (int)setup.height * 30 + 100;
-    if (screenWidth < minWidth || screenHeight < minHeight) {
+    if (screenWidth < minWidth || screenHeight < minHeight)
+    {
         SetWindowSize(std::max(screenWidth, minWidth), std::max(screenHeight, minHeight));
     }
 }
@@ -149,7 +150,7 @@ void Render::StartRender()
     UnloadFont(AdwaitaMono);
     UnloadTexture(flagTexture);
     UnloadTexture(bombTexture);
-    
+
     CloseWindow();
 }
 
@@ -198,9 +199,12 @@ void Render::DrawMenu()
     DrawTextEx(AdwaitaMono, "Seed", {renderPosX, renderPosY}, textSize, 0, textColor);
     Rectangle textBoxMapSeed = {offsetX, renderPosY, sizeX, rectSize};
     DrawRectangleRec(textBoxMapSeed, rectColor);
-    if (mapSeedText.empty()) {
+    if (mapSeedText.empty())
+    {
         DrawTextEx(AdwaitaMono, "(optional)", {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, theme.muted);
-    } else {
+    }
+    else
+    {
         DrawTextEx(AdwaitaMono, mapSeedText.c_str(), {textBoxMapSeed.x + 5, textBoxMapSeed.y + 5}, textSize, 0, textColor);
     }
 
@@ -246,18 +250,28 @@ void Render::DrawMenu()
         DrawRectangleRec(button, selected ? theme.surfaceAlt : theme.surface);
         const char *label = ThemeLabel(themeId);
         DrawTextEx(AdwaitaMono, label, {button.x + button.width / 2.0f - MeasureTextEx(AdwaitaMono, label, 18, 0).x / 2.0f, button.y + 8.0f}, 18.0f, 0, selected ? ButtonText(theme.surfaceAlt) : ButtonText(theme.surface));
-        if (CheckCollisionPointRec(mousePos, button)) DrawRectangleLinesEx(button, 2, theme.accent);
+        if (CheckCollisionPointRec(mousePos, button))
+            DrawRectangleLinesEx(button, 2, theme.accent);
     }
 
-    if (CheckCollisionPointRec(mousePos, textBoxPlayerName)) DrawRectangleLinesEx(textBoxPlayerName, 2, YELLOW);
-    if (CheckCollisionPointRec(mousePos, textBoxMapWidth)) DrawRectangleLinesEx(textBoxMapWidth, 2, YELLOW);
-    if (CheckCollisionPointRec(mousePos, textBoxMapHeight)) DrawRectangleLinesEx(textBoxMapHeight, 2, YELLOW);
-    if (CheckCollisionPointRec(mousePos, textBoxMapBombs)) DrawRectangleLinesEx(textBoxMapBombs, 2, YELLOW);
-    if (CheckCollisionPointRec(mousePos, textBoxMapSeed)) DrawRectangleLinesEx(textBoxMapSeed, 2, YELLOW);
-    if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleLinesEx(startButton, 2, WHITE);
-    if (CheckCollisionPointRec(mousePos, myStatsButton)) DrawRectangleLinesEx(myStatsButton, 2, WHITE);
-    if (CheckCollisionPointRec(mousePos, leaderboardButton)) DrawRectangleLinesEx(leaderboardButton, 2, WHITE);
-    if (CheckCollisionPointRec(mousePos, exitButton)) DrawRectangleLinesEx(exitButton, 2, theme.text);
+    if (CheckCollisionPointRec(mousePos, textBoxPlayerName))
+        DrawRectangleLinesEx(textBoxPlayerName, 2, YELLOW);
+    if (CheckCollisionPointRec(mousePos, textBoxMapWidth))
+        DrawRectangleLinesEx(textBoxMapWidth, 2, YELLOW);
+    if (CheckCollisionPointRec(mousePos, textBoxMapHeight))
+        DrawRectangleLinesEx(textBoxMapHeight, 2, YELLOW);
+    if (CheckCollisionPointRec(mousePos, textBoxMapBombs))
+        DrawRectangleLinesEx(textBoxMapBombs, 2, YELLOW);
+    if (CheckCollisionPointRec(mousePos, textBoxMapSeed))
+        DrawRectangleLinesEx(textBoxMapSeed, 2, YELLOW);
+    if (CheckCollisionPointRec(mousePos, startButton))
+        DrawRectangleLinesEx(startButton, 2, WHITE);
+    if (CheckCollisionPointRec(mousePos, myStatsButton))
+        DrawRectangleLinesEx(myStatsButton, 2, WHITE);
+    if (CheckCollisionPointRec(mousePos, leaderboardButton))
+        DrawRectangleLinesEx(leaderboardButton, 2, WHITE);
+    if (CheckCollisionPointRec(mousePos, exitButton))
+        DrawRectangleLinesEx(exitButton, 2, theme.text);
 }
 
 void Render::HandleMenuInput()
@@ -268,7 +282,7 @@ void Render::HandleMenuInput()
     const int screenWidth = GetScreenWidth();
     const float offsetX = (float)screenWidth / 2.0f;
     const float sizeX = (float)screenWidth / 2.0f - 2.0f * padding;
-    float renderPosY = 100.0f; 
+    float renderPosY = 100.0f;
 
     Rectangle textBoxPlayerName = {offsetX, renderPosY, sizeX, rectSize};
     renderPosY += 60.0f;
@@ -295,21 +309,26 @@ void Render::HandleMenuInput()
     const float themeRight = themeLeft + 155.0f;
     const StaticQueue<ThemeId, 4> themeChoices = {ThemeId::TokyoNight, ThemeId::OledBlack, ThemeId::Adwaita, ThemeId::Monokai};
 
-    auto handleTextInput = [](std::string &text, std::size_t maxLen, bool numericOnly) {
+    auto handleTextInput = [](std::string &text, std::size_t maxLen, bool numericOnly)
+    {
         int key = GetCharPressed();
-        while (key > 0) {
+        while (key > 0)
+        {
             bool validKey = !numericOnly || (key >= 48 && key <= 57);
-            if (validKey && text.size() < maxLen) {
+            if (validKey && text.size() < maxLen)
+            {
                 text.push_back(static_cast<char>(key));
             }
             key = GetCharPressed();
         }
-        if (IsKeyPressed(KEY_BACKSPACE) && !text.empty()) {
+        if (IsKeyPressed(KEY_BACKSPACE) && !text.empty())
+        {
             text.pop_back();
         }
     };
 
-    auto parseUnsigned = [](const std::string &text) -> unsigned int {
+    auto parseUnsigned = [](const std::string &text) -> unsigned int
+    {
         if (text.empty())
             return 0;
 
@@ -323,59 +342,94 @@ void Render::HandleMenuInput()
         }
     };
 
-    if (CheckCollisionPointRec(mousePos, textBoxPlayerName)) {
+    if (CheckCollisionPointRec(mousePos, textBoxPlayerName))
+    {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
         std::string buffer = playerName;
         handleTextInput(buffer, 63, false);
         playerName = buffer;
-    } else if (CheckCollisionPointRec(mousePos, textBoxMapWidth)) {
+    }
+    else if (CheckCollisionPointRec(mousePos, textBoxMapWidth))
+    {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
         handleTextInput(mapWidthText, 2, true);
-    } else if (CheckCollisionPointRec(mousePos, textBoxMapHeight)) {
+    }
+    else if (CheckCollisionPointRec(mousePos, textBoxMapHeight))
+    {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
         handleTextInput(mapHeightText, 2, true);
-    } else if (CheckCollisionPointRec(mousePos, textBoxMapBombs)) {
+    }
+    else if (CheckCollisionPointRec(mousePos, textBoxMapBombs))
+    {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
         handleTextInput(mapBombsText, 4, true);
-    } else if (CheckCollisionPointRec(mousePos, textBoxMapSeed)) {
+    }
+    else if (CheckCollisionPointRec(mousePos, textBoxMapSeed))
+    {
         SetMouseCursor(MOUSE_CURSOR_IBEAM);
         handleTextInput(mapSeedText, 12, true);
-    } else if (CheckCollisionPointRec(mousePos, startButton)) {
+    }
+    else if (CheckCollisionPointRec(mousePos, startButton))
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
             unsigned int w = parseUnsigned(mapWidthText);
             unsigned int h = parseUnsigned(mapHeightText);
-            if (w > 100) w = 100;
-            if (h > 100) h = 100;
+            if (w > 100)
+                w = 100;
+            if (h > 100)
+                h = 100;
             unsigned int b = parseUnsigned(mapBombsText);
             unsigned long long s = 0;
-            if (!mapSeedText.empty()) {
-                try { s = std::stoull(mapSeedText); } catch (...) { s = (unsigned long long)time(nullptr); }
-            } else s = (unsigned long long)time(nullptr);
+            if (!mapSeedText.empty())
+            {
+                try
+                {
+                    s = std::stoull(mapSeedText);
+                }
+                catch (...)
+                {
+                    s = (unsigned long long)time(nullptr);
+                }
+            }
+            else
+                s = (unsigned long long)time(nullptr);
             if (w > 0 && h > 0)
             {
                 GameSetup setup = GameSetupBuilder()
-                    .setWidth(w)
-                    .setHeight(h)
-                    .setBombs(b)
-                    .setSeed(s)
-                    .build();
+                                      .setWidth(w)
+                                      .setHeight(h)
+                                      .setBombs(b)
+                                      .setSeed(s)
+                                      .build();
                 InitializeGame(setup);
             }
         }
-    } else if (CheckCollisionPointRec(mousePos, myStatsButton)) {
+    }
+    else if (CheckCollisionPointRec(mousePos, myStatsButton))
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) guiState = GUIState::MY_STATS;
-    } else if (CheckCollisionPointRec(mousePos, leaderboardButton)) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            guiState = GUIState::MY_STATS;
+    }
+    else if (CheckCollisionPointRec(mousePos, leaderboardButton))
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) guiState = GUIState::LEADERBOARD;
-    } else if (CheckCollisionPointRec(mousePos, exitButton)) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            guiState = GUIState::LEADERBOARD;
+    }
+    else if (CheckCollisionPointRec(mousePos, exitButton))
+    {
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
             CloseWindow();
             std::exit(0);
         }
-    } else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
+    else
+        SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 
     for (std::size_t i = 0; i < themeChoices.size(); ++i)
     {
@@ -396,7 +450,7 @@ void Render::HandleMenuInput()
 void Render::DrawGame()
 {
     // Capture reference to avoid copies
-    const Map& map = game.getMap();
+    const Map &map = game.getMap();
     const ThemePalette &theme = Theme();
     unsigned int width = map.getWidth();
     unsigned int height = map.getHeight();
@@ -404,39 +458,51 @@ void Render::DrawGame()
     int screenHeight = GetScreenHeight();
 
     Game::GameState state = game.getCurrentState();
-    if (state == Game::GameState::WON || state == Game::GameState::LOST) {
-        if (finalTime == 0) finalTime = game.getElapsedTime().count();
+    if (state == Game::GameState::WON || state == Game::GameState::LOST)
+    {
+        if (finalTime == 0)
+            finalTime = game.getElapsedTime().count();
         SaveMatchStats();
-        if (state == Game::GameState::LOST && !mapRevealedOnLoss) {
+        if (state == Game::GameState::LOST && !mapRevealedOnLoss)
+        {
             game.revealFullMap();
             mapRevealedOnLoss = true;
         }
-    } else if (state == Game::GameState::IN_PROGRESS || state == Game::GameState::NOT_STARTED) {
+    }
+    else if (state == Game::GameState::IN_PROGRESS || state == Game::GameState::NOT_STARTED)
+    {
         finalTime = 0;
     }
 
     float statsHeight = 60.0f;
     DrawRectangle(0, 0, screenWidth, (int)statsHeight, theme.surface);
-    
+
     long long displayTime = finalTime > 0 ? finalTime : game.getElapsedTime().count();
     std::string timeStr;
-    if (displayTime < 60000) {
+    if (displayTime < 60000)
+    {
         std::stringstream ss;
         ss << std::fixed << std::setprecision(3) << "Time: " << (displayTime / 1000.0) << "s";
         timeStr = ss.str();
-    } else timeStr = "Time: " + std::to_string(displayTime / 1000) + "s";
-    
+    }
+    else
+        timeStr = "Time: " + std::to_string(displayTime / 1000) + "s";
+
     std::string flagsStr = "Flags: " + std::to_string(game.getFlagsPlaced()) + "/" + std::to_string(map.getBombs());
     DrawTextEx(AdwaitaMono, timeStr.c_str(), {20.0f, 15.0f}, 30.0f, 0, WHITE);
     DrawTextEx(AdwaitaMono, flagsStr.c_str(), {(float)screenWidth - MeasureTextEx(AdwaitaMono, flagsStr.c_str(), 30, 0).x - 20.0f, 15.0f}, 30.0f, 0, WHITE);
 
-    if (game.isInvulnerable()) {
+    if (game.isInvulnerable())
+    {
         DrawTextEx(AdwaitaMono, "SHIELD ACTIVE", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "SHIELD ACTIVE", 20, 0).x / 2.0f, 45.0f}, 20.0f, 0, theme.warning);
     }
 
-    if (game.getCurrentState() == Game::GameState::WON) {
+    if (game.getCurrentState() == Game::GameState::WON)
+    {
         DrawTextEx(AdwaitaMono, "YOU WON!", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "YOU WON!", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, theme.success);
-    } else if (game.getCurrentState() == Game::GameState::LOST) {
+    }
+    else if (game.getCurrentState() == Game::GameState::LOST)
+    {
         DrawTextEx(AdwaitaMono, "GAME OVER", {(float)screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "GAME OVER", 30, 0).x / 2.0f, 15.0f}, 30.0f, 0, theme.danger);
     }
 
@@ -447,57 +513,71 @@ void Render::DrawGame()
     float startX = gridPadding + (availableWidth - (float)width * cellSize) / 2.0f;
     float startY = statsHeight + gridPadding + (availableHeight - (float)height * cellSize) / 2.0f;
 
-    Color numberColors[] = { BLACK, BLUE, GREEN, RED, PURPLE, MAROON, SKYBLUE, DARKGRAY, GOLD };
+    Color numberColors[] = {BLACK, BLUE, GREEN, RED, PURPLE, MAROON, SKYBLUE, DARKGRAY, GOLD};
 
-    for (unsigned int y = 0; y < height; ++y) {
-        for (unsigned int x = 0; x < width; ++x) {
+    for (unsigned int y = 0; y < height; ++y)
+    {
+        for (unsigned int x = 0; x < width; ++x)
+        {
             Rectangle cellRect = {startX + (float)x * cellSize, startY + (float)y * cellSize, cellSize, cellSize};
-            if (map.isRevealedAt(x, y)) {
+            if (map.isRevealedAt(x, y))
+            {
                 DrawRectangleRec(cellRect, theme.surface);
-                if (map.isBombAt(x, y)) {
+                if (map.isBombAt(x, y))
+                {
                     DrawRectangleRec(cellRect, theme.danger);
                     DrawTexturePro(bombTexture, {0, 0, (float)bombTexture.width, (float)bombTexture.height}, cellRect, {0, 0}, 0, WHITE);
-                } else {
+                }
+                else
+                {
                     unsigned int adj = map.getAdjacentBombsAt(x, y);
-                    if (adj > 0) {
+                    if (adj > 0)
+                    {
                         std::string adjStr = std::to_string(adj);
                         Vector2 textSize = MeasureTextEx(AdwaitaMono, adjStr.c_str(), cellSize * 0.8f, 0);
                         DrawTextEx(AdwaitaMono, adjStr.c_str(), {cellRect.x + (cellSize - textSize.x) / 2.0f, cellRect.y + (cellSize - textSize.y) / 2.0f}, cellSize * 0.8f, 0, numberColors[adj]);
                     }
                 }
-            } else {
+            }
+            else
+            {
                 DrawRectangleRec(cellRect, theme.surfaceAlt);
-                if (map.isFlaggedAt(x, y)) DrawTexturePro(flagTexture, {0, 0, (float)flagTexture.width, (float)flagTexture.height}, cellRect, {0, 0}, 0, WHITE);
+                if (map.isFlaggedAt(x, y))
+                    DrawTexturePro(flagTexture, {0, 0, (float)flagTexture.width, (float)flagTexture.height}, cellRect, {0, 0}, 0, WHITE);
             }
             DrawRectangleLinesEx(cellRect, 1, theme.grid);
         }
     }
     // Interface buttons
     Vector2 mousePos = GetMousePosition();
-    
+
     // Left side buttons: +, *0.75, *1.5
     Rectangle addBombButton = {20.0f, (float)screenHeight - 40.0f, 40.0f, 30.0f};
     DrawRectangleRec(addBombButton, theme.surface);
     DrawTextEx(AdwaitaMono, "+", {addBombButton.x + 20.0f - MeasureTextEx(AdwaitaMono, "+", 20, 0).x / 2.0f, addBombButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
-    if (CheckCollisionPointRec(mousePos, addBombButton)) DrawRectangleLinesEx(addBombButton, 2, theme.accent);
+    if (CheckCollisionPointRec(mousePos, addBombButton))
+        DrawRectangleLinesEx(addBombButton, 2, theme.accent);
 
     Rectangle scaleDownButton = {65.0f, (float)screenHeight - 40.0f, 60.0f, 30.0f};
     DrawRectangleRec(scaleDownButton, theme.surface);
     DrawTextEx(AdwaitaMono, "*0.75", {scaleDownButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*0.75", 20, 0).x / 2.0f, scaleDownButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
-    if (CheckCollisionPointRec(mousePos, scaleDownButton)) DrawRectangleLinesEx(scaleDownButton, 2, theme.accent);
+    if (CheckCollisionPointRec(mousePos, scaleDownButton))
+        DrawRectangleLinesEx(scaleDownButton, 2, theme.accent);
 
     Rectangle scaleBombsButton = {130.0f, (float)screenHeight - 40.0f, 60.0f, 30.0f};
     DrawRectangleRec(scaleBombsButton, theme.surface);
     DrawTextEx(AdwaitaMono, "*1.5", {scaleBombsButton.x + 30.0f - MeasureTextEx(AdwaitaMono, "*1.5", 20, 0).x / 2.0f, scaleBombsButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
-    if (CheckCollisionPointRec(mousePos, scaleBombsButton)) DrawRectangleLinesEx(scaleBombsButton, 2, theme.accent);
+    if (CheckCollisionPointRec(mousePos, scaleBombsButton))
+        DrawRectangleLinesEx(scaleBombsButton, 2, theme.accent);
 
     // Power-up buttons
     Rectangle shieldBtn = {200.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
     DrawRectangleRec(shieldBtn, theme.accent);
     DrawTextEx(AdwaitaMono, "SHIELD", {shieldBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "SHIELD", 18, 0).x / 2.0f, shieldBtn.y + 6.0f}, 18.0f, 0, ButtonText(theme.accent));
-    if (CheckCollisionPointRec(mousePos, shieldBtn)) {
+    if (CheckCollisionPointRec(mousePos, shieldBtn))
+    {
         DrawRectangleLinesEx(shieldBtn, 2, theme.warning);
-        BasePowerUp* temp = new ShieldPowerUp(0, 0);
+        BasePowerUp *temp = new ShieldPowerUp(0, 0);
         DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {shieldBtn.x, shieldBtn.y - 25.0f}, 16, 0, theme.warning);
         delete temp;
     }
@@ -505,9 +585,10 @@ void Render::DrawGame()
     Rectangle ultiBtn = {290.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
     DrawRectangleRec(ultiBtn, theme.highlight);
     DrawTextEx(AdwaitaMono, "ULTI", {ultiBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "ULTI", 18, 0).x / 2.0f, ultiBtn.y + 6.0f}, 18.0f, 0, ButtonText(theme.highlight));
-    if (CheckCollisionPointRec(mousePos, ultiBtn)) {
+    if (CheckCollisionPointRec(mousePos, ultiBtn))
+    {
         DrawRectangleLinesEx(ultiBtn, 2, theme.accent);
-        BasePowerUp* temp = new UltimatePowerUp(0, 0, 0);
+        BasePowerUp *temp = new UltimatePowerUp(0, 0, 0);
         DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {ultiBtn.x, ultiBtn.y - 25.0f}, 16, 0, theme.accent);
         delete temp;
     }
@@ -515,9 +596,10 @@ void Render::DrawGame()
     Rectangle defuseBtn = {380.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
     DrawRectangleRec(defuseBtn, theme.surfaceAlt);
     DrawTextEx(AdwaitaMono, "DEFUSE", {defuseBtn.x + 40.0f - MeasureTextEx(AdwaitaMono, "DEFUSE", 18, 0).x / 2.0f, defuseBtn.y + 6.0f}, 18.0f, 0, ButtonText(theme.surfaceAlt));
-    if (CheckCollisionPointRec(mousePos, defuseBtn)) {
+    if (CheckCollisionPointRec(mousePos, defuseBtn))
+    {
         DrawRectangleLinesEx(defuseBtn, 2, theme.text);
-        BasePowerUp* temp = new BombDefuser(0, 0);
+        BasePowerUp *temp = new BombDefuser(0, 0);
         DrawTextEx(AdwaitaMono, temp->getDescription().c_str(), {defuseBtn.x, defuseBtn.y - 25.0f}, 16, 0, theme.text);
         delete temp;
     }
@@ -526,7 +608,8 @@ void Render::DrawGame()
     Rectangle backButton = {(float)screenWidth - 220.0f, (float)screenHeight - 40.0f, 200.0f, 30.0f};
     DrawRectangleRec(backButton, theme.surface);
     DrawTextEx(AdwaitaMono, "MENU", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "MENU", 20, 0).x / 2.0f, backButton.y + 5.0f}, 20.0f, 0, ButtonText(theme.surface));
-    if (CheckCollisionPointRec(mousePos, backButton)) DrawRectangleLinesEx(backButton, 2, theme.accent);
+    if (CheckCollisionPointRec(mousePos, backButton))
+        DrawRectangleLinesEx(backButton, 2, theme.accent);
 }
 
 void Render::HandleGameInput()
@@ -548,7 +631,7 @@ void Render::HandleGameInput()
     Rectangle ultiBtn = {290.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
     Rectangle defuseBtn = {380.0f, (float)screenHeight - 40.0f, 80.0f, 30.0f};
 
-    const Map& map = game.getMap();
+    const Map &map = game.getMap();
     unsigned int width = map.getWidth();
     unsigned int height = map.getHeight();
     float statsHeight = 60.0f;
@@ -562,53 +645,69 @@ void Render::HandleGameInput()
     int mouseGridX = (int)((mousePos.x - startX) / cellSize);
     int mouseGridY = (int)((mousePos.y - startY) / cellSize);
 
-    try {
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            if (CheckCollisionPointRec(mousePos, backButton)) {
+    try
+    {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
+            if (CheckCollisionPointRec(mousePos, backButton))
+            {
                 guiState = GUIState::MENU;
                 return;
             }
-            if (CheckCollisionPointRec(mousePos, addBombButton)) {
+            if (CheckCollisionPointRec(mousePos, addBombButton))
+            {
                 game + 1;
                 return;
             }
-            if (CheckCollisionPointRec(mousePos, scaleDownButton)) {
+            if (CheckCollisionPointRec(mousePos, scaleDownButton))
+            {
                 game * 0.75;
                 return;
             }
-            if (CheckCollisionPointRec(mousePos, scaleBombsButton)) {
+            if (CheckCollisionPointRec(mousePos, scaleBombsButton))
+            {
                 game * 1.5;
                 return;
             }
-            if (CheckCollisionPointRec(mousePos, shieldBtn)) {
-                BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+            if (CheckCollisionPointRec(mousePos, shieldBtn))
+            {
+                BasePowerUp *p = new ShieldPowerUp(1, 15.0f);
                 p->use(game, mouseGridX, mouseGridY);
                 return;
             }
-            if (CheckCollisionPointRec(mousePos, ultiBtn)) {
-                BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+            if (CheckCollisionPointRec(mousePos, ultiBtn))
+            {
+                BasePowerUp *p = new UltimatePowerUp(3, 10.0f, 5);
                 p->use(game, mouseGridX, mouseGridY);
                 return;
             }
-            if (CheckCollisionPointRec(mousePos, defuseBtn)) {
-                BasePowerUp* p = new BombDefuser(4, 0.5);
+            if (CheckCollisionPointRec(mousePos, defuseBtn))
+            {
+                BasePowerUp *p = new BombDefuser(4, 0.5);
                 p->use(game, mouseGridX, mouseGridY);
                 return;
             }
         }
 
-        if (mousePos.x >= startX && mousePos.x < startX + (float)width * cellSize && mousePos.y >= startY && mousePos.y < startY + (float)height * cellSize) {
-            if (game.getCurrentState() == Game::GameState::IN_PROGRESS || game.getCurrentState() == Game::GameState::NOT_STARTED) {
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (mousePos.x >= startX && mousePos.x < startX + (float)width * cellSize && mousePos.y >= startY && mousePos.y < startY + (float)height * cellSize)
+        {
+            if (game.getCurrentState() == Game::GameState::IN_PROGRESS || game.getCurrentState() == Game::GameState::NOT_STARTED)
+            {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
                     bool clickedCellIsRevealed = game.getMap().isRevealedAt(mouseGridX, mouseGridY);
                     double now = GetTime();
-                    if (clickedCellIsRevealed) {
-                        if (lastRevealClickX == mouseGridX && lastRevealClickY == mouseGridY && (now - lastRevealClickTime) <= doubleClickThreshold) {
+                    if (clickedCellIsRevealed)
+                    {
+                        if (lastRevealClickX == mouseGridX && lastRevealClickY == mouseGridY && (now - lastRevealClickTime) <= doubleClickThreshold)
+                        {
                             game.adjacentReveal(mouseGridX, mouseGridY);
                             lastRevealClickTime = -1.0;
                             lastRevealClickX = -1;
                             lastRevealClickY = -1;
-                        } else {
+                        }
+                        else
+                        {
                             lastRevealClickTime = now;
                             lastRevealClickX = mouseGridX;
                             lastRevealClickY = mouseGridY;
@@ -620,55 +719,71 @@ void Render::HandleGameInput()
                     lastRevealClickX = -1;
                     lastRevealClickY = -1;
 
-                    if (game.getCurrentState() == Game::GameState::NOT_STARTED) {
+                    if (game.getCurrentState() == Game::GameState::NOT_STARTED)
+                    {
                         unsigned int w = map.getWidth();
                         unsigned int h = map.getHeight();
                         unsigned int b = map.getBombs();
                         unsigned long long s = map.getSeed();
-                        if (game.getMap().isBombAt(mouseGridX, mouseGridY)) {
+                        if (game.getMap().isBombAt(mouseGridX, mouseGridY))
+                        {
                             s++;
                             game.setMap(Map(w, h, s, b));
                         }
                         game.startGame();
                     }
                     game.revealCell(mouseGridX, mouseGridY);
-                } else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) game.toggleFlag(mouseGridX, mouseGridY);
-                else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) game.adjacentReveal(mouseGridX, mouseGridY);
+                }
+                else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+                    game.toggleFlag(mouseGridX, mouseGridY);
+                else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+                    game.adjacentReveal(mouseGridX, mouseGridY);
             }
         }
-        if (IsKeyPressed(KEY_R)) game.reset();
-        if (IsKeyPressed(KEY_ESCAPE)) guiState = GUIState::MENU;
+        if (IsKeyPressed(KEY_R))
+            game.reset();
+        if (IsKeyPressed(KEY_ESCAPE))
+            guiState = GUIState::MENU;
 
-        if (IsKeyPressed(KEY_ONE)) {
-            BasePowerUp* p = new ShieldPowerUp(1, 15.0f);
+        if (IsKeyPressed(KEY_ONE))
+        {
+            BasePowerUp *p = new ShieldPowerUp(1, 15.0f);
             p->use(game, mouseGridX, mouseGridY);
         }
-        if (IsKeyPressed(KEY_TWO)) {
-            BasePowerUp* p = new ScannerPowerUp(2, 3);
+        if (IsKeyPressed(KEY_TWO))
+        {
+            BasePowerUp *p = new ScannerPowerUp(2, 3);
             p->use(game, mouseGridX, mouseGridY);
         }
-        if (IsKeyPressed(KEY_THREE)) {
-            BasePowerUp* p = new UltimatePowerUp(3, 10.0f, 5);
+        if (IsKeyPressed(KEY_THREE))
+        {
+            BasePowerUp *p = new UltimatePowerUp(3, 10.0f, 5);
             p->use(game, mouseGridX, mouseGridY);
         }
-        if (IsKeyPressed(KEY_FOUR)) {
-            BasePowerUp* p = new BombDefuser(4, 0.5);
+        if (IsKeyPressed(KEY_FOUR))
+        {
+            BasePowerUp *p = new BombDefuser(4, 0.5);
             p->use(game, mouseGridX, mouseGridY);
         }
     }
-    catch (const InvalidMoveException &e) {
+    catch (const InvalidMoveException &e)
+    {
         std::cout << e.what() << "\n";
     }
-    catch (const GameConfigException &e) {
+    catch (const GameConfigException &e)
+    {
         std::cout << e.what() << "\n";
     }
-    catch (const DatabaseException &e) {
+    catch (const DatabaseException &e)
+    {
         std::cout << e.what() << "\n";
     }
-    catch (const MinesweeperException &e) {
+    catch (const MinesweeperException &e)
+    {
         std::cout << e.what() << "\n";
     }
-    catch (...) {
+    catch (...)
+    {
         std::cout << "An unknown error occurred.\n";
     }
 }
@@ -684,12 +799,15 @@ void Render::DrawMyStats()
     renderPosY += 70.0f;
 
     PlayerStats *player = Leaderboard::findPlayer(playerName);
-    if (!player || player->getMatchesNumber() == 0) {
+    if (!player || player->getMatchesNumber() == 0)
+    {
         DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
-    } else {
+    }
+    else
+    {
         // Two-column layout for general stats
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
-        
+
         // Column 1
         std::stringstream ss1;
         ss1 << "Player: " << player->getPlayerName() << "\n";
@@ -701,12 +819,13 @@ void Render::DrawMyStats()
         std::stringstream ss2;
         ss2 << "Wins: " << player->getWins() << "\n";
         ss2 << "Losses: " << (player->getMatchesNumber() - player->getWins()) << "\n";
-        
+
         unsigned int totalTime = 0;
         unsigned int totalClicks = 0;
         const auto &matches = player->getMatches();
         int totalGames = player->getMatchesNumber();
-        for (const Match &match : matches) {
+        for (const Match &match : matches)
+        {
             totalTime += match.getTimePlayed().count();
             totalClicks += match.getClicks();
         }
@@ -728,12 +847,13 @@ void Render::DrawMyStats()
         DrawTextEx(AdwaitaMono, "Time", {padding + resW + sizeW + bombsW, renderPosY}, 20, 0, theme.muted);
         DrawTextEx(AdwaitaMono, "Clicks", {padding + resW + sizeW + bombsW + timeW, renderPosY}, 20, 0, theme.muted);
         DrawTextEx(AdwaitaMono, "Powers", {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 20, 0, theme.muted);
-        
+
         renderPosY += 30.0f;
         DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, theme.grid);
 
         const auto recentMatches = player->getRecentMatches();
-        for (const Match &match : recentMatches) {
+        for (const Match &match : recentMatches)
+        {
             Color resColor = match.getWinState() ? theme.success : theme.danger;
             DrawTextEx(AdwaitaMono, match.getWinState() ? "WIN" : "LOSS", {padding, renderPosY}, 18, 0, resColor);
 
@@ -751,12 +871,14 @@ void Render::DrawMyStats()
     Rectangle removeLastButton = {padding, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
     DrawRectangleRec(removeLastButton, theme.danger);
     DrawTextEx(AdwaitaMono, "REMOVE LAST MATCH", {removeLastButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "REMOVE LAST MATCH", 20, 0).x / 2.0f, removeLastButton.y + 10.0f}, 20.0f, 0, theme.accentText);
-    if (CheckCollisionPointRec(GetMousePosition(), removeLastButton)) DrawRectangleLinesEx(removeLastButton, 2, theme.accent);
+    if (CheckCollisionPointRec(GetMousePosition(), removeLastButton))
+        DrawRectangleLinesEx(removeLastButton, 2, theme.accent);
 
     Rectangle backButton = {(float)screenWidth - padding - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
     DrawRectangleRec(backButton, theme.surface);
     DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, theme.text);
-    if (CheckCollisionPointRec(GetMousePosition(), backButton)) DrawRectangleLinesEx(backButton, 2, theme.accent);
+    if (CheckCollisionPointRec(GetMousePosition(), backButton))
+        DrawRectangleLinesEx(backButton, 2, theme.accent);
 }
 
 void Render::HandleMyStatsInput()
@@ -764,18 +886,23 @@ void Render::HandleMyStatsInput()
     const float padding = 40.0f;
     Vector2 mousePos = GetMousePosition();
 
-    if (IsKeyPressed(KEY_ESCAPE)) guiState = GUIState::MENU;
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (IsKeyPressed(KEY_ESCAPE))
+        guiState = GUIState::MENU;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
         Rectangle removeLastButton = {padding, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
         Rectangle backButton = {(float)GetScreenWidth() - padding - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
-        
-        if (CheckCollisionPointRec(mousePos, removeLastButton)) {
+
+        if (CheckCollisionPointRec(mousePos, removeLastButton))
+        {
             PlayerStats *player = Leaderboard::findPlayer(playerName);
-            if (player && player->getMatchesNumber() > 0) {
+            if (player && player->getMatchesNumber() > 0)
+            {
                 --(*player);
             }
         }
-        if (CheckCollisionPointRec(mousePos, backButton)) guiState = GUIState::MENU;
+        if (CheckCollisionPointRec(mousePos, backButton))
+            guiState = GUIState::MENU;
     }
 }
 
@@ -794,11 +921,14 @@ void Render::DrawLeaderboard()
     const auto players = Leaderboard::getPlayers();
     const PlayerStats *bestPlayer = findBest<PlayerStats>(players);
 
-    if (playerCount == 0) {
+    if (playerCount == 0)
+    {
         DrawTextEx(AdwaitaMono, "No players yet. Play some games first!", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No players yet. Play some games first!", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
-    } else {
+    }
+    else
+    {
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
-        
+
         std::stringstream ss1;
         ss1 << "Players: " << playerCount << "\n";
         ss1 << "Total Games: " << Leaderboard::getOverallGames() << "\n";
@@ -828,7 +958,8 @@ void Render::DrawLeaderboard()
         renderPosY += 30.0f;
         DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, theme.grid);
 
-        for (unsigned int i = 0; i < playerCount; ++i) {
+        for (unsigned int i = 0; i < playerCount; ++i)
+        {
             PlayerStats *p = Leaderboard::getPlayer(i);
             bool isCurrent = (p->getPlayerName() == playerName);
             bool isBest = (bestPlayer && p == bestPlayer);
@@ -837,18 +968,20 @@ void Render::DrawLeaderboard()
             DrawTextEx(AdwaitaMono, p->getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
             DrawTextEx(AdwaitaMono, std::to_string(p->getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
             DrawTextEx(AdwaitaMono, std::to_string(p->getWins()).c_str(), {padding + nameW + gamesW, renderPosY}, 20, 0, col);
-            
+
             std::stringstream rss;
             rss << std::fixed << std::setprecision(1) << p->getWinRate() * 100.0f << "%";
             DrawTextEx(AdwaitaMono, rss.str().c_str(), {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, col);
 
             unsigned int totalTime = 0;
             const auto &matches = p->getMatches();
-            for (const Match &match : matches) totalTime += match.getTimePlayed().count();
+            for (const Match &match : matches)
+                totalTime += match.getTimePlayed().count();
             DrawTextEx(AdwaitaMono, (std::to_string(totalTime / 1000) + "s").c_str(), {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, col);
 
             renderPosY += 25.0f;
-            if (renderPosY > GetScreenHeight() - 100) break;
+            if (renderPosY > GetScreenHeight() - 100)
+                break;
         }
     }
 
@@ -858,17 +991,22 @@ void Render::DrawLeaderboard()
     DrawTextEx(AdwaitaMono, "DELETE PLAYER", {deleteButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "DELETE PLAYER", 20, 0).x / 2.0f, deleteButton.y + 10.0f}, 20.0f, 0, ButtonText(theme.danger));
     DrawRectangleRec(backButton, theme.surface);
     DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, theme.text);
-    if (CheckCollisionPointRec(GetMousePosition(), deleteButton)) DrawRectangleLinesEx(deleteButton, 2, theme.accent);
-    if (CheckCollisionPointRec(GetMousePosition(), backButton)) DrawRectangleLinesEx(backButton, 2, theme.accent);
+    if (CheckCollisionPointRec(GetMousePosition(), deleteButton))
+        DrawRectangleLinesEx(deleteButton, 2, theme.accent);
+    if (CheckCollisionPointRec(GetMousePosition(), backButton))
+        DrawRectangleLinesEx(backButton, 2, theme.accent);
 }
 
 void Render::HandleLeaderboardInput()
 {
-    if (IsKeyPressed(KEY_ESCAPE)) guiState = GUIState::MENU;
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (IsKeyPressed(KEY_ESCAPE))
+        guiState = GUIState::MENU;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
         Rectangle deleteButton = {40.0f, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
         Rectangle backButton = {(float)GetScreenWidth() - 40.0f - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
-        if (CheckCollisionPointRec(GetMousePosition(), deleteButton)) {
+        if (CheckCollisionPointRec(GetMousePosition(), deleteButton))
+        {
             try
             {
                 if (!playerName.empty())
@@ -883,32 +1021,35 @@ void Render::HandleLeaderboardInput()
                 std::cout << "An unknown error occurred.\n";
             }
         }
-        if (CheckCollisionPointRec(GetMousePosition(), backButton)) guiState = GUIState::MENU;
+        if (CheckCollisionPointRec(GetMousePosition(), backButton))
+            guiState = GUIState::MENU;
     }
 }
 
 void Render::SaveMatchStats()
 {
-    if (statsSaved) return;
+    if (statsSaved)
+        return;
 
     bool won = (game.getCurrentState() == Game::GameState::WON);
-    const Map& m = game.getMap();
+    const Map &m = game.getMap();
     Match match(m.getWidth(), m.getHeight(), m.getSeed(), m.getBombs(), game.getCellsRevealed(), game.getClicks(), std::chrono::duration<int, std::milli>(finalTime), won, true);
-    
+
     // Set power-up statistics
     match.setPowerUpStats(
         game.getPowerUpCount("Shield"),
         game.getPowerUpCount("Scanner"),
         game.getPowerUpCount("Ultimate"),
-        game.getPowerUpCount("Defuser")
-    );
+        game.getPowerUpCount("Defuser"));
 
-    if (!playerName.empty()) {
+    if (!playerName.empty())
+    {
         // Functia Raylib SaveFileText cere un pointer non-const.
-        SaveFileText("last_player.txt", const_cast<char*>(playerName.c_str()));
+        SaveFileText("last_player.txt", const_cast<char *>(playerName.c_str()));
 
         PlayerStats *player = Leaderboard::addPlayer(playerName);
-        if (player) {
+        if (player)
+        {
             *player + match;
             Leaderboard::addGame();
             statsSaved = true;

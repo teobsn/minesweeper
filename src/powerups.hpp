@@ -10,8 +10,8 @@ class Game;
 class BasePowerUp : public IObject
 {
 protected:
-    // Folosim 'protected' pentru a permite claselor derivate (Temporal/Spatial) 
-    // acces direct la atributele de baza, mentinandu-le in acelasi timp 
+    // Folosim 'protected' pentru a permite claselor derivate (Temporal/Spatial)
+    // acces direct la atributele de baza, mentinandu-le in acelasi timp
     // incapsulate fata de exterior.
     const int typeId;
     std::string name;
@@ -20,9 +20,9 @@ public:
     BasePowerUp(int id, std::string name);
     virtual ~BasePowerUp();
 
-    void use(Game& game, int x = 0, int y = 0);
+    void use(Game &game, int x = 0, int y = 0);
 
-    virtual void activate(Game& game, int x, int y);
+    virtual void activate(Game &game, int x, int y);
     // Clasa BasePowerUp nu poate fi instantiata direct deoarece include
     // doua functii virtual pure
     virtual std::string getDescription() const = 0;
@@ -43,7 +43,7 @@ protected:
 public:
     TemporalEffect(int id, std::string name, float duration);
     virtual ~TemporalEffect() override;
-    
+
     float getDuration() const;
 };
 
@@ -68,7 +68,7 @@ public:
     // Utilizam 'final' pe metodele claselor care nu sunt destinate sa fie baze
     // pentru alte derivate. Acest lucru garanteaza ca logica de activare
     // nu va fi modificata accidental in viitor (si ajuta la devirtualizare).
-    void activate(Game& game, int x, int y) override final;
+    void activate(Game &game, int x, int y) override final;
     std::string getDescription() const override final;
     std::string getCategory() const override final;
 };
@@ -79,7 +79,7 @@ public:
     ScannerPowerUp(int id, int radius);
     virtual ~ScannerPowerUp();
 
-    void activate(Game& game, int x, int y) override final;
+    void activate(Game &game, int x, int y) override final;
     std::string getDescription() const override final;
     std::string getCategory() const override final;
 };
@@ -87,7 +87,7 @@ public:
 // Utilizam 'final' pentru a marca faptul ca UltimatePowerUp este varful ierarhiei
 // si nu mai poate fi derivat.
 // Acest lucru permite compilatorului sa optimizeze
-// apelurile de functii virtuale, eliminand overhead-ul 
+// apelurile de functii virtuale, eliminand overhead-ul
 // legat de vtable acolo unde este posibil.
 class UltimatePowerUp final : public TemporalEffect, public SpatialEffect
 {
@@ -95,7 +95,7 @@ public:
     UltimatePowerUp(int id, float duration, int radius);
     ~UltimatePowerUp();
 
-    void activate(Game& game, int x, int y) override;
+    void activate(Game &game, int x, int y) override;
     std::string getDescription() const override;
     std::string getCategory() const override;
 };
@@ -109,7 +109,7 @@ public:
     BombDefuser(int id, double ratio);
     virtual ~BombDefuser();
 
-    void activate(Game& game, int x, int y) override final;
+    void activate(Game &game, int x, int y) override final;
     std::string getDescription() const override final;
     std::string getCategory() const override final;
 };

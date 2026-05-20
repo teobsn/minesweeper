@@ -251,6 +251,5 @@ int Cell::operator[](char c) const
     default:
         return 0;
         break;
-    
-    }
+        }
 }

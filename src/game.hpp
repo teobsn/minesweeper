@@ -34,7 +34,7 @@ public:
     void startGame();
     void reset();
 
-    void setMap(const Map& map);
+    void setMap(const Map &map);
 
     void revealCell(int x, int y);
     void fillReveal(int x, int y);
@@ -45,10 +45,10 @@ public:
     GameState getCurrentState() const;
     const Map &getMap() const;
     Map &getMap();
-    
+
     std::chrono::duration<int, std::milli> getElapsedTime() const;
     std::chrono::steady_clock::time_point getStartTime() const;
-    
+
     unsigned int getClicks() const;
     unsigned int getCellsRevealed() const;
     unsigned int getFlagsPlaced() const;
@@ -59,8 +59,8 @@ public:
     void consumeShield();
     void activateRadar(int x, int y, int radius);
 
-    void addPowerUpToHistory(BasePowerUp* p);
-    unsigned int getPowerUpCount(const std::string& type = "all") const;
+    void addPowerUpToHistory(BasePowerUp *p);
+    unsigned int getPowerUpCount(const std::string &type = "all") const;
     void showPowerUpHistory() const;
 
     // Operator de atribuire
@@ -98,7 +98,7 @@ private:
     std::chrono::steady_clock::time_point startTime;
 
     bool invulnerable = false;
-    std::list<BasePowerUp*> powerUpHistory;
+    std::list<BasePowerUp *> powerUpHistory;
 
     void clearPowerUpHistory();
     void checkWinCondition();

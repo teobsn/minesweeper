@@ -86,10 +86,8 @@ void Game::reset()
 
 void Game::clearPowerUpHistory()
 {
-    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp* p)
-    {
-        delete p;
-    });
+    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp *p)
+                  { delete p; });
     powerUpHistory.clear();
 }
 
@@ -135,33 +133,42 @@ void Game::revealCell(int x, int y)
     checkWinCondition();
 }
 
-void Game::setInvulnerable(bool value) { 
-    invulnerable = value; 
+void Game::setInvulnerable(bool value)
+{
+    invulnerable = value;
 }
 
-bool Game::isInvulnerable() const {
+bool Game::isInvulnerable() const
+{
     return invulnerable;
 }
 
-void Game::consumeShield() {
+void Game::consumeShield()
+{
     invulnerable = false;
 }
 
-void Game::activateRadar(int x, int y, int radius) { 
-    if (gameState == GameState::NOT_STARTED) startGame();
-    gameMap.revealArea(x, y, radius); 
+void Game::activateRadar(int x, int y, int radius)
+{
+    if (gameState == GameState::NOT_STARTED)
+        startGame();
+    gameMap.revealArea(x, y, radius);
     checkWinCondition();
 }
 
-void Game::addPowerUpToHistory(BasePowerUp* p) {
-    if (p) powerUpHistory.push_back(p);
+void Game::addPowerUpToHistory(BasePowerUp *p)
+{
+    if (p)
+        powerUpHistory.push_back(p);
 }
 
-unsigned int Game::getPowerUpCount(const std::string& type) const {
-    if (type == "all") return powerUpHistory.size();
+unsigned int Game::getPowerUpCount(const std::string &type) const
+{
+    if (type == "all")
+        return powerUpHistory.size();
 
-    return static_cast<unsigned int>(std::count_if(powerUpHistory.begin(), powerUpHistory.end(), [&](BasePowerUp* p)
-    {
+    return static_cast<unsigned int>(std::count_if(powerUpHistory.begin(), powerUpHistory.end(), [&](BasePowerUp *p)
+                                                   {
         if (!p)
             return false;
 
@@ -188,17 +195,16 @@ unsigned int Game::getPowerUpCount(const std::string& type) const {
             return false;
         }
 
-        return false;
-    }));
+        return false; }));
 }
 
-void Game::showPowerUpHistory() const {
-    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp* p)
-    {
+void Game::showPowerUpHistory() const
+{
+    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp *p)
+                  {
         if (p) {
             std::cout << *p << "\n";
-        }
-    });
+        } });
 }
 
 void Game::fillReveal(int x, int y)
@@ -286,7 +292,6 @@ void Game::revealFullMap()
     gameMap.revealAll();
 }
 
-
 void Game::toggleFlag(int x, int y)
 {
     if (!gameMap.isValidPosition(x, y) || gameMap.isRevealedAt(x, y))
@@ -310,7 +315,6 @@ Map &Game::getMap()
 {
     return gameMap;
 }
-
 
 const Map &Game::getMap() const
 {
@@ -429,9 +433,8 @@ void Game::checkWinCondition()
 {
     for (unsigned int y = 0; y < gameMap.getHeight(); ++y)
         for (unsigned int x = 0; x < gameMap.getWidth(); ++x)
-            if (!gameMap[y * gameMap.getWidth() + x]['b']    
-                && !gameMap[y * gameMap.getWidth() + x]['r'])
-            return;
+            if (!gameMap[y * gameMap.getWidth() + x]['b'] && !gameMap[y * gameMap.getWidth() + x]['r'])
+                return;
 
     gameState = GameState::WON;
 }
