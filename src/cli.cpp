@@ -541,31 +541,7 @@ void Commandline::processGameInput(Game &game)
                 return;
             }
         }
-        catch (const InvalidMoveException &e)
-        {
-            disableRawMode();
-            clearScreen();
-            std::cout << e.what() << "\n";
-            waitForEnter();
-            enableRawMode();
-        }
-        catch (const GameConfigException &e)
-        {
-            disableRawMode();
-            clearScreen();
-            std::cout << e.what() << "\n";
-            waitForEnter();
-            enableRawMode();
-        }
-        catch (const DatabaseException &e)
-        {
-            disableRawMode();
-            clearScreen();
-            std::cout << e.what() << "\n";
-            waitForEnter();
-            enableRawMode();
-        }
-        catch (const MinesweeperException &e)
+        catch (const std::exception &e)
         {
             disableRawMode();
             clearScreen();
@@ -687,22 +663,7 @@ void Commandline::displayStatistics()
             }
         }
     }
-    catch (const InvalidMoveException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const GameConfigException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const DatabaseException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const MinesweeperException &e)
+    catch (const std::exception &e)
     {
         std::cout << e.what() << "\n";
         waitForEnter();
@@ -793,22 +754,7 @@ void Commandline::displayAllPlayersStatistics()
         std::cout << "\n";
         waitForEnter();
     }
-    catch (const InvalidMoveException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const GameConfigException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const DatabaseException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const MinesweeperException &e)
+    catch (const std::exception &e)
     {
         std::cout << e.what() << "\n";
         waitForEnter();
@@ -839,22 +785,7 @@ void Commandline::StartCommandline()
             printMainMenu();
             handleMainMenu();
         }
-        catch (const InvalidMoveException &e)
-        {
-            std::cout << e.what() << "\n";
-            waitForEnter();
-        }
-        catch (const GameConfigException &e)
-        {
-            std::cout << e.what() << "\n";
-            waitForEnter();
-        }
-        catch (const DatabaseException &e)
-        {
-            std::cout << e.what() << "\n";
-            waitForEnter();
-        }
-        catch (const MinesweeperException &e)
+        catch (const std::exception &e)
         {
             std::cout << e.what() << "\n";
             waitForEnter();
