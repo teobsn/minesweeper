@@ -63,6 +63,20 @@ Windows:
 build.bat
 ```
 
+The scripts above build the project in CMake's `Debug` configuration by default,
+which also enables the project's `DEBUG` macro inside the codebase.
+
+To force a release build locally, pass the build type explicitly:
+```bash
+BUILD_TYPE=Release ./build.sh
+```
+
+```batch
+build.bat Release
+```
+
+The GitHub Actions workflow only builds `Release` binaries.
+
 Build outputs:
 - `build/minesweeper` - CLI version
 - `build/minesweeper-gui` - GUI version
@@ -78,7 +92,7 @@ Build outputs:
 
 ## Build Optimizations
 
-The project is built with aggressive optimization flags for maximum performance:
+Builds are produced with aggressive optimization flags for maximum performance:
 
 - `-O3` - Aggressive optimization level
 - `-march=native` - CPU-specific instructions (AVX2, SSE4, etc.)
