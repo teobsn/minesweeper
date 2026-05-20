@@ -84,7 +84,9 @@ ShieldPowerUp::ShieldPowerUp(int id, float duration)
 
 ShieldPowerUp::~ShieldPowerUp()
 {
+#ifdef DEBUG
     std::cout << "~ShieldPowerUp()\n";
+#endif
 }
 
 void ShieldPowerUp::activate(Game &game, int x, int y)
@@ -108,7 +110,9 @@ ScannerPowerUp::ScannerPowerUp(int id, int radius)
 
 ScannerPowerUp::~ScannerPowerUp()
 {
+#ifdef DEBUG
     std::cout << "~ScannerPowerUp()\n";
+#endif
 }
 
 void ScannerPowerUp::activate(Game &game, int x, int y)
@@ -132,7 +136,9 @@ UltimatePowerUp::UltimatePowerUp(int id, float duration, int radius)
 
 UltimatePowerUp::~UltimatePowerUp()
 {
+#ifdef DEBUG
     std::cout << "~UltimatePowerUp()\n";
+#endif
 }
 
 void UltimatePowerUp::activate(Game &game, int x, int y)
@@ -157,7 +163,9 @@ BombDefuser::BombDefuser(int id, double ratio)
 
 BombDefuser::~BombDefuser()
 {
+#ifdef DEBUG
     std::cout << "~BombDefuser()\n";
+#endif
 }
 
 void BombDefuser::activate(Game &game, int x, int y)
