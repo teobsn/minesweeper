@@ -47,6 +47,8 @@ int main()
     cout << "Running Multi-Threaded Benchmark (" << cpuNumThreads << " threads)..." << endl;
     auto start_time_mt = chrono::high_resolution_clock::now();
 
+    // vector-ul e potrivit aici pentru ca avem o lista compacta de thread-uri,
+    // cu acces indexat O(1) si iterare liniara O(n).
     vector<thread> threads;
     for (unsigned int i = 0; i < cpuNumThreads; ++i)
         threads.emplace_back(benchmarkWorker, i, mapsPerThread);
