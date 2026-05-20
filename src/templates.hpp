@@ -26,7 +26,7 @@ template <typename T>
 const T *findBest(const std::vector<T> &values)
 {
     if (values.empty())
-        return nullptr;
+        throw std::out_of_range("findBest called on an empty collection");
 
     return &*std::max_element(values.begin(), values.end());
 }
@@ -109,8 +109,9 @@ private:
     std::size_t count;
 
 public:
-    // queue cu capacitate fixa prin parametru de template; merge bine pentru
-    // istoric de meciuri si alte buffere mici
+    // Coada cu capacitate fixa prin parametru de template: push/pop sunt O(1),
+    // iar lipsa realocarilor o face potrivita pentru istorii mici si buffer-e
+    // fixe folosite frecvent in logica jocului.
     StaticQueue() : data(new T[Capacity]), count(0)
     {
     }
