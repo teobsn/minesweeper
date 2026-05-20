@@ -98,6 +98,9 @@ private:
     std::chrono::steady_clock::time_point startTime;
 
     bool invulnerable = false;
+    // list pastreaza istoricul power-up-urilor activate; stergerea elementelor
+    // si curatarea completa raman O(1) pentru operatia pe nod, fara realocari
+    // sau mutari costisitoare ca la un vector.
     std::list<BasePowerUp *> powerUpHistory;
 
     void clearPowerUpHistory();

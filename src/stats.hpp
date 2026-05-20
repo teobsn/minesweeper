@@ -109,7 +109,13 @@ class PlayerStats final
 {
 private:
     std::string playerName;
+    // vector-ul pastreaza istoricul complet al meciurilor
+    // accesul secvential si agregarea pe tot istoricul sunt operatii frecvente
+    // deci costul amortizat O(1) la push_back este potrivit aici
     std::vector<Match> games;
+    // StaticQueue limiteaza istoricul recent la 10 elemente fara alocare
+    // suplimentara la runtime, ceea ce se potriveste pentru afisarea ultimelor
+    // meciuri din UI
     StaticQueue<Match, 10> recentGames;
     int numberOfWins;
     float winRate;
@@ -174,7 +180,9 @@ std::istream &operator>>(std::istream &os, PlayerStats &plrStats);
 class Leaderboard final
 {
 private:
+    // unordered_map ofera cautare/inserare medie O(1) pentru numele jucatorilor
     static std::unordered_map<std::string, PlayerStats> playerStats;
+    // vector-ul pastreaza ordinea afisarii si permite sortare eficienta O(n log n)
     static std::vector<std::string> playerOrder;
     static unsigned int overallGames;
 
@@ -195,3 +203,24 @@ public:
 
 template <>
 const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values);
+
+/* Specializare pentru PlayerStats: cea mai buna statistica se decide dupa
+   win rate, apoi dupa numarul de victorii. */
+template <>
+inline const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values)
+{
+    if (values.empty())
+        throw std::out_of_range("findBest called on an empty collection");
+
+    auto it = std::max_element(values.begin(), values.end(), [](const PlayerStats &lhs, const PlayerStats &rhs)
+                               {
+        if (lhs.getWinRate() != rhs.getWinRate())
+            return lhs.getWinRate() < rhs.getWinRate();
+
+        if (lhs.getWins() != rhs.getWins())
+            return lhs.getWins() < rhs.getWins();
+
+        return lhs.getPlayerName() < rhs.getPlayerName(); });
+
+    return &*it;
+}

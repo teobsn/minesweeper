@@ -159,22 +159,7 @@ void Commandline::handleMainMenu()
             break;
         }
     }
-    catch (const InvalidMoveException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const GameConfigException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const DatabaseException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const MinesweeperException &e)
+    catch (const std::exception &e)
     {
         std::cout << e.what() << "\n";
         waitForEnter();
@@ -394,12 +379,26 @@ void Commandline::startNewGame()
                 std::getline(std::cin, playerName);
 
                 PlayerStats *player = nullptr;
+                // Daca utilizatorul introduce un nume, incercam sa salvam
+                // statistica in leaderboard-ul persistent
+                // Daca lasa campul gol, sarim complet peste salvare
                 if (!playerName.empty())
-                    player = Leaderboard::addPlayer(playerName);
+                {
+                    try
+                    {
+                        // Incercam intai sa gasim jucatorul
+                        player = Leaderboard::findPlayer(playerName);
+                    }
+                    catch (const DatabaseException &)
+                    {
+                        // Daca nu exista, il adaugam
+                        player = Leaderboard::addPlayer(playerName);
+                    }
+                }
 
                 if (player)
                 {
-                    // player->addMatch(match);
+                    // Asociem meciul curent cu jucatorul ales.
                     *player + match;
                     Leaderboard::addGame();
                 }
@@ -613,9 +612,21 @@ void Commandline::displayStatistics()
 
         clearScreen();
 
-        PlayerStats *player = Leaderboard::findPlayer(playerName);
+        PlayerStats *player = nullptr;
+        try
+        {
+            player = Leaderboard::findPlayer(playerName);
+        }
+        catch (const MinesweeperException &)
+        {
+            std::cout << "No games found for this player...\n";
+            waitForEnter();
+            return;
+        }
 
-        if (!player || player->getMatchesNumber() == 0)
+        // Jucatorul poate exista deja in baza de date,
+        // dar sa nu aibe niciun meci (au fost sterse toate)
+        if (player->getMatchesNumber() == 0)
         {
             std::cout << "No games found for this player...\n";
             waitForEnter();
@@ -628,7 +639,6 @@ void Commandline::displayStatistics()
             clearScreen();
             const auto &matches = player->getMatches();
             int totalGames = player->getMatchesNumber();
-            unsigned int wins = player->getWins();
             unsigned int totalTime = 0;
             int totalClicks = 0;
 
@@ -638,12 +648,10 @@ void Commandline::displayStatistics()
                 totalClicks += static_cast<int>(match.getClicks());
             }
 
-            float winRate = player->getWinRate() * 100.0f;
-
             std::cout << "Player: " << player->getPlayerName() << "\n";
             std::cout << "Games: " << totalGames << "\n";
-            std::cout << "Wins: " << wins << " | Losses: " << (totalGames - wins) << "\n";
-            std::cout << "Win rate: " << std::fixed << std::setprecision(1) << winRate << "%\n";
+            std::cout << "Wins: " << player->getWins() << " | Losses: " << (totalGames - player->getWins()) << "\n";
+            std::cout << "Win rate: " << std::fixed << std::setprecision(1) << player->getWinRate() * 100.0f << "%\n";
             std::cout << "Total time: " << (totalTime / 1000) << "s\n";
             std::cout << "Average number of clicks: " << (totalGames > 0 ? totalClicks / totalGames : 0) << "\n";
 

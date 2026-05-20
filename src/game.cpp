@@ -86,9 +86,15 @@ void Game::reset()
 
 void Game::clearPowerUpHistory()
 {
-    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp *p)
-                  { delete p; });
-    powerUpHistory.clear();
+    // Eliberam explicit resursele cu for_each, apoi curatam lista prin remove_if
+    // (e usor artificiala implementarea...)
+    std::for_each(powerUpHistory.begin(), powerUpHistory.end(), [](BasePowerUp *&p)
+                  {
+        delete p;
+        p = nullptr; });
+
+    powerUpHistory.remove_if([](BasePowerUp *p)
+                             { return p == nullptr; });
 }
 
 void Game::setMap(const Map &map)
@@ -210,9 +216,11 @@ void Game::showPowerUpHistory() const
 void Game::fillReveal(int x, int y)
 {
     /*
-        Standard Minesweeper reveal algorithm using BFS with 8-connectivity.
+       Standard Minesweeper reveal algorithm using BFS with 8-connectivity.
     */
 
+    // std::queue ofera FIFO cu push/pop O(1) amortizat, ce ne este folositor
+    // pentru BFS-ul de flood fill.
     std::queue<std::pair<int, int>> Queue;
     Queue.push(std::make_pair(x, y));
 
@@ -251,11 +259,11 @@ void Game::adjacentReveal(int x, int y)
     // Functia implementeaza tehnica de Chording
 
     /*
-       "When an uncovered square with a number has exactly the correct number of adjacent squares flagged,
-    performing a click with both mouse buttons on it will uncover all unmarked squares;
-        This is called a Chord."
+       "When an uncovered square with a number has exactly the correct number of
+       adjacent squares flagged, performing a click with both mouse buttons on it
+       will uncover all unmarked squares. This is called a Chord."
 
-        Sursa explicatie: https://www.speedrun.com/de-DE/gm/guides/0jd4m
+       Sursa explicatie: https://www.speedrun.com/de-DE/gm/guides/0jd4m
     */
     if (!gameMap.isValidPosition(x, y) || !gameMap.isRevealedAt(x, y))
         throw InvalidMoveException("Invalid move: chord used on an unavailable cell", x, y);

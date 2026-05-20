@@ -618,35 +618,30 @@ std::istream &operator>>(std::istream &is, PlayerStats &plrStats)
     std::string numGamesText;
     std::string wRateText;
 
-    if (is >> name >> numGamesText >> wRateText)
+    if (!(is >> name >> numGamesText >> wRateText))
+        throw MinesweeperException("Invalid player statistics input");
+
+    int numGames = std::stoi(numGamesText);
+    double wRate = std::stod(wRateText);
+
+    plrStats.setPlayerName(name);
+    plrStats.games.clear();
+    plrStats.recentGames.clear();
+    plrStats.numberOfWins = 0;
+    plrStats.setWinRate(static_cast<float>(wRate));
+
+    if (numGames > 0)
     {
-        try
+        plrStats.games.reserve(numGames);
+        for (int i = 0; i < numGames; ++i)
         {
-            int numGames = std::stoi(numGamesText);
-            double wRate = std::stod(wRateText);
-
-            plrStats.setPlayerName(name);
-            plrStats.games.clear();
-            plrStats.recentGames.clear();
-            plrStats.numberOfWins = 0;
-            plrStats.setWinRate(static_cast<float>(wRate));
-
-            if (numGames > 0)
-            {
-                plrStats.games.reserve(numGames);
-                for (int i = 0; i < numGames; ++i)
-                {
-                    Match match;
-                    is >> match;
-                    plrStats.addMatch(match);
-                }
-            }
-        }
-        catch (...)
-        {
-            is.setstate(std::ios::failbit);
+            Match match;
+            if (!(is >> match))
+                throw MinesweeperException("Invalid match data in player statistics");
+            plrStats.addMatch(match);
         }
     }
+
     return is;
 }
 
@@ -673,7 +668,7 @@ PlayerStats *Leaderboard::findPlayer(const std::string &name)
     auto it = playerStats.find(normalized);
 
     if (it == playerStats.end())
-        return nullptr;
+        throw DatabaseException("Player not found in leaderboard", 0);
 
     return &it->second;
 }
@@ -685,9 +680,9 @@ PlayerStats *Leaderboard::addPlayer(const std::string &name)
     if (normalized.empty())
         throw MinesweeperException("Player name cannot be empty");
 
-    PlayerStats *existing = findPlayer(normalized);
-    if (existing)
-        return existing;
+    auto existing = playerStats.find(normalized);
+    if (existing != playerStats.end())
+        throw DatabaseException("Player already exists in leaderboard", 0);
 
     auto [it, inserted] = playerStats.emplace(normalized, PlayerStats(normalized));
     if (inserted)
@@ -746,8 +741,12 @@ void Leaderboard::removePlayer(const std::string &name)
 
     playerStats.erase(it);
 
-    std::erase_if(playerOrder, [&](const std::string &playerName)
-                  { return playerName == normalized; });
+    // erase-remove_if pe vector
+    // stergem referinta din ordinea de afisare
+    // dupa ce am eliminat player-ul
+    playerOrder.erase(std::remove_if(playerOrder.begin(), playerOrder.end(), [&](const std::string &playerName)
+                                     { return playerName == normalized; }),
+                      playerOrder.end());
 }
 
 void Leaderboard::sort(char order, bool equality)
@@ -772,27 +771,4 @@ void Leaderboard::sort(char order, bool equality)
         std::stable_sort(playerOrder.begin(), playerOrder.end(), comparator);
     else
         std::sort(playerOrder.begin(), playerOrder.end(), comparator);
-}
-
-/**
- * Alegem "cel mai bun" jucator dupa win rate, apoi dupa numarul de victorii.
- */
-template <>
-const PlayerStats *findBest<PlayerStats>(const std::vector<PlayerStats> &values)
-{
-    if (values.empty())
-        return nullptr;
-
-    // lhs = left-hand side, rhs = right-hand side
-    auto it = std::max_element(values.begin(), values.end(), [](const PlayerStats &lhs, const PlayerStats &rhs)
-                               {
-        if (lhs.getWinRate() != rhs.getWinRate())
-            return lhs.getWinRate() < rhs.getWinRate();
-
-        if (lhs.getWins() != rhs.getWins())
-            return lhs.getWins() < rhs.getWins();
-
-        return lhs.getPlayerName() < rhs.getPlayerName(); });
-
-    return &*it;
 }

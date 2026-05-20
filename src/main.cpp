@@ -6,6 +6,10 @@ int main()
 {
     try
     {
+        // ThemeManager e un singleton Meyers, deci nu poate fi declarat aici 
+        //
+        // ThemeManager copy = ThemeManager::instance(); // error: copy constructor deleted
+        // ThemeManager other;                           // error: default constructor is private in a Meyers singleton
         Commandline cli;
         cli.StartCommandline();
     }

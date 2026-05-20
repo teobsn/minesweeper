@@ -816,8 +816,18 @@ void Render::DrawMyStats()
     DrawTextEx(AdwaitaMono, "MY STATISTICS", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "MY STATISTICS", 48, 0).x / 2.0f, renderPosY}, 48, 0, theme.accent);
     renderPosY += 70.0f;
 
-    PlayerStats *player = Leaderboard::findPlayer(playerName);
-    if (!player || player->getMatchesNumber() == 0)
+    PlayerStats *player = nullptr;
+    try
+    {
+        player = Leaderboard::findPlayer(playerName);
+    }
+    catch (const MinesweeperException &)
+    {
+        DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
+        return;
+    }
+
+    if (player->getMatchesNumber() == 0)
     {
         DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
     }
@@ -913,10 +923,17 @@ void Render::HandleMyStatsInput()
 
         if (CheckCollisionPointRec(mousePos, removeLastButton))
         {
-            PlayerStats *player = Leaderboard::findPlayer(playerName);
-            if (player && player->getMatchesNumber() > 0)
+            try
             {
-                --(*player);
+                PlayerStats *player = Leaderboard::findPlayer(playerName);
+                if (player && player->getMatchesNumber() > 0)
+                {
+                    --(*player);
+                }
+            }
+            catch (const MinesweeperException &e)
+            {
+                std::cout << e.what() << "\n";
             }
         }
         if (CheckCollisionPointRec(mousePos, backButton))
@@ -1065,12 +1082,20 @@ void Render::SaveMatchStats()
         // Functia Raylib SaveFileText cere un pointer non-const.
         SaveFileText("last_player.txt", const_cast<char *>(playerName.c_str()));
 
-        PlayerStats *player = Leaderboard::addPlayer(playerName);
-        if (player)
+        PlayerStats *player = nullptr;
+        try
         {
-            *player + match;
-            Leaderboard::addGame();
-            statsSaved = true;
+            // Incercam intai sa gasim jucatorul
+            player = Leaderboard::findPlayer(playerName);
         }
+        catch (const DatabaseException &)
+        {
+            // Daca nu exista, il adaugam
+            player = Leaderboard::addPlayer(playerName);
+        }
+
+        *player + match;
+        Leaderboard::addGame();
+        statsSaved = true;
     }
 }
