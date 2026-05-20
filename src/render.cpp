@@ -29,7 +29,7 @@ namespace
     // poate exista variante mai bune (to do?)
     const ThemePalette &Theme()
     {
-        return ThemeManager::instance().getPalette();
+        return ThemeManager::getInstance().getPalette();
     }
 
     Color ButtonText(Color background)
@@ -252,7 +252,7 @@ void Render::DrawMenu()
     renderPosY += 95.0f;
     DrawTextEx(AdwaitaMono, "THEME", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "THEME", 24, 0).x / 2.0f, renderPosY}, 24, 0, theme.text);
     renderPosY += 40.0f;
-    std::string currentThemeStr = "Current theme: " + ThemeManager::instance().getThemeName();
+    std::string currentThemeStr = "Current theme: " + ThemeManager::getInstance().getThemeName();
     DrawTextEx(AdwaitaMono, currentThemeStr.c_str(), {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, currentThemeStr.c_str(), 18, 0).x / 2.0f, renderPosY - 22.0f}, 18, 0, theme.muted);
 
     const float themeButtonW = 145.0f;
@@ -267,7 +267,7 @@ void Render::DrawMenu()
         float x = (i % 2 == 0) ? themeLeft : themeRight;
         float y = renderPosY + static_cast<float>(i / 2) * 46.0f;
         Rectangle button = {x, y, themeButtonW, themeButtonH};
-        const bool selected = ThemeManager::instance().getTheme() == themeId;
+        const bool selected = ThemeManager::getInstance().getTheme() == themeId;
         DrawRectangleRec(button, selected ? theme.surfaceAlt : theme.surface);
         const char *label = ThemeLabel(themeId);
         DrawTextEx(AdwaitaMono, label, {button.x + button.width / 2.0f - MeasureTextEx(AdwaitaMono, label, 18, 0).x / 2.0f, button.y + 8.0f}, 18.0f, 0, selected ? ButtonText(theme.surfaceAlt) : ButtonText(theme.surface));
@@ -462,7 +462,7 @@ void Render::HandleMenuInput()
         {
             SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-                ThemeManager::instance().setTheme(makeThemeFactory(themeId));
+                ThemeManager::getInstance().setTheme(makeThemeFactory(themeId));
             break;
         }
     }

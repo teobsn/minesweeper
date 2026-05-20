@@ -2,6 +2,7 @@
 
 // Minesweeper headers
 #include "cell.hpp"
+#include "iobject.hpp"
 #include "map.hpp"
 
 // C++ standard library
@@ -12,7 +13,7 @@
 
 class BasePowerUp;
 
-class Game final
+class Game final : public IObject
 {
 public:
     enum class GameState
@@ -86,6 +87,7 @@ public:
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Game &game);
     friend std::istream &operator>>(std::istream &os, Game &game);
+    std::string toString() const override;
 
 private:
     Map gameMap;

@@ -105,7 +105,7 @@ public:
 std::ostream &operator<<(std::ostream &os, const Match &match);
 std::istream &operator>>(std::istream &os, Match &match);
 
-class PlayerStats final
+class PlayerStats final : public IObject
 {
 private:
     std::string playerName;
@@ -114,8 +114,8 @@ private:
     // deci costul amortizat O(1) la push_back este potrivit aici
     std::vector<Match> games;
     // StaticQueue limiteaza istoricul recent la 10 elemente fara alocare
-    // suplimentara la runtime, ceea ce se potriveste pentru afisarea ultimelor
-    // meciuri din UI
+    // suplimentara la runtime; push/pop raman O(1), ceea ce se potriveste
+    // pentru afisarea ultimelor meciuri din UI
     StaticQueue<Match, 10> recentGames;
     int numberOfWins;
     float winRate;
@@ -172,6 +172,7 @@ public:
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats);
     friend std::istream &operator>>(std::istream &os, PlayerStats &plrStats);
+    std::string toString() const override;
 };
 
 std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats);

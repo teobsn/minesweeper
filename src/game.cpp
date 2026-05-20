@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <queue>
 #include <typeinfo>
+#include <sstream>
 
 Game::Game()
 {
@@ -53,7 +54,7 @@ Game::Game(GameState gameState, Map gameMap, unsigned int flagsPlaced, unsigned 
 }
 
 Game::Game(const Game &game)
-    : gameMap(game.gameMap), gameState(game.gameState), flagsPlaced(game.flagsPlaced), cellsRevealed(game.cellsRevealed), clicks(game.clicks), startTime(game.startTime), invulnerable(game.invulnerable)
+    : IObject(game), gameMap(game.gameMap), gameState(game.gameState), flagsPlaced(game.flagsPlaced), cellsRevealed(game.cellsRevealed), clicks(game.clicks), startTime(game.startTime), invulnerable(game.invulnerable)
 {
     // Istoricul nu se copiaza pentru a evita double free
     this->powerUpHistory.clear();
@@ -312,6 +313,36 @@ void Game::toggleFlag(int x, int y)
         flagsPlaced++;
     else
         flagsPlaced--;
+}
+
+std::string Game::toString() const
+{
+    std::ostringstream os;
+    os << "Game #" << getId() << " State: ";
+
+    switch (gameState)
+    {
+    case GameState::MENU:
+        os << "MENU";
+        break;
+    case GameState::NOT_STARTED:
+        os << "NOT_STARTED";
+        break;
+    case GameState::IN_PROGRESS:
+        os << "IN_PROGRESS";
+        break;
+    case GameState::WON:
+        os << "WON";
+        break;
+    case GameState::LOST:
+        os << "LOST";
+        break;
+    }
+
+    os << " | Flags: " << flagsPlaced
+       << " | Revealed: " << cellsRevealed
+       << " | Clicks: " << clicks;
+    return os.str();
 }
 
 Game::GameState Game::getCurrentState() const

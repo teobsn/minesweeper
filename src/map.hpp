@@ -2,12 +2,13 @@
 
 // Minesweeper headers
 #include "cell.hpp"
+#include "iobject.hpp"
 
 // C++ standard library
 #include <vector>
 #include <iostream>
 
-class Map final
+class Map final : public IObject
 {
     unsigned int width, height;
     unsigned long long seed;
@@ -63,6 +64,7 @@ public:
     // Friend pentru ostream, istream
     friend std::ostream &operator<<(std::ostream &os, const Map &map);
     friend std::istream &operator>>(std::istream &os, Map &map);
+    std::string toString() const override;
 
     // Alte metode
     unsigned int getWidth() const;

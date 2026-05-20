@@ -606,10 +606,16 @@ unsigned int PlayerStats::operator[](char c) const
 
 std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats)
 {
-    os << "Statistics for " << (plrStats.playerName.empty() ? "Unknown Player" : plrStats.playerName) << "\n";
-    os << "Games played: " << plrStats.getMatchesNumber() << "\n";
-    os << "Win Rate: " << plrStats.winRate << "\n";
-    return os;
+    return os << plrStats.toString();
+}
+
+std::string PlayerStats::toString() const
+{
+    std::ostringstream os;
+    os << "Statistics for " << (playerName.empty() ? "Unknown Player" : playerName) << "\n";
+    os << "Games played: " << getMatchesNumber() << "\n";
+    os << "Win Rate: " << winRate << "\n";
+    return os.str();
 }
 
 std::istream &operator>>(std::istream &is, PlayerStats &plrStats)

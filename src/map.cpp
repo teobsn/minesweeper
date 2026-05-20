@@ -6,6 +6,7 @@
 // C++ standard library
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 // External libraries
 #include "pcg/pcg32.h"
@@ -61,7 +62,7 @@ Map::Map(const unsigned int width, const unsigned int height, const unsigned lon
 }
 
 Map::Map(const Map &other)
-    : width(other.width), height(other.height), seed(other.seed), bombs(other.bombs)
+    : IObject(other), width(other.width), height(other.height), seed(other.seed), bombs(other.bombs)
 {
     // Cream o matrice noua
     cells = std::vector<std::vector<Cell>>(other.height, std::vector<Cell>(other.width));
@@ -249,6 +250,15 @@ std::ostream &operator<<(std::ostream &os, const Map &map)
     }
 
     return os;
+}
+
+std::string Map::toString() const
+{
+    std::ostringstream os;
+    os << "Map #" << getId() << " [" << width << "x" << height << "]"
+       << " Seed: " << seed
+       << " Bombs: " << bombs;
+    return os.str();
 }
 
 std::istream &operator>>(std::istream &is, Map &map)

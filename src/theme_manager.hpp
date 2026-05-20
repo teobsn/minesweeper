@@ -29,6 +29,7 @@ private:
     void applyFactory(const IThemeFactory &factory);
 
 public:
+    static ThemeManager &getInstance();
     static ThemeManager &instance();
 
     ThemeManager(const ThemeManager &) = delete;
@@ -48,10 +49,15 @@ inline ThemeManager::ThemeManager()
     setTheme(makeThemeFactory(ThemeId::TokyoNight));
 }
 
-inline ThemeManager &ThemeManager::instance()
+inline ThemeManager &ThemeManager::getInstance()
 {
     static ThemeManager manager;
     return manager;
+}
+
+inline ThemeManager &ThemeManager::instance()
+{
+    return getInstance();
 }
 
 inline void ThemeManager::applyFactory(const IThemeFactory &factory)
