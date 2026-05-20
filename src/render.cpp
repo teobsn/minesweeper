@@ -729,18 +729,18 @@ void Render::DrawMyStats()
         renderPosY += 30.0f;
         DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, theme.grid);
 
-        int start = std::max(0, totalGames - 12);
-        for (int i = totalGames - 1; i >= start; --i) {
-            Color resColor = matches[i].getWinState() ? theme.success : theme.danger;
-            DrawTextEx(AdwaitaMono, matches[i].getWinState() ? "WIN" : "LOSS", {padding, renderPosY}, 18, 0, resColor);
-            
-            std::string sizeStr = std::to_string(matches[i].getMapWidth()) + "x" + std::to_string(matches[i].getMapHeight());
+        const auto recentMatches = player->getRecentMatches();
+        for (const Match &match : recentMatches) {
+            Color resColor = match.getWinState() ? theme.success : theme.danger;
+            DrawTextEx(AdwaitaMono, match.getWinState() ? "WIN" : "LOSS", {padding, renderPosY}, 18, 0, resColor);
+
+            std::string sizeStr = std::to_string(match.getMapWidth()) + "x" + std::to_string(match.getMapHeight());
             DrawTextEx(AdwaitaMono, sizeStr.c_str(), {padding + resW, renderPosY}, 18, 0, WHITE);
-            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getMapBombs()).c_str(), {padding + resW + sizeW, renderPosY}, 18, 0, WHITE);
-            DrawTextEx(AdwaitaMono, (std::to_string(matches[i].getTimePlayed().count() / 1000) + "s").c_str(), {padding + resW + sizeW + bombsW, renderPosY}, 18, 0, WHITE);
-            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getClicks()).c_str(), {padding + resW + sizeW + bombsW + timeW, renderPosY}, 18, 0, WHITE);
-            DrawTextEx(AdwaitaMono, std::to_string(matches[i].getTotalPowerUpsUsed()).c_str(), {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 18, 0, theme.highlight);
-            
+            DrawTextEx(AdwaitaMono, std::to_string(match.getMapBombs()).c_str(), {padding + resW + sizeW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, (std::to_string(match.getTimePlayed().count() / 1000) + "s").c_str(), {padding + resW + sizeW + bombsW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, std::to_string(match.getClicks()).c_str(), {padding + resW + sizeW + bombsW + timeW, renderPosY}, 18, 0, WHITE);
+            DrawTextEx(AdwaitaMono, std::to_string(match.getTotalPowerUpsUsed()).c_str(), {padding + resW + sizeW + bombsW + timeW + clickW, renderPosY}, 18, 0, theme.highlight);
+
             renderPosY += 22.0f;
         }
     }
