@@ -85,6 +85,10 @@ endif()
 
 # GUI Target
 add_executable(minesweeper-gui ${SOURCES-GUI})
+set_target_properties(minesweeper-gui PROPERTIES
+    RULE_LAUNCH_COMPILE "env CCACHE_DISABLE=1"
+    RULE_LAUNCH_LINK "env CCACHE_DISABLE=1"
+)
 if(raylib_FOUND)
     target_link_libraries(minesweeper-gui raylib)
 else()
@@ -104,7 +108,49 @@ if(BUILD_CLI)
     add_executable(minesweeper-benchmark ${SOURCES-BENCHMARK})
     add_executable(minesweeper-animation-demo ${SOURCES-DEMO1})
     add_executable(minesweeper-test ${SOURCES-DEMO2})
+    set_target_properties(minesweeper minesweeper-benchmark minesweeper-animation-demo minesweeper-test PROPERTIES
+        RULE_LAUNCH_COMPILE "env CCACHE_DISABLE=1"
+        RULE_LAUNCH_LINK "env CCACHE_DISABLE=1"
+    )
 endif()
+
+add_executable(minesweeper-unit-tests
+    tests/unit_tests.cpp
+    ${SOURCES-COMMON}
+)
+set_target_properties(minesweeper-unit-tests PROPERTIES
+    RULE_LAUNCH_COMPILE "env CCACHE_DISABLE=1"
+    RULE_LAUNCH_LINK "env CCACHE_DISABLE=1"
+)
+
+enable_testing()
+add_test(NAME minesweeper-unit-tests COMMAND minesweeper-unit-tests)
+add_test(NAME minesweeper-smoke-tests COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/smoke_tests.sh)
+add_test(NAME minesweeper-memory-tests COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tests/memory_tests.sh)
+
+set(CHECK_DEPENDS minesweeper-unit-tests)
+if(BUILD_CLI)
+    list(APPEND CHECK_DEPENDS minesweeper)
+endif()
+
+add_custom_target(check
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    DEPENDS ${CHECK_DEPENDS}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running project test suite"
+)
+
+set(CHECK_MEM_DEPENDS minesweeper-unit-tests)
+if(BUILD_CLI)
+    list(APPEND CHECK_MEM_DEPENDS minesweeper)
+endif()
+
+add_custom_target(check-mem
+    COMMAND ${CMAKE_CTEST_COMMAND} -R minesweeper-memory-tests --output-on-failure
+    DEPENDS ${CHECK_MEM_DEPENDS}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Running project memory leak checks"
+)
 
 # Enable parallel builds
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)
