@@ -6,7 +6,7 @@
 
 #include "iobject.hpp"
 
-class Cell : public IObject
+class Cell final : public IObject
 {
     bool bomb;
     bool flagged;

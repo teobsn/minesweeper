@@ -59,7 +59,7 @@ public:
     int getRadius() const;
 };
 
-class ShieldPowerUp : public TemporalEffect
+class ShieldPowerUp final : public TemporalEffect
 {
 public:
     ShieldPowerUp(int id, float duration);
@@ -73,7 +73,7 @@ public:
     std::string getCategory() const override final;
 };
 
-class ScannerPowerUp : public SpatialEffect
+class ScannerPowerUp final : public SpatialEffect
 {
 public:
     ScannerPowerUp(int id, int radius);
@@ -100,7 +100,7 @@ public:
     std::string getCategory() const override;
 };
 
-class BombDefuser : public BasePowerUp
+class BombDefuser final : public BasePowerUp
 {
 private:
     double ratio;

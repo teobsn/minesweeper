@@ -7,7 +7,7 @@
 #include <vector>
 #include <iostream>
 
-class Map
+class Map final
 {
     unsigned int width, height;
     unsigned long long seed;

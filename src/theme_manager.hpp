@@ -19,7 +19,7 @@ struct ThemePalette
     Color muted;
 };
 
-class ThemeManager
+class ThemeManager final
 {
 private:
     ThemeId currentTheme;

@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-class Match : public IObject
+class Match final : public IObject
 {
 private:
     unsigned int mapWidth, mapHeight;
@@ -105,7 +105,7 @@ public:
 std::ostream &operator<<(std::ostream &os, const Match &match);
 std::istream &operator>>(std::istream &os, Match &match);
 
-class PlayerStats
+class PlayerStats final
 {
 private:
     std::string playerName;
@@ -171,7 +171,7 @@ public:
 std::ostream &operator<<(std::ostream &os, const PlayerStats &plrStats);
 std::istream &operator>>(std::istream &os, PlayerStats &plrStats);
 
-class Leaderboard
+class Leaderboard final
 {
 private:
     static std::unordered_map<std::string, PlayerStats> playerStats;

@@ -20,7 +20,7 @@ public:
     }
 };
 
-class InvalidMoveException : public MinesweeperException
+class InvalidMoveException final : public MinesweeperException
 {
 private:
     int x, y;
@@ -38,7 +38,7 @@ public:
     int getY() const { return y; }
 };
 
-class GameConfigException : public MinesweeperException
+class GameConfigException final : public MinesweeperException
 {
 private:
     int width, height, bombs;
@@ -57,7 +57,7 @@ public:
     int getBombs() const { return bombs; }
 };
 
-class DatabaseException : public MinesweeperException
+class DatabaseException final : public MinesweeperException
 {
 private:
     int sqliteErrorCode;
@@ -75,7 +75,7 @@ public:
 };
 
 /// stack unwinding
-class ResourceGuard
+class ResourceGuard final
 {
 private:
     std::string resourceName;

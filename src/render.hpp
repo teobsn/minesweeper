@@ -13,7 +13,7 @@
 #include <chrono>
 #include <string>
 
-class Render
+class Render final
 {
 public:
     enum class GUIState

@@ -17,7 +17,7 @@ struct GameSetup
 
 // builder pentru setup-ul de joc; il folosim cand pornim o partida noua
 // din meniul cli/gui, ca sa tinem configuratia explicita si curata
-class GameSetupBuilder
+class GameSetupBuilder final
 {
 private:
     GameSetup setup;

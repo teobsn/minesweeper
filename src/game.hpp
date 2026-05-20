@@ -12,7 +12,7 @@
 
 class BasePowerUp;
 
-class Game
+class Game final
 {
 public:
     enum class GameState

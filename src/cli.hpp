@@ -24,7 +24,7 @@ struct MapSettings
     void generateRandomSeed();
 };
 
-class Commandline
+class Commandline final
 {
 public:
     enum class MenuOption
