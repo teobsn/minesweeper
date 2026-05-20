@@ -17,10 +17,6 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 - singleton `ThemeManager` implemented as a Meyers singleton
 - abstract factory for runtime theme selection
 - builder for game setup creation
-- bonus utilities:
-  - `Rezultat<T>`
-  - `StaticQueue<T, Capacity>`
-  - `std::initializer_list<T>` support
 
 ## Justificari
 
