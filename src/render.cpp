@@ -23,6 +23,9 @@
 
 namespace
 {
+// folosim un namespace anonim:
+// helperele sunt locale acestui fisier ca sa nu poluam namespace-ul global
+// poate exista variante mai bune (to do?)
 const ThemePalette &Theme()
 {
     return ThemeManager::instance().getPalette();
