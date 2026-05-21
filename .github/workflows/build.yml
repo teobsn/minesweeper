@@ -53,17 +53,19 @@ jobs:
         mkdir -p raylib-src/build
         cd raylib-src/build
         cmake -G "MinGW Makefiles" -DBUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release ..
-        mingw32-make -j$(nproc)
+        mingw32-make -j2
         # Note: We don't install globally, we'll point CMake to this build directory
 
     - name: Configure CMake
       shell: bash
       run: |
         if [ "${{ runner.os }}" == "Windows" ]; then
+          # Use absolute paths for raylib to avoid issues
+          RAYLIB_PATH="$(pwd)/raylib-src/build/raylib"
           cmake -B build -G "MinGW Makefiles" \
                 -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release \
-                -Draylib_DIR="$(pwd)/raylib-src/build/raylib" \
-                -DCMAKE_PREFIX_PATH="$(pwd)/raylib-src/build/raylib"
+                -Draylib_DIR="$RAYLIB_PATH" \
+                -DCMAKE_PREFIX_PATH="$RAYLIB_PATH"
         else
           cmake -B build -DCMAKE_BUILD_TYPE=Release
         fi
