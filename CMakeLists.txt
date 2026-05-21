@@ -86,7 +86,7 @@ if(BUILD_CLI)
 endif()
 
 # Raylib finding/linking
-if(NOT raylib_FOUND)
+if(NOT raylib_FOUND AND NOT (RAYLIB_INCLUDE_PATH AND RAYLIB_LIB_PATH))
     find_package(raylib QUIET)
 endif()
 

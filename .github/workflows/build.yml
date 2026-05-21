@@ -53,20 +53,18 @@ jobs:
         git clone --depth 1 https://github.com/raysan5/raylib.git raylib-src
         mkdir -p raylib-src/build
         cd raylib-src/build
-        cmake -G "MinGW Makefiles" -DBUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release ..
+        # Build as shared library for the DLL
+        cmake -G "MinGW Makefiles" -DBUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
         mingw32-make -j2
-        # Note: We don't install globally, we'll point CMake to this build directory
 
     - name: Configure CMake
       shell: bash
       run: |
         if [ "${{ runner.os }}" == "Windows" ]; then
-          # Use absolute paths for raylib to avoid issues
-          RAYLIB_PATH="$(pwd)/raylib-src/build/raylib"
           cmake -B build -G "MinGW Makefiles" \
                 -DBUILD_CLI=OFF -DCMAKE_BUILD_TYPE=Release \
-                -Draylib_DIR="$RAYLIB_PATH" \
-                -DCMAKE_PREFIX_PATH="$RAYLIB_PATH"
+                -DRAYLIB_INCLUDE_PATH="$(pwd)/raylib-src/src" \
+                -DRAYLIB_LIB_PATH="$(pwd)/raylib-src/build/raylib"
         else
           cmake -B build -DCMAKE_BUILD_TYPE=Release
         fi
@@ -91,15 +89,13 @@ jobs:
           # Copy executables
           cp build/*.exe dist/ 2>/dev/null || true
           
-          # Copy raylib.dll from our build
-          if [ -f "raylib-src/build/raylib/raylib.dll" ]; then
-            cp "raylib-src/build/raylib/raylib.dll" dist/
-            echo "Copied raylib.dll"
-          fi
-
+          # Copy raylib.dll from our build (might be in raylib subfolder)
+          find raylib-src/build -name "raylib.dll" -exec cp {} dist/ \;
+          
           # Verify that the critical DLLs are present
           if [ ! -f "dist/raylib.dll" ]; then
             echo "ERROR: raylib.dll was not found!"
+            find raylib-src/build -name "*.dll"
             exit 1
           fi
 
