@@ -1,5 +1,6 @@
 #include "powerups.hpp"
 #include "game.hpp"
+#include "logger.hpp"
 
 #include <sstream>
 
@@ -37,6 +38,7 @@ void BasePowerUp::use(Game &game, int x, int y)
 void BasePowerUp::activate(Game &game, int, int)
 {
     game.addPowerUpToHistory(this); // Valid (metoda publica a clasei Game)
+    Logger::getInstance().info("Power-up used: " + name);
 }
 
 TemporalEffect::TemporalEffect(int id, std::string name, float duration)

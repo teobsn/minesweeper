@@ -3,6 +3,7 @@
 #include "cli.hpp"
 #include "powerups.hpp"
 #include "exceptions.hpp"
+#include "logger.hpp"
 
 // C++ Standard libraries
 #include <iostream>
@@ -119,7 +120,8 @@ void Commandline::printMainMenu() const
     std::cout << "2. Change Map Settings\n";
     std::cout << "3. View My Statistics\n";
     std::cout << "4. View All Players Statistics\n";
-    std::cout << "5. Exit\n\n";
+    std::cout << "5. View Journal\n";
+    std::cout << "6. Exit\n\n";
 }
 
 void Commandline::printSettingsMenu() const
@@ -136,7 +138,7 @@ void Commandline::printSettingsMenu() const
 
 void Commandline::handleMainMenu()
 {
-    int choice = readIntInput("Your choice: ", 1, 5);
+    int choice = readIntInput("Your choice: ", 1, 6);
 
     try
     {
@@ -153,6 +155,9 @@ void Commandline::handleMainMenu()
             break;
         case MenuOption::VIEW_ALL_PLAYERS:
             displayAllPlayersStatistics();
+            break;
+        case MenuOption::VIEW_JOURNAL:
+            displayJournal();
             break;
         case MenuOption::EXIT:
             exit(0);
@@ -753,6 +758,53 @@ void Commandline::displayAllPlayersStatistics()
 
         std::cout << "\n";
         waitForEnter();
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << e.what() << "\n";
+        waitForEnter();
+    }
+    catch (...)
+    {
+        std::cout << "An unknown error occurred.\n";
+        waitForEnter();
+    }
+}
+
+void Commandline::displayJournal()
+{
+    try
+    {
+        while (true)
+        {
+            clearScreen();
+
+            std::cout << "Journal\n\n";
+
+            const auto entries = Logger::getInstance().getEntries();
+            if (entries.empty())
+            {
+                std::cout << "Journal is empty.\n";
+            }
+            else
+            {
+                for (const std::string &entry : entries)
+                    std::cout << entry << "\n";
+            }
+
+            std::cout << "\nOptions:\n";
+            std::cout << "1. Clear Journal\n";
+            std::cout << "2. Back\n";
+
+            int choice = readIntInput("Your choice: ", 1, 2);
+            if (choice == 1)
+            {
+                Logger::getInstance().clear();
+                std::cout << "Journal cleared.\n";
+                waitForEnter();
+            }
+            return;
+        }
     }
     catch (const std::exception &e)
     {

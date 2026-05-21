@@ -15,6 +15,7 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 - `std::string` everywhere instead of manual C strings
 - `IObject` interface with unique ids and polymorphic `toString()`
 - singleton `ThemeManager` implemented as a Meyers singleton
+- singleton `Logger` with journal persistence and menu access
 - abstract factory for runtime theme selection
 - builder for game setup creation
 

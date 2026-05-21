@@ -1,6 +1,7 @@
 #pragma once
 
 #include "theme_factory.hpp"
+#include "logger.hpp"
 #include <string>
 
 struct ThemePalette
@@ -91,6 +92,7 @@ inline void ThemeManager::setTheme(std::unique_ptr<IThemeFactory> factory)
         currentTheme = ThemeId::TokyoNight;
 
     applyFactory(*factory);
+    Logger::getInstance().info("Theme changed to " + getThemeName(currentTheme));
 }
 
 inline void ThemeManager::setTheme(ThemeId theme)

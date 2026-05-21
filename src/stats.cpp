@@ -3,6 +3,7 @@
 #include "cell.hpp"
 #include "map.hpp"
 #include "exceptions.hpp"
+#include "logger.hpp"
 
 // C++ standard library
 #include <iostream>
@@ -439,6 +440,7 @@ void PlayerStats::addMatch(const Match &match)
 
     updateWins();
     updateWinRate();
+    Logger::getInstance().info("Match added to player stats: " + playerName);
 }
 
 void PlayerStats::removeMatches(int numMatches)
@@ -455,6 +457,7 @@ void PlayerStats::removeMatches(int numMatches)
 
     updateWins();
     updateWinRate();
+    Logger::getInstance().info("Removed " + std::to_string(numMatches) + " match(es) from player stats: " + playerName);
 }
 
 std::vector<Match> &PlayerStats::getMatches() noexcept
@@ -692,7 +695,10 @@ PlayerStats *Leaderboard::addPlayer(const std::string &name)
 
     auto [it, inserted] = playerStats.emplace(normalized, PlayerStats(normalized));
     if (inserted)
+    {
         playerOrder.push_back(normalized);
+        Logger::getInstance().info("Player added to leaderboard: " + normalized);
+    }
 
     return &it->second;
 }
@@ -753,6 +759,7 @@ void Leaderboard::removePlayer(const std::string &name)
     playerOrder.erase(std::remove_if(playerOrder.begin(), playerOrder.end(), [&](const std::string &playerName)
                                      { return playerName == normalized; }),
                       playerOrder.end());
+    Logger::getInstance().info("Player removed from leaderboard: " + normalized);
 }
 
 void Leaderboard::sort(char order, bool equality)

@@ -6,6 +6,7 @@
 #include "stats.hpp"
 #include "powerups.hpp"
 #include "exceptions.hpp"
+#include "logger.hpp"
 
 // C++ standard library
 #include <iostream>
@@ -72,6 +73,7 @@ void Game::startGame()
 {
     gameState = GameState::IN_PROGRESS;
     startTime = std::chrono::steady_clock::now();
+    Logger::getInstance().info("Game started");
 }
 
 void Game::reset()
@@ -83,6 +85,7 @@ void Game::reset()
     clicks = 0;
     invulnerable = false;
     clearPowerUpHistory();
+    Logger::getInstance().info("Game reset");
 }
 
 void Game::clearPowerUpHistory()
@@ -143,6 +146,8 @@ void Game::revealCell(int x, int y)
 void Game::setInvulnerable(bool value)
 {
     invulnerable = value;
+    if (value)
+        Logger::getInstance().debug("Shield activated");
 }
 
 bool Game::isInvulnerable() const
@@ -153,6 +158,7 @@ bool Game::isInvulnerable() const
 void Game::consumeShield()
 {
     invulnerable = false;
+    Logger::getInstance().info("Shield consumed");
 }
 
 void Game::activateRadar(int x, int y, int radius)
@@ -161,6 +167,9 @@ void Game::activateRadar(int x, int y, int radius)
         startGame();
     gameMap.revealArea(x, y, radius);
     checkWinCondition();
+    std::ostringstream oss;
+    oss << "Radar activated at (" << x << ", " << y << ") with radius " << radius;
+    Logger::getInstance().info(oss.str());
 }
 
 void Game::addPowerUpToHistory(BasePowerUp *p)
@@ -470,17 +479,25 @@ Cell &Game::operator[](int index)
 
 void Game::checkWinCondition()
 {
+    if (gameState == GameState::WON || gameState == GameState::LOST)
+        return;
+
     for (unsigned int y = 0; y < gameMap.getHeight(); ++y)
         for (unsigned int x = 0; x < gameMap.getWidth(); ++x)
             if (!gameMap[y * gameMap.getWidth() + x]['b'] && !gameMap[y * gameMap.getWidth() + x]['r'])
                 return;
 
     gameState = GameState::WON;
+    Logger::getInstance().info("Game won");
 }
 
 void Game::loseGame()
 {
+    if (gameState == GameState::LOST)
+        return;
+
     gameState = GameState::LOST;
+    Logger::getInstance().error("Game lost");
 }
 
 std::ostream &operator<<(std::ostream &os, const Game &game)

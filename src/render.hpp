@@ -21,7 +21,8 @@ public:
         MENU,
         GAME,
         MY_STATS,
-        LEADERBOARD
+        LEADERBOARD,
+        JOURNAL
     };
 
 private:
@@ -50,6 +51,8 @@ private:
     void HandleMyStatsInput();
     void DrawLeaderboard();
     void HandleLeaderboardInput();
+    void DrawJournal();
+    void HandleJournalInput();
 
     void SaveMatchStats();
 

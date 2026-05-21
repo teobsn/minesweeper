@@ -33,6 +33,7 @@ public:
         CHANGE_SETTINGS,
         VIEW_STATS,
         VIEW_ALL_PLAYERS,
+        VIEW_JOURNAL,
         EXIT
     };
 
@@ -55,6 +56,7 @@ private:
     Match saveGameRecord(const Game &game, bool won);
     void displayStatistics();
     void displayAllPlayersStatistics();
+    void displayJournal();
 
     int readIntInput(const char *prompt, int min, int max);
     unsigned long long readULLInput(const char *prompt);

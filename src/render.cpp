@@ -8,6 +8,7 @@
 #include "powerups.hpp"
 #include "theme_manager.hpp"
 #include "exceptions.hpp"
+#include "logger.hpp"
 
 // External libraries
 #include "raylib.h"
@@ -95,8 +96,9 @@ Render::~Render()
 
 void Render::InitializeGame(const GameSetup &setup)
 {
-    // Informatiile sunt logate pentru debug
-    std::cout << "Generating map: " << setup.width << "x" << setup.height << ", Bombs: " << setup.bombs << ", Seed: " << setup.seed << "\n";
+    std::ostringstream oss;
+    oss << "Generating map: " << setup.width << "x" << setup.height << ", Bombs: " << setup.bombs << ", Seed: " << setup.seed;
+    Logger::getInstance().info(oss.str());
 
     Map newMap(setup.width, setup.height, setup.seed, setup.bombs);
     game = Game(Game::GameState::NOT_STARTED, newMap);
@@ -163,6 +165,13 @@ void Render::StartRender()
             BeginDrawing();
             ClearBackground(Theme().background);
             DrawLeaderboard();
+            EndDrawing();
+            break;
+        case GUIState::JOURNAL:
+            HandleJournalInput();
+            BeginDrawing();
+            ClearBackground(Theme().background);
+            DrawJournal();
             EndDrawing();
             break;
         }
@@ -245,11 +254,16 @@ void Render::DrawMenu()
     DrawTextEx(AdwaitaMono, "LEADERBOARD", {leaderboardButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "LEADERBOARD", textSize, 0).x / 2.0f, leaderboardButton.y + 10.0f}, textSize, 0, ButtonText(theme.highlight));
 
     renderPosY += 70.0f;
+    Rectangle journalButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
+    DrawRectangleRec(journalButton, theme.surfaceAlt);
+    DrawTextEx(AdwaitaMono, "JOURNAL", {journalButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "JOURNAL", textSize, 0).x / 2.0f, journalButton.y + 10.0f}, textSize, 0, ButtonText(theme.surfaceAlt));
+
+    renderPosY += 70.0f;
     Rectangle exitButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
     DrawRectangleRec(exitButton, theme.danger);
     DrawTextEx(AdwaitaMono, "EXIT", {exitButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "EXIT", textSize, 0).x / 2.0f, exitButton.y + 10.0f}, textSize, 0, ButtonText(theme.danger));
 
-    renderPosY += 95.0f;
+    renderPosY += 60.0f;
     DrawTextEx(AdwaitaMono, "THEME", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "THEME", 24, 0).x / 2.0f, renderPosY}, 24, 0, theme.text);
     renderPosY += 40.0f;
     std::string currentThemeStr = "Current theme: " + ThemeManager::getInstance().getThemeName();
@@ -291,6 +305,8 @@ void Render::DrawMenu()
         DrawRectangleLinesEx(myStatsButton, 2, WHITE);
     if (CheckCollisionPointRec(mousePos, leaderboardButton))
         DrawRectangleLinesEx(leaderboardButton, 2, WHITE);
+    if (CheckCollisionPointRec(mousePos, journalButton))
+        DrawRectangleLinesEx(journalButton, 2, WHITE);
     if (CheckCollisionPointRec(mousePos, exitButton))
         DrawRectangleLinesEx(exitButton, 2, theme.text);
 }
@@ -321,8 +337,10 @@ void Render::HandleMenuInput()
     renderPosY += 70.0f;
     Rectangle leaderboardButton = {(float)screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
     renderPosY += 70.0f;
+    Rectangle journalButton = {(float)screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
+    renderPosY += 70.0f;
     Rectangle exitButton = {(float)screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
-    renderPosY += 95.0f;
+    renderPosY += 60.0f;
     renderPosY += 40.0f;
     const float themeButtonW = 145.0f;
     const float themeButtonH = 36.0f;
@@ -439,6 +457,12 @@ void Render::HandleMenuInput()
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             guiState = GUIState::LEADERBOARD;
+    }
+    else if (CheckCollisionPointRec(mousePos, journalButton))
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            guiState = GUIState::JOURNAL;
     }
     else if (CheckCollisionPointRec(mousePos, exitButton))
     {
@@ -935,6 +959,69 @@ void Render::HandleMyStatsInput()
             {
                 std::cout << e.what() << "\n";
             }
+        }
+        if (CheckCollisionPointRec(mousePos, backButton))
+            guiState = GUIState::MENU;
+    }
+}
+
+void Render::DrawJournal()
+{
+    const int screenWidth = GetScreenWidth();
+    const int screenHeight = GetScreenHeight();
+    const float padding = 40.0f;
+    const ThemePalette &theme = Theme();
+    float renderPosY = padding;
+
+    DrawTextEx(AdwaitaMono, "JOURNAL", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "JOURNAL", 48, 0).x / 2.0f, renderPosY}, 48, 0, theme.accent);
+    renderPosY += 70.0f;
+
+    const auto entries = Logger::getInstance().getEntries();
+    if (entries.empty())
+    {
+        DrawTextEx(AdwaitaMono, "Journal is empty.", {padding, renderPosY}, 24, 0, theme.text);
+    }
+    else
+    {
+        std::size_t start = entries.size() > 18 ? entries.size() - 18 : 0;
+        for (std::size_t i = start; i < entries.size(); ++i)
+        {
+            DrawTextEx(AdwaitaMono, entries[i].c_str(), {padding, renderPosY}, 18, 0, theme.text);
+            renderPosY += 22.0f;
+            if (renderPosY > screenHeight - 100.0f)
+                break;
+        }
+    }
+
+    Rectangle clearButton = {padding, (float)screenHeight - 60.0f, 250.0f, 40.0f};
+    DrawRectangleRec(clearButton, theme.warning);
+    DrawTextEx(AdwaitaMono, "CLEAR JOURNAL", {clearButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "CLEAR JOURNAL", 20, 0).x / 2.0f, clearButton.y + 10.0f}, 20.0f, 0, ButtonText(theme.warning));
+    if (CheckCollisionPointRec(GetMousePosition(), clearButton))
+        DrawRectangleLinesEx(clearButton, 2, theme.accent);
+
+    Rectangle backButton = {(float)screenWidth - padding - 200.0f, (float)screenHeight - 60.0f, 200.0f, 40.0f};
+    DrawRectangleRec(backButton, theme.surface);
+    DrawTextEx(AdwaitaMono, "BACK", {backButton.x + 100.0f - MeasureTextEx(AdwaitaMono, "BACK", 24, 0).x / 2.0f, backButton.y + 8.0f}, 24, 0, theme.text);
+    if (CheckCollisionPointRec(GetMousePosition(), backButton))
+        DrawRectangleLinesEx(backButton, 2, theme.accent);
+}
+
+void Render::HandleJournalInput()
+{
+    const float padding = 40.0f;
+    Vector2 mousePos = GetMousePosition();
+
+    if (IsKeyPressed(KEY_ESCAPE))
+        guiState = GUIState::MENU;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        Rectangle clearButton = {padding, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
+        Rectangle backButton = {(float)GetScreenWidth() - padding - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
+
+        if (CheckCollisionPointRec(mousePos, clearButton))
+        {
+            Logger::getInstance().clear();
+            return;
         }
         if (CheckCollisionPointRec(mousePos, backButton))
             guiState = GUIState::MENU;
