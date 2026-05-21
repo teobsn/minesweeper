@@ -10,6 +10,7 @@
 #include <limits>
 #include <cstring>
 #include <iomanip>
+#include <algorithm>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/select.h>
@@ -250,9 +251,9 @@ int Commandline::readIntInput(const char *prompt, int min, int max)
 
         // Rezultat<T> is used here to keep input parsing explicit: the value path
         // stays separate from the error path, and the error message can be reused
-        // without throwing for normal invalid input.
-        auto parsed = parseInt(line).transforma([](int value)
-                                                { return value; });
+        // without throwing for normal invalid input
+        auto parsed = parseInt(line).transforma<int>([](int value)
+                                                     { return value; });
 
         if (parsed.ok())
         {
@@ -763,9 +764,10 @@ void Commandline::displayAllPlayersStatistics()
 
         std::cout << "\nOptions:\n";
         std::cout << "1. Delete Player\n";
-        std::cout << "2. Back\n";
+        std::cout << "2. Filter by minimum games\n";
+        std::cout << "3. Back\n";
 
-        int choice = readIntInput("Your choice: ", 1, 2);
+        int choice = readIntInput("Your choice: ", 1, 3);
         if (choice == 1)
         {
             std::string playerName;
@@ -774,6 +776,56 @@ void Commandline::displayAllPlayersStatistics()
 
             Leaderboard::removePlayer(playerName);
             std::cout << "Player deleted.\n";
+        }
+        else if (choice == 2)
+        {
+            int minGames = readIntInput("Minimum games to show: ", 0, 1000000);
+            const auto players = Leaderboard::getPlayers();
+            std::vector<PlayerStats> filteredPlayers;
+            std::copy_if(players.begin(), players.end(), std::back_inserter(filteredPlayers), [minGames](const PlayerStats &player)
+                         { return player.getMatchesNumber() >= minGames; });
+
+            clearScreen();
+            std::cout << "Filtered players with at least " << minGames << " game(s):\n\n";
+            if (filteredPlayers.empty())
+            {
+                std::cout << "No players match this filter.\n";
+            }
+            else
+            {
+                std::cout << "Player\t\tGames\tWins\tLosses\tWin Rate\tTime\tAverage Clicks\n";
+                for (const PlayerStats &player : filteredPlayers)
+                {
+                    const std::string &playerName = player.getPlayerName();
+                    int totalGames = player.getMatchesNumber();
+                    float winRate = player.getWinRate() * 100.0f;
+                    unsigned int wins = player.getWins();
+                    unsigned int totalTime = 0;
+                    unsigned int totalClicks = 0;
+
+                    if (totalGames > 0)
+                    {
+                        const auto &matches = player.getMatches();
+                        for (const Match &match : matches)
+                        {
+                            totalTime += match.getTimePlayed().count();
+                            totalClicks += match.getClicks();
+                        }
+                    }
+
+                    std::cout << (playerName.empty() ? "Unknown" : playerName) << "\t\t"
+                              << totalGames << "\t"
+                              << wins << "\t"
+                              << (totalGames - wins) << "\t"
+                              << std::fixed << std::setprecision(1) << winRate << "%\t\t"
+                              << (totalTime / 1000) << "s\t"
+                              << (totalGames > 0 ? (totalClicks / static_cast<unsigned int>(totalGames)) : 0) << "\n";
+                }
+            }
+
+            std::cout << "\n";
+            waitForEnter();
+            return;
         }
 
         std::cout << "\n";

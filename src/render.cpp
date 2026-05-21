@@ -84,6 +84,7 @@ Render::Render()
     mapBombsText = "8";
     mapSeedText = "";
     playerName = "Player";
+    leaderboardMinGamesText = "0";
     finalTime = 0;
     guiState = GUIState::MENU;
     statsSaved = false;
@@ -286,8 +287,8 @@ void Render::DrawMenu()
 
     renderPosY += 70.0f;
     Rectangle journalButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
-    DrawRectangleRec(journalButton, theme.surfaceAlt);
-    DrawTextEx(AdwaitaMono, "JOURNAL", {journalButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "JOURNAL", textSize, 0).x / 2.0f, journalButton.y + 10.0f}, textSize, 0, ButtonText(theme.surfaceAlt));
+    DrawRectangleRec(journalButton, theme.highlight);
+    DrawTextEx(AdwaitaMono, "JOURNAL", {journalButton.x + 150.0f - MeasureTextEx(AdwaitaMono, "JOURNAL", textSize, 0).x / 2.0f, journalButton.y + 10.0f}, textSize, 0, ButtonText(theme.highlight));
 
     renderPosY += 70.0f;
     Rectangle exitButton = {screenWidth / 2.0f - 150.0f, renderPosY, 300.0f, 50.0f};
@@ -1034,8 +1035,8 @@ void Render::DrawJournal()
     }
 
     Rectangle clearButton = {padding, (float)screenHeight - 60.0f, 250.0f, 40.0f};
-    DrawRectangleRec(clearButton, theme.warning);
-    DrawTextEx(AdwaitaMono, "CLEAR JOURNAL", {clearButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "CLEAR JOURNAL", 20, 0).x / 2.0f, clearButton.y + 10.0f}, 20.0f, 0, ButtonText(theme.warning));
+    DrawRectangleRec(clearButton, theme.danger);
+    DrawTextEx(AdwaitaMono, "CLEAR JOURNAL", {clearButton.x + 125.0f - MeasureTextEx(AdwaitaMono, "CLEAR JOURNAL", 20, 0).x / 2.0f, clearButton.y + 10.0f}, 20.0f, 0, ButtonText(theme.danger));
     if (CheckCollisionPointRec(GetMousePosition(), clearButton))
         DrawRectangleLinesEx(clearButton, 2, theme.accent);
 
@@ -1088,7 +1089,22 @@ void Render::DrawLeaderboard()
     }
     else
     {
-        const PlayerStats *bestPlayer = findBest<PlayerStats>(players);
+        unsigned int minGames = 0;
+        try
+        {
+            if (!leaderboardMinGamesText.empty())
+                minGames = static_cast<unsigned int>(std::stoul(leaderboardMinGamesText));
+        }
+        catch (...)
+        {
+            minGames = 0;
+        }
+
+        std::vector<PlayerStats> filteredPlayers;
+        std::copy_if(players.begin(), players.end(), std::back_inserter(filteredPlayers), [minGames](const PlayerStats &player)
+                     { return player.getMatchesNumber() >= static_cast<int>(minGames); });
+
+        const PlayerStats *bestPlayer = filteredPlayers.empty() ? nullptr : findBest<PlayerStats>(filteredPlayers);
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
 
         std::stringstream ss1;
@@ -1103,10 +1119,21 @@ void Render::DrawLeaderboard()
         else
             ss2 << "Best Win Rate: 0.0%\n";
         ss2 << "Current Player: " << (playerName.empty() ? "None" : playerName) << "\n";
-        ss2 << "Sorted: By score";
+        ss2 << "Sorted: By score\n";
+        ss2 << "Filter: min games >= " << (leaderboardMinGamesText.empty() ? "0" : leaderboardMinGamesText);
         DrawTextEx(AdwaitaMono, ss2.str().c_str(), {padding + colWidth, renderPosY}, 24, 0, theme.text);
 
-        renderPosY += 140.0f;
+        renderPosY += 170.0f;
+
+        DrawTextEx(AdwaitaMono, "FILTER", {padding, renderPosY}, 24, 0, theme.highlight);
+        renderPosY += 35.0f;
+        Rectangle filterBox = {padding, renderPosY, 180.0f, 36.0f};
+        DrawRectangleRec(filterBox, theme.surface);
+        DrawTextEx(AdwaitaMono, leaderboardMinGamesText.c_str(), {filterBox.x + 5.0f, filterBox.y + 5.0f}, 20.0f, 0, theme.text);
+        DrawTextEx(AdwaitaMono, "Minimum games", {filterBox.x + 200.0f, filterBox.y + 5.0f}, 20.0f, 0, theme.muted);
+        if (CheckCollisionPointRec(GetMousePosition(), filterBox))
+            DrawRectangleLinesEx(filterBox, 2, YELLOW);
+        renderPosY += 55.0f;
 
         DrawTextEx(AdwaitaMono, "PLAYER RANKING", {padding, renderPosY}, 28, 0, theme.highlight);
         renderPosY += 40.0f;
@@ -1120,30 +1147,36 @@ void Render::DrawLeaderboard()
         renderPosY += 30.0f;
         DrawRectangle(padding, renderPosY - 5, screenWidth - 2 * padding, 2, theme.grid);
 
-        for (unsigned int i = 0; i < playerCount; ++i)
+        if (filteredPlayers.empty())
         {
-            PlayerStats *p = Leaderboard::getPlayer(i);
-            bool isCurrent = (p->getPlayerName() == playerName);
-            bool isBest = (bestPlayer && p == bestPlayer);
-            Color col = isCurrent ? theme.success : (isBest ? theme.warning : theme.text);
+            DrawTextEx(AdwaitaMono, "No players match this filter.", {padding, renderPosY + 20.0f}, 22, 0, theme.text);
+        }
+        else
+        {
+            for (const PlayerStats &player : filteredPlayers)
+            {
+                bool isCurrent = (player.getPlayerName() == playerName);
+                bool isBest = (bestPlayer && player.getPlayerName() == bestPlayer->getPlayerName());
+                Color col = isCurrent ? theme.success : (isBest ? theme.warning : theme.text);
 
-            DrawTextEx(AdwaitaMono, p->getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
-            DrawTextEx(AdwaitaMono, std::to_string(p->getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
-            DrawTextEx(AdwaitaMono, std::to_string(p->getWins()).c_str(), {padding + nameW + gamesW, renderPosY}, 20, 0, col);
+                DrawTextEx(AdwaitaMono, player.getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
+                DrawTextEx(AdwaitaMono, std::to_string(player.getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
+                DrawTextEx(AdwaitaMono, std::to_string(player.getWins()).c_str(), {padding + nameW + gamesW, renderPosY}, 20, 0, col);
 
-            std::stringstream rss;
-            rss << std::fixed << std::setprecision(1) << p->getWinRate() * 100.0f << "%";
-            DrawTextEx(AdwaitaMono, rss.str().c_str(), {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, col);
+                std::stringstream rss;
+                rss << std::fixed << std::setprecision(1) << player.getWinRate() * 100.0f << "%";
+                DrawTextEx(AdwaitaMono, rss.str().c_str(), {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, col);
 
-            unsigned int totalTime = 0;
-            const auto &matches = p->getMatches();
-            for (const Match &match : matches)
-                totalTime += match.getTimePlayed().count();
-            DrawTextEx(AdwaitaMono, (std::to_string(totalTime / 1000) + "s").c_str(), {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, col);
+                unsigned int totalTime = 0;
+                const auto &matches = player.getMatches();
+                for (const Match &match : matches)
+                    totalTime += match.getTimePlayed().count();
+                DrawTextEx(AdwaitaMono, (std::to_string(totalTime / 1000) + "s").c_str(), {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, col);
 
-            renderPosY += 25.0f;
-            if (renderPosY > GetScreenHeight() - 100)
-                break;
+                renderPosY += 25.0f;
+                if (renderPosY > GetScreenHeight() - 100)
+                    break;
+            }
         }
     }
 
@@ -1161,13 +1194,34 @@ void Render::DrawLeaderboard()
 
 void Render::HandleLeaderboardInput()
 {
+    Rectangle filterBox = {40.0f, 315.0f, 180.0f, 36.0f};
+    Rectangle deleteButton = {40.0f, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
+    Rectangle backButton = {(float)GetScreenWidth() - 40.0f - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
+    Vector2 mousePos = GetMousePosition();
+
     if (IsKeyPressed(KEY_ESCAPE))
         guiState = GUIState::MENU;
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+
+    if (CheckCollisionPointRec(mousePos, filterBox))
     {
-        Rectangle deleteButton = {40.0f, (float)GetScreenHeight() - 60.0f, 250.0f, 40.0f};
-        Rectangle backButton = {(float)GetScreenWidth() - 40.0f - 200.0f, (float)GetScreenHeight() - 60.0f, 200.0f, 40.0f};
-        if (CheckCollisionPointRec(GetMousePosition(), deleteButton))
+        SetMouseCursor(MOUSE_CURSOR_IBEAM);
+        int key = GetCharPressed();
+        while (key > 0)
+        {
+            if (key >= 48 && key <= 57 && leaderboardMinGamesText.size() < 6)
+                leaderboardMinGamesText.push_back(static_cast<char>(key));
+            key = GetCharPressed();
+        }
+
+        if (IsKeyPressed(KEY_BACKSPACE) && !leaderboardMinGamesText.empty())
+            leaderboardMinGamesText.pop_back();
+        return;
+    }
+
+    if (CheckCollisionPointRec(mousePos, deleteButton))
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
             try
             {
@@ -1185,9 +1239,18 @@ void Render::HandleLeaderboardInput()
                 std::cout << "An unknown error occurred.\n";
             }
         }
-        if (CheckCollisionPointRec(GetMousePosition(), backButton))
-            guiState = GUIState::MENU;
+        return;
     }
+
+    if (CheckCollisionPointRec(mousePos, backButton))
+    {
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            guiState = GUIState::MENU;
+        return;
+    }
+
+    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 }
 
 void Render::SaveMatchStats()

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
-#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -91,13 +91,13 @@ public:
         return error;
     }
 
-    template <typename F>
-    auto transforma(F f) const
+    template <typename U, typename F>
+    Rezultat<U> transforma(F f) const
     {
         if (!success)
-            return Rezultat<T>::eroare(error);
+            return Rezultat<U>::eroare(error);
 
-        return Rezultat<T>(f(*value));
+        return Rezultat<U>(f(*value));
     }
 };
 
@@ -105,18 +105,18 @@ template <typename T, std::size_t Capacity>
 class StaticQueue
 {
 private:
-    std::unique_ptr<T[]> data;
+    std::array<T, Capacity> data;
     std::size_t count;
 
 public:
-    // Coada cu capacitate fixa prin parametru de template: push/pop sunt O(1),
-    // iar lipsa realocarilor o face potrivita pentru istorii mici si buffer-e
-    // fixe folosite frecvent in logica jocului.
-    StaticQueue() : data(new T[Capacity]), count(0)
+    // Coada cu capacitate fixa prin parametru de template: elementele stau
+    // direct in std::array, deci nu folosim new si nu avem realocari.
+    // push/pop raman O(1) si structura e potrivita pentru istorii mici si fixe
+    StaticQueue() : data{}, count(0)
     {
     }
 
-    StaticQueue(std::initializer_list<T> init) : data(new T[Capacity]), count(0)
+    StaticQueue(std::initializer_list<T> init) : data{}, count(0)
     {
         if (init.size() > Capacity)
             throw std::overflow_error("StaticQueue init list exceeds capacity");
@@ -125,23 +125,11 @@ public:
             push(value);
     }
 
-    StaticQueue(const StaticQueue &other) : data(new T[Capacity]), count(other.count)
+    StaticQueue(const StaticQueue &other) : data(other.data), count(other.count)
     {
-        for (std::size_t i = 0; i < count; ++i)
-            data[i] = other.data[i];
     }
 
-    StaticQueue &operator=(const StaticQueue &other)
-    {
-        if (this == &other)
-            return *this;
-
-        count = other.count;
-        for (std::size_t i = 0; i < count; ++i)
-            data[i] = other.data[i];
-
-        return *this;
-    }
+    StaticQueue &operator=(const StaticQueue &other) = default;
 
     ~StaticQueue() noexcept = default;
 
@@ -195,22 +183,22 @@ public:
 
     const T *begin() const noexcept
     {
-        return data.get();
+        return data.data();
     }
 
     const T *end() const noexcept
     {
-        return data.get() + count;
+        return data.data() + count;
     }
 
     T *begin() noexcept
     {
-        return data.get();
+        return data.data();
     }
 
     T *end() noexcept
     {
-        return data.get() + count;
+        return data.data() + count;
     }
 
     template <typename U, typename Mapper>

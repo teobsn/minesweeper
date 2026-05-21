@@ -31,6 +31,7 @@ private:
     std::string mapBombsText;
     std::string mapSeedText;
     std::string playerName;
+    std::string leaderboardMinGamesText;
 
     GUIState guiState;
     Game game;
