@@ -70,6 +70,7 @@ jobs:
         fi
 
     - name: Build Project
+      shell: bash
       run: |
         if [ "${{ runner.os }}" == "Windows" ]; then
           cmake --build build --parallel 8
