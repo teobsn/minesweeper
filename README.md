@@ -46,6 +46,26 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 
 ## Build
 
+### Windows (Fresh Install)
+
+To set up the environment and build on a clean Windows installation, run the following commands in **PowerShell**:
+
+```powershell
+# 1. Install Scoop (Package Manager)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+
+# 2. Install Build Tools
+scoop install gcc make cmake
+
+# 3. Install Raylib (MinGW version)
+scoop bucket add extras
+scoop install raylib-mingw
+
+# 4. Build the project
+.\build.bat
+```
+
 Linux / macOS:
 ```bash
 ./build.sh
