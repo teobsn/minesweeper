@@ -18,6 +18,10 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 - singleton `Logger` with journal persistence and menu access
 - abstract factory for runtime theme selection
 - builder for game setup creation
+- bonus utilities:
+  - `Rezultat<T>`
+  - `StaticQueue<T, Capacity>`
+  - `std::initializer_list<T>` support
 
 ## Justificari / Detalii proiect POO
 
