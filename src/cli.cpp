@@ -249,17 +249,17 @@ int Commandline::readIntInput(const char *prompt, int min, int max)
         std::cout << prompt;
         std::getline(std::cin, line);
 
-        // Rezultat<T> is used here to keep input parsing explicit: the value path
-        // stays separate from the error path, and the error message can be reused
-        // without throwing for normal invalid input
-        auto parsed = parseInt(line).transforma<int>([](int value)
-                                                     { return value; });
+        // Rezultat<T> keeps the parsing path explicit and lets us widen the
+        // numeric type before range checks, without throwing for normal invalid
+        // input.
+        auto parsed = parseInt(line).transforma<long long>([](int value)
+                                                           { return static_cast<long long>(value); });
 
         if (parsed.ok())
         {
-            int value = parsed.get();
+            long long value = parsed.get();
             if (value >= min && value <= max)
-                return value;
+                return static_cast<int>(value);
         }
 
         std::cout << "Enter a number between " << min << " and " << max << ".\n";
@@ -449,22 +449,7 @@ void Commandline::startNewGame()
         std::cout << "\n";
         waitForEnter();
     }
-    catch (const InvalidMoveException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const GameConfigException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const DatabaseException &e)
-    {
-        std::cout << e.what() << "\n";
-        waitForEnter();
-    }
-    catch (const MinesweeperException &e)
+    catch (const std::exception &e)
     {
         std::cout << e.what() << "\n";
         waitForEnter();
@@ -617,7 +602,7 @@ void Commandline::displayStatistics()
         {
             player = Leaderboard::findPlayer(playerName);
         }
-        catch (const MinesweeperException &)
+        catch (const std::exception &)
         {
             std::cout << "No games found for this player...\n";
             waitForEnter();
@@ -855,7 +840,7 @@ void Commandline::displayJournal()
 
             std::cout << "Journal\n\n";
 
-            const auto entries = Logger::getInstance().getEntries();
+            const auto &entries = Logger::getInstance().getEntries();
             if (entries.empty())
             {
                 std::cout << "Journal is empty.\n";

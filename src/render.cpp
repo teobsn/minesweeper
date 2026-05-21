@@ -843,22 +843,7 @@ void Render::HandleGameInput()
             p->use(game, mouseGridX, mouseGridY);
         }
     }
-    catch (const InvalidMoveException &e)
-    {
-        Logger::getInstance().error(e.what());
-        std::cout << e.what() << "\n";
-    }
-    catch (const GameConfigException &e)
-    {
-        Logger::getInstance().error(e.what());
-        std::cout << e.what() << "\n";
-    }
-    catch (const DatabaseException &e)
-    {
-        Logger::getInstance().error(e.what());
-        std::cout << e.what() << "\n";
-    }
-    catch (const MinesweeperException &e)
+    catch (const std::exception &e)
     {
         Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
@@ -885,7 +870,7 @@ void Render::DrawMyStats()
     {
         player = Leaderboard::findPlayer(playerName);
     }
-    catch (const MinesweeperException &)
+    catch (const std::exception &)
     {
         Logger::getInstance().error("Player not found in GUI my statistics");
         DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
@@ -996,7 +981,7 @@ void Render::HandleMyStatsInput()
                     --(*player);
                 }
             }
-            catch (const MinesweeperException &e)
+            catch (const std::exception &e)
             {
                 std::cout << e.what() << "\n";
             }
@@ -1017,7 +1002,7 @@ void Render::DrawJournal()
     DrawTextEx(AdwaitaMono, "JOURNAL", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "JOURNAL", 48, 0).x / 2.0f, renderPosY}, 48, 0, theme.accent);
     renderPosY += 70.0f;
 
-    const auto entries = Logger::getInstance().getEntries();
+    const auto &entries = Logger::getInstance().getEntries();
     if (entries.empty())
     {
         DrawTextEx(AdwaitaMono, "Journal is empty.", {padding, renderPosY}, 24, 0, theme.text);
@@ -1228,7 +1213,7 @@ void Render::HandleLeaderboardInput()
                 if (!playerName.empty())
                     Leaderboard::removePlayer(playerName);
             }
-            catch (const MinesweeperException &e)
+            catch (const std::exception &e)
             {
                 Logger::getInstance().error(e.what());
                 std::cout << e.what() << "\n";
