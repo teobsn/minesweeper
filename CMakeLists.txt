@@ -9,9 +9,6 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Use the standard CMake Debug configuration to enable project debug macros.
-add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
-
 # Options
 if(WIN32)
     option(BUILD_CLI "Build CLI version" OFF)
@@ -29,6 +26,10 @@ if(MSVC)
     endif()
 else()
     add_compile_options(-Wall -Wextra -O3 -flto)
+    if(WIN32)
+        # Link GCC and Standard Library statically to avoid missing DLLs on the user's system
+        add_link_options(-static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive)
+    endif()
     if(NOT APPLE)
         if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "amd64")
             add_compile_options(-mavx2 -march=native)
@@ -38,6 +39,12 @@ endif()
 
 # Include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(RAYLIB_INCLUDE_PATH)
+    include_directories(${RAYLIB_INCLUDE_PATH})
+endif()
+if(RAYLIB_LIB_PATH)
+    link_directories(${RAYLIB_LIB_PATH})
+endif()
 
 # Source groups
 set(SOURCES-COMMON
@@ -83,7 +90,7 @@ if(BUILD_CLI)
 endif()
 
 # Raylib finding/linking
-if(NOT raylib_FOUND)
+if(NOT raylib_FOUND AND NOT (RAYLIB_INCLUDE_PATH AND RAYLIB_LIB_PATH))
     find_package(raylib QUIET)
 endif()
 

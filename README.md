@@ -79,6 +79,23 @@ Build outputs:
 - `CMake` - build system
 - `C++23` - language standard
 
+### Installing dependencies on Windows
+
+To set up the environment on a clean Windows installation, run the following commands in **PowerShell**:
+
+```powershell
+# 1. Install Scoop (Package Manager)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+
+# 2. Install Build Tools
+scoop install gcc make cmake
+
+# 3. Install Raylib (MinGW version)
+scoop bucket add extras
+scoop install raylib-mingw
+```
+
 ## Build Optimizations
 
 Builds are produced with aggressive optimization flags for maximum performance:
