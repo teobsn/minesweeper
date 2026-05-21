@@ -15,45 +15,30 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 - `std::string` everywhere instead of manual C strings
 - `IObject` interface with unique ids and polymorphic `toString()`
 - singleton `ThemeManager` implemented as a Meyers singleton
+- singleton `Logger` with journal persistence and menu access
 - abstract factory for runtime theme selection
 - builder for game setup creation
-- bonus utilities:
-  - `Rezultat<T>`
-  - `StaticQueue<T, Capacity>`
-  - `std::initializer_list<T>` support
 
-## Justificari
+## Justificari / Detalii proiect POO
 
-### Singleton
+### Varianta aleasa
+- Am ales varianta A, extinderea proiectului 2
 
-- `ThemeManager` este un singleton Meyers fiindca tema activa e stare partajata si trebuie sa aiba un singur punct de adevar in GUI.
-- pastrarea lui ca singleton evita sa plimbam starea temei prin cod UI care nu are legatura directa cu ea.
+### Justificari containere STL
 
-### Abstract Factory
+- `std::vector<Map::cells>` este potrivit pentru harta jocului, deoarece accesul la o celula dupa coordonate trebuie sa fie rapid `O(1)`, iar structura ramane compacta in memorie.
+- `std::vector<Match>` pastreaza istoricul complet al meciurilor pentru fiecare jucator, fiind util pentru iterare secventiala si agregari peste tot istoricul; `push_back` este amortizat `O(1)`.
+- `std::unordered_map<std::string, PlayerStats>` este alegerea naturala pentru leaderboard, deoarece cautarea si inserarea jucatorilor sunt medii `O(1)`.
+- `std::vector<std::string>` pentru ordinea leaderboard-ului este util fiindca permite afisare ordonata si sortare eficienta `O(n log n)`.
+- `std::list<BasePowerUp*>` este folosita pentru istoricul power-up-urilor activate, deoarece stergerea si curatarea completa sunt `O(1)` pe nod si nu cer realocari sau mutari de elemente.
+- `std::queue<std::pair<int, int>>` este potrivita pentru algoritmul BFS de revelare a celulelor, fiind o coada FIFO cu `push`/`pop` amortizate `O(1)`.
+- `StaticQueue<Match, 10>` pastreaza ultimele 10 meciuri vizibile in UI, fara alocari dinamice suplimentare; `push`/`pop` sunt `O(1)`, iar dimensiunea este fixa la compilare.
 
-- sistemul de teme are nevoie de schimbare la runtime intre familii de culori si stiluri inrudite.
-- abstract factory lasa GUI-ul sa lucreze doar cu interfete, fara sa cunoasca tipurile concrete de teme.
-
-### `Rezultat<T>`
-
-- `Rezultat<T>` e folosit pentru fail-uri de input asteptate, unde un exception complet ar fi prea mult.
-- pastreaza explicit path-ul de succes si path-ul de eroare in parsing-ul din CLI.
-
-### `StaticQueue<T, Capacity>`
-
-- queue-ul cu capacitate fixa e util pentru istorii mici si limitate, fara alocare dinamica.
-- parametrul non-tip face capacitatea parte din tip si pastreaza structura lightweight.
-
-### Builder
+### Justificari design pattern Builder
 
 - `GameSetupBuilder` e folosit cand construim configuratia unui joc nou din input-ul meniului.
 - mentine setup-ul explicit si lasa CLI-ul si GUI-ul sa normalizeze acelasi path inainte sa creeze harta.
 
-### Bonus patterns
-
-- `Rezultat<T>` ramane pentru tratarea explicita a succesului si erorii in parsing-ul de input.
-- `std::initializer_list<T>` face initializarea cu acolade mai clean cand colectia e mica si fixa.
-- parametrii non-tip sunt folositi cand dimensiunea colectiei trebuie impusa la compile time.
 
 ## Build
 
@@ -66,6 +51,20 @@ Windows:
 ```batch
 build.bat
 ```
+
+The scripts above build the project in CMake's `Debug` configuration by default,
+which also enables the project's `DEBUG` macro inside the codebase.
+
+To force a release build locally, pass the build type explicitly:
+```bash
+BUILD_TYPE=Release ./build.sh
+```
+
+```batch
+build.bat Release
+```
+
+The GitHub Actions workflow only builds `Release` binaries.
 
 Build outputs:
 - `build/minesweeper` - CLI version
@@ -99,7 +98,7 @@ scoop install raylib-mingw
 
 ## Build Optimizations
 
-The project is built with aggressive optimization flags for maximum performance:
+Builds are produced with aggressive optimization flags for maximum performance:
 
 - `-O3` - Aggressive optimization level
 - `-march=native` - CPU-specific instructions (AVX2, SSE4, etc.)
