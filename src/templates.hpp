@@ -92,16 +92,12 @@ public:
     }
 
     template <typename F>
-    auto transforma(F f) const -> Rezultat<std::invoke_result_t<F, T>>
+    auto transforma(F f) const
     {
-        // invoke_result_t deduce tipul rezultatului produs de transformare,
-        // astfel incat functia ramane generica fara a repeta tipul manual.
-        using U = std::invoke_result_t<F, T>;
-
         if (!success)
-            return Rezultat<U>::eroare(error);
+            return Rezultat<T>::eroare(error);
 
-        return Rezultat<U>(f(*value));
+        return Rezultat<T>(f(*value));
     }
 };
 
