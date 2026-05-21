@@ -36,6 +36,8 @@ class Rezultat
 {
 private:
     bool success;
+    // optional pastreaza valoarea doar cand rezultatul este valid; altfel
+    // obiectul ramane intr-o stare de eroare fara pointeri sau alocari manuale.
     std::optional<T> value;
     std::string error;
 
@@ -92,6 +94,8 @@ public:
     template <typename F>
     auto transforma(F f) const -> Rezultat<std::invoke_result_t<F, T>>
     {
+        // invoke_result_t deduce tipul rezultatului produs de transformare,
+        // astfel incat functia ramane generica fara a repeta tipul manual.
         using U = std::invoke_result_t<F, T>;
 
         if (!success)

@@ -108,6 +108,9 @@ void Game::setMap(const Map &map)
 
 void Game::revealCell(int x, int y)
 {
+#ifdef DEBUG
+    Logger::getInstance().debug("Reveal click at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
+#endif
     if (!gameMap.isValidPosition(x, y))
         throw InvalidMoveException("Invalid move: position outside the map", x, y);
 
@@ -147,7 +150,7 @@ void Game::setInvulnerable(bool value)
 {
     invulnerable = value;
     if (value)
-        Logger::getInstance().debug("Shield activated");
+        Logger::getInstance().info("Shield activated");
 }
 
 bool Game::isInvulnerable() const
@@ -167,6 +170,9 @@ void Game::activateRadar(int x, int y, int radius)
         startGame();
     gameMap.revealArea(x, y, radius);
     checkWinCondition();
+#ifdef DEBUG
+    Logger::getInstance().debug("Radar used at (" + std::to_string(x) + ", " + std::to_string(y) + ") radius=" + std::to_string(radius));
+#endif
     std::ostringstream oss;
     oss << "Radar activated at (" << x << ", " << y << ") with radius " << radius;
     Logger::getInstance().info(oss.str());
@@ -266,6 +272,9 @@ void Game::fillReveal(int x, int y)
 
 void Game::adjacentReveal(int x, int y)
 {
+#ifdef DEBUG
+    Logger::getInstance().debug("Chord at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
+#endif
     // Functia implementeaza tehnica de Chording
 
     /*
@@ -312,6 +321,9 @@ void Game::revealFullMap()
 
 void Game::toggleFlag(int x, int y)
 {
+#ifdef DEBUG
+    Logger::getInstance().debug("Flag toggle at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
+#endif
     if (!gameMap.isValidPosition(x, y) || gameMap.isRevealedAt(x, y))
         throw InvalidMoveException("Invalid move: cannot place a flag on this cell", x, y);
 
@@ -497,7 +509,7 @@ void Game::loseGame()
         return;
 
     gameState = GameState::LOST;
-    Logger::getInstance().error("Game lost");
+    Logger::getInstance().info("Game lost");
 }
 
 std::ostream &operator<<(std::ostream &os, const Game &game)

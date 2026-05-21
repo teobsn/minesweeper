@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <mutex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -23,7 +22,6 @@ public:
 
 private:
     std::string logPath;
-    mutable std::mutex mutex;
 
     Logger();
 
@@ -94,16 +92,22 @@ inline std::string Logger::timestamp()
 
 inline void Logger::log(Level level, const std::string &message)
 {
-    std::lock_guard<std::mutex> guard(mutex);
-
     std::ofstream out(logPath, std::ios::app);
     if (!out)
+    {
+        std::cerr << "[" << timestamp() << "] [ERROR] Could not open journal file '" << logPath << "'\n";
         return;
+    }
 
     std::ostringstream line;
     line << "[" << timestamp() << "] [" << levelName(level) << "] " << message;
 
     out << line.str() << '\n';
+    if (!out.good())
+    {
+        std::cerr << "[" << timestamp() << "] [ERROR] Could not write to journal file '" << logPath << "'\n";
+        return;
+    }
 
     if (level == Level::Error)
         std::cerr << line.str() << '\n';
@@ -133,8 +137,6 @@ inline void Logger::debug(const std::string &message)
 
 inline std::vector<std::string> Logger::getEntries() const
 {
-    std::lock_guard<std::mutex> guard(mutex);
-
     std::ifstream in(logPath);
     std::vector<std::string> entries;
     std::string line;
@@ -148,13 +150,11 @@ inline std::vector<std::string> Logger::getEntries() const
 
 inline void Logger::clear()
 {
-    std::lock_guard<std::mutex> guard(mutex);
     std::ofstream out(logPath, std::ios::trunc);
 }
 
 inline bool Logger::empty() const
 {
-    std::lock_guard<std::mutex> guard(mutex);
     std::ifstream in(logPath);
     return !in.good() || in.peek() == std::ifstream::traits_type::eof();
 }

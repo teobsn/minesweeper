@@ -99,6 +99,14 @@ void Render::InitializeGame(const GameSetup &setup)
     std::ostringstream oss;
     oss << "Generating map: " << setup.width << "x" << setup.height << ", Bombs: " << setup.bombs << ", Seed: " << setup.seed;
     Logger::getInstance().info(oss.str());
+#ifdef DEBUG
+    std::ostringstream debugOss;
+    debugOss << "Map params => width=" << setup.width
+             << ", height=" << setup.height
+             << ", bombs=" << setup.bombs
+             << ", seed=" << setup.seed;
+    Logger::getInstance().debug(debugOss.str());
+#endif
 
     Map newMap(setup.width, setup.height, setup.seed, setup.bombs);
     game = Game(Game::GameState::NOT_STARTED, newMap);
@@ -131,9 +139,32 @@ void Render::StartRender()
     InitWindow(screenWidth, screenHeight, "Minesweeper");
     SetTargetFPS(60);
 
-    AdwaitaMono = LoadFont("resources/fonts/adw/AdwaitaMono-Regular.ttf");
+    if (!FileExists("resources/fonts/adw/AdwaitaMono-Regular.ttf"))
+    {
+        Logger::getInstance().error("Missing GUI font: resources/fonts/adw/AdwaitaMono-Regular.ttf");
+        AdwaitaMono = GetFontDefault();
+    }
+    else
+    {
+        AdwaitaMono = LoadFont("resources/fonts/adw/AdwaitaMono-Regular.ttf");
+        if (AdwaitaMono.texture.id == 0)
+        {
+            Logger::getInstance().error("Failed to load GUI font: resources/fonts/adw/AdwaitaMono-Regular.ttf");
+            AdwaitaMono = GetFontDefault();
+        }
+    }
+
+    if (!FileExists("resources/textures/flag.png"))
+        Logger::getInstance().error("Missing GUI texture: resources/textures/flag.png");
     flagTexture = LoadTexture("resources/textures/flag.png");
+    if (flagTexture.id == 0)
+        Logger::getInstance().error("Failed to load GUI texture: resources/textures/flag.png");
+
+    if (!FileExists("resources/textures/bomb.png"))
+        Logger::getInstance().error("Missing GUI texture: resources/textures/bomb.png");
     bombTexture = LoadTexture("resources/textures/bomb.png");
+    if (bombTexture.id == 0)
+        Logger::getInstance().error("Failed to load GUI texture: resources/textures/bomb.png");
 
     while (!WindowShouldClose())
     {
@@ -377,6 +408,7 @@ void Render::HandleMenuInput()
         }
         catch (...)
         {
+            Logger::getInstance().warning("Invalid unsigned input in GUI: " + text);
             return 0;
         }
     };
@@ -429,6 +461,7 @@ void Render::HandleMenuInput()
                 }
                 catch (...)
                 {
+                    Logger::getInstance().warning("Invalid seed input in GUI: " + mapSeedText + "; using time-based seed");
                     s = (unsigned long long)time(nullptr);
                 }
             }
@@ -571,7 +604,8 @@ void Render::DrawGame()
                 if (map.isBombAt(x, y))
                 {
                     DrawRectangleRec(cellRect, theme.danger);
-                    DrawTexturePro(bombTexture, {0, 0, (float)bombTexture.width, (float)bombTexture.height}, cellRect, {0, 0}, 0, WHITE);
+                    if (bombTexture.id != 0)
+                        DrawTexturePro(bombTexture, {0, 0, (float)bombTexture.width, (float)bombTexture.height}, cellRect, {0, 0}, 0, WHITE);
                 }
                 else
                 {
@@ -587,7 +621,7 @@ void Render::DrawGame()
             else
             {
                 DrawRectangleRec(cellRect, theme.surfaceAlt);
-                if (map.isFlaggedAt(x, y))
+                if (map.isFlaggedAt(x, y) && flagTexture.id != 0)
                     DrawTexturePro(flagTexture, {0, 0, (float)flagTexture.width, (float)flagTexture.height}, cellRect, {0, 0}, 0, WHITE);
             }
             DrawRectangleLinesEx(cellRect, 1, theme.grid);
@@ -810,22 +844,27 @@ void Render::HandleGameInput()
     }
     catch (const InvalidMoveException &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
     }
     catch (const GameConfigException &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
     }
     catch (const DatabaseException &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
     }
     catch (const MinesweeperException &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
     }
     catch (...)
     {
+        Logger::getInstance().error("Unknown error in game input");
         std::cout << "An unknown error occurred.\n";
     }
 }
@@ -847,6 +886,7 @@ void Render::DrawMyStats()
     }
     catch (const MinesweeperException &)
     {
+        Logger::getInstance().error("Player not found in GUI my statistics");
         DrawTextEx(AdwaitaMono, "No games found for this player.", {screenWidth / 2.0f - MeasureTextEx(AdwaitaMono, "No games found for this player.", 24, 0).x / 2.0f, renderPosY + 100.0f}, 24, 0, theme.text);
         return;
     }
@@ -1136,10 +1176,12 @@ void Render::HandleLeaderboardInput()
             }
             catch (const MinesweeperException &e)
             {
+                Logger::getInstance().error(e.what());
                 std::cout << e.what() << "\n";
             }
             catch (...)
             {
+                Logger::getInstance().error("Unknown error in leaderboard input");
                 std::cout << "An unknown error occurred.\n";
             }
         }

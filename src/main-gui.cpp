@@ -1,45 +1,28 @@
-
-// Minesweeper headers
 #include "cell.hpp"
 #include "game.hpp"
 #include "map.hpp"
-#include "render.hpp"
 #include "exceptions.hpp"
+#include "logger.hpp"
+#include "render.hpp"
 
 // External libraries
 #include "raylib.h"
-
-// C++ standard library
-#include <chrono>
-#include <iostream>
-
-using namespace std;
 
 int main()
 {
     try
     {
-        Render RenderContext;
-        RenderContext.StartRender();
-    }
-    catch (const InvalidMoveException &e)
-    {
-        std::cout << e.what() << "\n";
-    }
-    catch (const GameConfigException &e)
-    {
-        std::cout << e.what() << "\n";
-    }
-    catch (const DatabaseException &e)
-    {
-        std::cout << e.what() << "\n";
+        Render renderContext;
+        renderContext.StartRender();
     }
     catch (const MinesweeperException &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
     }
     catch (...)
     {
+        Logger::getInstance().error("Unknown error in GUI entry point");
         std::cout << "An unknown error occurred.\n";
     }
 

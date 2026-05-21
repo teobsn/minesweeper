@@ -34,19 +34,26 @@ namespace
     Rezultat<int> parseInt(const std::string &line)
     {
         if (line.empty())
+        {
+            Logger::getInstance().warning("Invalid integer input: empty value");
             return Rezultat<int>::eroare("invalid input");
+        }
 
         try
         {
             std::size_t parsedChars = 0;
             int value = std::stoi(line, &parsedChars);
             if (parsedChars != line.size())
+            {
+                Logger::getInstance().warning("Invalid integer input: " + line);
                 return Rezultat<int>::eroare("invalid input");
+            }
 
             return value;
         }
         catch (...)
         {
+            Logger::getInstance().warning("Invalid integer input: " + line);
             return Rezultat<int>::eroare("invalid input");
         }
     }
@@ -54,19 +61,26 @@ namespace
     Rezultat<unsigned long long> parseUnsignedLongLong(const std::string &line)
     {
         if (line.empty())
+        {
+            Logger::getInstance().warning("Invalid unsigned integer input: empty value");
             return Rezultat<unsigned long long>::eroare("invalid input");
+        }
 
         try
         {
             std::size_t parsedChars = 0;
             unsigned long long value = std::stoull(line, &parsedChars);
             if (parsedChars != line.size())
+            {
+                Logger::getInstance().warning("Invalid unsigned integer input: " + line);
                 return Rezultat<unsigned long long>::eroare("invalid input");
+            }
 
             return value;
         }
         catch (...)
         {
+            Logger::getInstance().warning("Invalid unsigned integer input: " + line);
             return Rezultat<unsigned long long>::eroare("invalid input");
         }
     }
@@ -166,11 +180,13 @@ void Commandline::handleMainMenu()
     }
     catch (const std::exception &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
         waitForEnter();
     }
     catch (...)
     {
+        Logger::getInstance().error("Unknown error in main menu");
         std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
@@ -546,22 +562,24 @@ void Commandline::processGameInput(Game &game)
                 return;
             }
         }
-        catch (const std::exception &e)
-        {
-            disableRawMode();
-            clearScreen();
-            std::cout << e.what() << "\n";
-            waitForEnter();
-            enableRawMode();
-        }
-        catch (...)
-        {
-            disableRawMode();
-            clearScreen();
-            std::cout << "An unknown error occurred.\n";
-            waitForEnter();
-            enableRawMode();
-        }
+    catch (const std::exception &e)
+    {
+        disableRawMode();
+        clearScreen();
+        Logger::getInstance().error(e.what());
+        std::cout << e.what() << "\n";
+        waitForEnter();
+        enableRawMode();
+    }
+    catch (...)
+    {
+        disableRawMode();
+        clearScreen();
+        Logger::getInstance().error("Unknown error during game input");
+        std::cout << "An unknown error occurred.\n";
+        waitForEnter();
+        enableRawMode();
+    }
     }
 
     clearScreen();
@@ -670,11 +688,13 @@ void Commandline::displayStatistics()
     }
     catch (const std::exception &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
         waitForEnter();
     }
     catch (...)
     {
+        Logger::getInstance().error("Unknown error in statistics view");
         std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
@@ -761,11 +781,13 @@ void Commandline::displayAllPlayersStatistics()
     }
     catch (const std::exception &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
         waitForEnter();
     }
     catch (...)
     {
+        Logger::getInstance().error("Unknown error in leaderboard view");
         std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
@@ -808,11 +830,13 @@ void Commandline::displayJournal()
     }
     catch (const std::exception &e)
     {
+        Logger::getInstance().error(e.what());
         std::cout << e.what() << "\n";
         waitForEnter();
     }
     catch (...)
     {
+        Logger::getInstance().error("Unknown error in commandline loop");
         std::cout << "An unknown error occurred.\n";
         waitForEnter();
     }
