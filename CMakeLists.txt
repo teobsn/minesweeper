@@ -44,6 +44,7 @@ set(SOURCES-COMMON
     src/cell.cpp
     src/game.cpp
     src/map.cpp
+    src/logger.cpp
     src/stats.cpp
     src/powerups.cpp
 )
