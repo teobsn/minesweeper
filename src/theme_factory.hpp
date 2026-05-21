@@ -43,6 +43,9 @@ class IThemeFactory
 public:
     virtual ~IThemeFactory() = default;
 
+    // Produsele sunt returnate prin unique_ptr deoarece fabrica transfera
+    // proprietatea obiectului creat catre client, fara copii inutile si fara
+    // risc de leakage sau slicing pe tipuri abstracte
     virtual std::unique_ptr<IThemeSurfaceColors> createSurfaceColors() const = 0;
     virtual std::unique_ptr<IThemeAccentColors> createAccentColors() const = 0;
     virtual std::string name() const = 0;
@@ -148,6 +151,7 @@ public:
     std::string name() const override { return "Monokai"; }
 };
 
+// Il tinem inline in header ca sa evitam definiri multiple
 inline std::unique_ptr<IThemeFactory> makeThemeFactory(ThemeId theme)
 {
     switch (theme)
