@@ -53,8 +53,8 @@ jobs:
         git clone --depth 1 https://github.com/raysan5/raylib.git raylib-src
         mkdir -p raylib-src/build
         cd raylib-src/build
-        # Build as shared library for the DLL
-        cmake -G "MinGW Makefiles" -DBUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
+        # Build as static library
+        cmake -G "MinGW Makefiles" -DBUILD_EXAMPLES=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF ..
         mingw32-make -j2
 
     - name: Configure CMake
@@ -90,16 +90,6 @@ jobs:
           # Copy executables
           cp build/*.exe dist/ 2>/dev/null || true
           
-          # Copy raylib.dll from our build (might be libraylib.dll on MinGW)
-          find raylib-src/build -name "*.dll" -exec cp {} dist/ \;
-          
-          # Verify that a raylib DLL is present
-          if [ ! -f "dist/raylib.dll" ] && [ ! -f "dist/libraylib.dll" ]; then
-            echo "ERROR: No raylib DLL was found!"
-            find raylib-src/build -name "*.dll"
-            exit 1
-          fi
-
           # Use 7z on Windows as zip is missing in the default bash path
           cd dist && 7z a -tzip ../minesweeper-windows.zip * && cd ..
         elif [ "${{ runner.os }}" == 'macOS' ]; then
