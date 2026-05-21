@@ -90,12 +90,12 @@ jobs:
           # Copy executables
           cp build/*.exe dist/ 2>/dev/null || true
           
-          # Copy raylib.dll from our build (might be in raylib subfolder)
-          find raylib-src/build -name "raylib.dll" -exec cp {} dist/ \;
+          # Copy raylib.dll from our build (might be libraylib.dll on MinGW)
+          find raylib-src/build -name "*.dll" -exec cp {} dist/ \;
           
-          # Verify that the critical DLLs are present
-          if [ ! -f "dist/raylib.dll" ]; then
-            echo "ERROR: raylib.dll was not found!"
+          # Verify that a raylib DLL is present
+          if [ ! -f "dist/raylib.dll" ] && [ ! -f "dist/libraylib.dll" ]; then
+            echo "ERROR: No raylib DLL was found!"
             find raylib-src/build -name "*.dll"
             exit 1
           fi
