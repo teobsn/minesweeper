@@ -23,6 +23,7 @@ public:
 private:
     std::string logPath;
     std::vector<std::string> entries;
+    std::ofstream fileStream;
 
     Logger();
 
@@ -32,6 +33,7 @@ private:
 public:
     Logger(const Logger &) = delete;
     Logger &operator=(const Logger &) = delete;
+    ~Logger();
 
     static Logger &getInstance();
 

@@ -9,6 +9,15 @@ Logger::Logger() : logPath("journal.log")
         if (!line.empty())
             entries.push_back(line);
     }
+    in.close();
+
+    fileStream.open(logPath, std::ios::app);
+}
+
+Logger::~Logger()
+{
+    if (fileStream.is_open())
+        fileStream.close();
 }
 
 Logger &Logger::getInstance()
@@ -58,18 +67,14 @@ void Logger::log(Level level, const std::string &message)
 
     entries.push_back(line.str());
 
-    std::ofstream out(logPath, std::ios::app);
-    if (!out)
+    if (fileStream.is_open())
     {
-        std::cerr << "[" << timestamp() << "] [ERROR] Could not open journal file '" << logPath << "'\n";
-        return;
+        fileStream << line.str() << '\n';
+        fileStream.flush();
     }
-
-    out << line.str() << '\n';
-    if (!out.good())
+    else
     {
         std::cerr << "[" << timestamp() << "] [ERROR] Could not write to journal file '" << logPath << "'\n";
-        return;
     }
 
     if (level == Level::Error)
@@ -106,5 +111,7 @@ const std::vector<std::string> &Logger::getEntries() const noexcept
 void Logger::clear()
 {
     entries.clear();
-    std::ofstream out(logPath, std::ios::trunc);
+    if (fileStream.is_open())
+        fileStream.close();
+    fileStream.open(logPath, std::ios::trunc);
 }
