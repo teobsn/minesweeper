@@ -234,16 +234,14 @@ void Game::fillReveal(int x, int y)
     /*
        Standard Minesweeper reveal algorithm using BFS with 8-connectivity.
     */
+    std::vector<std::pair<int, int>> queue;
+    queue.reserve(64);
+    queue.push_back({x, y});
 
-    // std::queue ofera FIFO cu push/pop O(1) amortizat, ce ne este folositor
-    // pentru BFS-ul de flood fill.
-    std::queue<std::pair<int, int>> Queue;
-    Queue.push(std::make_pair(x, y));
-
-    while (!Queue.empty())
+    std::size_t head = 0;
+    while (head < queue.size())
     {
-        int i = Queue.front().first, j = Queue.front().second;
-        Queue.pop();
+        auto [i, j] = queue[head++];
 
         for (int dy = -1; dy <= 1; ++dy)
         {
@@ -262,7 +260,7 @@ void Game::fillReveal(int x, int y)
                         cellsRevealed++;
 
                         if (gameMap.getAdjacentBombsAt(nx, ny) == 0)
-                            Queue.push(std::make_pair(nx, ny));
+                            queue.push_back({nx, ny});
                     }
                 }
             }
@@ -494,13 +492,12 @@ void Game::checkWinCondition()
     if (gameState == GameState::WON || gameState == GameState::LOST)
         return;
 
-    for (unsigned int y = 0; y < gameMap.getHeight(); ++y)
-        for (unsigned int x = 0; x < gameMap.getWidth(); ++x)
-            if (!gameMap[y * gameMap.getWidth() + x]['b'] && !gameMap[y * gameMap.getWidth() + x]['r'])
-                return;
-
-    gameState = GameState::WON;
-    Logger::getInstance().info("Game won");
+    unsigned int totalCells = gameMap.getWidth() * gameMap.getHeight();
+    if (totalCells >= gameMap.getBombs() && cellsRevealed >= totalCells - gameMap.getBombs())
+    {
+        gameState = GameState::WON;
+        Logger::getInstance().info("Game won");
+    }
 }
 
 void Game::loseGame()
