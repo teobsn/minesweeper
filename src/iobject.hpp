@@ -1,12 +1,13 @@
 #pragma once
 
+#include <atomic>
 #include <iostream>
 #include <string>
 
 class IObject
 {
 private:
-    inline static int contor = 0;
+    inline static std::atomic<int> contor{0};
     const int id;
 
 protected:
