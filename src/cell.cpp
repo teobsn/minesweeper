@@ -40,8 +40,7 @@ Cell::~Cell()
 
 bool Cell::isBomb() const
 {
-    // return bomb;
-    return (*this)['b'];
+    return bomb;
 }
 
 void Cell::setBomb(bool value)
@@ -51,8 +50,7 @@ void Cell::setBomb(bool value)
 
 bool Cell::isRevealed() const
 {
-    // return revealed;
-    return (*this)['r'];
+    return revealed;
 }
 
 void Cell::setRevealed(bool value)
@@ -62,8 +60,7 @@ void Cell::setRevealed(bool value)
 
 unsigned int Cell::getAdjacentBombs() const
 {
-    // return adjacentBombs;
-    return (*this)['a'];
+    return adjacentBombs;
 }
 
 void Cell::setAdjacentBombs(unsigned int value)
@@ -73,8 +70,7 @@ void Cell::setAdjacentBombs(unsigned int value)
 
 bool Cell::isFlagged() const
 {
-    // return flagged;
-    return (*this)['f'];
+    return flagged;
 }
 
 void Cell::toggleFlagged()

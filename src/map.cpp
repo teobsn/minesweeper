@@ -10,9 +10,6 @@
 
 // External libraries
 #include "pcg/pcg32.h"
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-#include "pcg/pcg32_8.h"
-#endif
 
 Map::Map() : width(1), height(1), seed(0), bombs(0)
 {
@@ -62,15 +59,8 @@ Map::Map(const unsigned int width, const unsigned int height, const unsigned lon
 }
 
 Map::Map(const Map &other)
-    : IObject(other), width(other.width), height(other.height), seed(other.seed), bombs(other.bombs)
+    : IObject(other), width(other.width), height(other.height), seed(other.seed), bombs(other.bombs), cells(other.cells)
 {
-    // Cream o matrice noua
-    cells = std::vector<std::vector<Cell>>(other.height, std::vector<Cell>(other.width));
-
-    // Copiem celulele
-    for (unsigned int y = 0; y < other.height; ++y)
-        for (unsigned int x = 0; x < other.width; ++x)
-            cells[y][x] = other.cells[y][x];
 }
 
 Map::~Map()
@@ -82,23 +72,14 @@ Map::~Map()
 
 Map &Map::operator=(const Map &other)
 {
-    // Verificam daca incercam sa atribuim aceeasi harta
     if (this == &other)
         return *this;
 
-    // Copiem atributele
     width = other.width;
     height = other.height;
     seed = other.seed;
     bombs = other.bombs;
-
-    // Cream o matrice noua
-    cells = std::vector<std::vector<Cell>>(other.height, std::vector<Cell>(other.width));
-
-    // Copiem celulele
-    for (unsigned int y = 0; y < other.height; ++y)
-        for (unsigned int x = 0; x < other.width; ++x)
-            cells[y][x] = other.cells[y][x];
+    cells = other.cells;
 
     return *this;
 }
@@ -111,12 +92,7 @@ bool Map::operator==(const Map &other) const
     if (width != other.width || height != other.height)
         return false;
 
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
-            if (cells[y][x] != other.cells[y][x])
-                return false;
-
-    return true;
+    return cells == other.cells;
 }
 
 bool Map::operator!=(const Map &other) const
@@ -196,9 +172,7 @@ Map &Map::operator++()
 
 Cell &Map::operator[](int index)
 {
-    int x = index % width, y = index / width;
-
-    return this->getCell(x, y);
+    return cells[index];
 }
 
 std::ostream &operator<<(std::ostream &os, const Map &map)
@@ -305,10 +279,11 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
         {
             unsigned int x = rng.nextUInt(width);
             unsigned int y = rng.nextUInt(height);
+            unsigned int idx = y * width + x;
 
-            if (!cells[y][x].isBomb())
+            if (!cells[idx].isBomb())
             {
-                cells[y][x].setBomb(true);
+                cells[idx].setBomb(true);
                 this->bombs++;
                 ++i;
 
@@ -323,15 +298,18 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
         unsigned int bombsToRemove = static_cast<unsigned int>(-bombs);
         for (unsigned int y = 0; y < height; ++y)
             for (unsigned int x = 0; x < width && i < bombsToRemove; ++x)
-                if (cells[y][x].isBomb())
+            {
+                unsigned int idx = y * width + x;
+                if (cells[idx].isBomb())
                 {
-                    cells[y][x].setBomb(false);
+                    cells[idx].setBomb(false);
                     this->bombs--;
                     i++;
 
                     if (updateAdjacentBombs)
                         updateAdjacentBombsAround(x, y);
                 }
+            }
     }
 }
 
@@ -371,61 +349,33 @@ void Map::setSeed(const unsigned long long newSeed)
 
 bool Map::isBombAt(const int x, const int y) const
 {
-    return cells[y][x].isBomb();
+    return cells[y * width + x].isBomb();
 }
 
 int Map::getAdjacentBombsAt(const int x, const int y) const
 {
-    return cells[y][x].getAdjacentBombs();
+    return cells[y * width + x].getAdjacentBombs();
 }
 
 bool Map::isRevealedAt(const int x, const int y) const
 {
-    return cells[y][x].isRevealed();
+    return cells[y * width + x].isRevealed();
 }
 
 bool Map::isFlaggedAt(const int x, const int y) const
 {
-    return cells[y][x].isFlagged();
+    return cells[y * width + x].isFlagged();
 }
 
 void Map::updateAdjacentBombs(bool reset)
 {
     if (reset)
-        for (unsigned int y = 0; y < height; ++y)
-            for (unsigned int x = 0; x < width; ++x)
-                cells[y][x].setAdjacentBombs(0);
-
-    // // Pentru restul celulelor, din interior, nu trebuie sa verificam daca pozitia e valida
-    // for (unsigned int y = 1; y < height - 1; ++y)
-    //     for (unsigned int x = 1; x < width - 1; ++x)
-    //         if (cells[y][x].isBomb())
-    //         {
-    //             // Incrementam numarul de bombe adiacente pentru celulele din jur
-    //             for (int dy = -1; dy <= 1; ++dy)
-    //                 for (int dx = -1; dx <= 1; ++dx)
-    //                 {
-    //                     int px = x + dx, py = y + dy;
-
-    //                     if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
-    //                         ++cells[py][px];
-    //                 }
-    //         }
-
-    // // Pentru a nu face mereu verificarea isValidPosition,
-    // // calculam separat pentru liniile si coloanele marginale
-    // for (unsigned int x = 0; x < width; ++x)
-    //     updateAdjacentBombs(x, 0);
-    // for (unsigned int x = 0; x < width; ++x)
-    //     updateAdjacentBombs(x, height - 1);
-    // for (unsigned int y = 1; y < height - 1; ++y)
-    //     updateAdjacentBombs(0, y);
-    // for (unsigned int y = 1; y < height - 1; ++y)
-    //     updateAdjacentBombs(width - 1, y);
+        for (Cell &cell : cells)
+            cell.setAdjacentBombs(0);
 
     for (unsigned int y = 0; y < height; ++y)
         for (unsigned int x = 0; x < width; ++x)
-            if (cells[y][x].isBomb())
+            if (cells[y * width + x].isBomb())
             {
                 // Incrementam numarul de bombe adiacente pentru celulele din jur
                 for (int dy = -1; dy <= 1; ++dy)
@@ -434,8 +384,8 @@ void Map::updateAdjacentBombs(bool reset)
                         int px = x + dx, py = y + dy;
 
                         if (isValidPosition(px, py))
-                            if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
-                                ++cells[py][px];
+                            if (!cells[py * width + px].isBomb()) // Bombele nu au nevoie de indicator
+                                ++cells[py * width + px];
                     }
             }
 }
@@ -443,14 +393,14 @@ void Map::updateAdjacentBombs(bool reset)
 void Map::updateAdjacentBombs(const int x, const int y)
 {
     // Actualizam numarul de bombe adiacente pentru celula aflata la x, y
-    cells[y][x].setAdjacentBombs(0);
+    cells[y * width + x].setAdjacentBombs(0);
     for (int dy = -1; dy <= 1; ++dy)
         for (int dx = -1; dx <= 1; ++dx)
         { // Incrementam pentru fiecare vecin care e bomba
             int px = x + dx, py = y + dy;
 
-            if (isValidPosition(px, py) && cells[py][px].isBomb())
-                ++cells[y][x];
+            if (isValidPosition(px, py) && cells[py * width + px].isBomb())
+                ++cells[y * width + x];
         }
 }
 
@@ -463,7 +413,7 @@ void Map::updateAdjacentBombsAround(const int x, const int y)
 
     for (int py = updateRangeY1; py <= updateRangeY2; ++py)
         for (int px = updateRangeX1; px <= updateRangeX2; ++px)
-            if (!cells[py][px].isBomb()) // Bombele nu au nevoie de indicator
+            if (!cells[py * width + px].isBomb()) // Bombele nu au nevoie de indicator
                 updateAdjacentBombs(px, py);
 }
 
@@ -471,34 +421,38 @@ void Map::reserveCells()
 {
     // Rezervam spatiu in memorie pentru celule
     // pentru a evita realocarea ulterioara
-    cells.resize(height, std::vector<Cell>(width));
+    cells.resize(width * height);
 }
 
 Cell &Map::getCell(const int x, const int y)
 {
-    return cells[y][x];
+    return cells[y * width + x];
+}
+
+const Cell &Map::getCell(const int x, const int y) const
+{
+    return cells[y * width + x];
 }
 
 void Map::toggleFlagAt(const int x, const int y)
 {
-    cells[y][x].toggleFlagged();
+    cells[y * width + x].toggleFlagged();
 }
 
 void Map::setFlagAt(const int x, const int y, const bool value)
 {
-    cells[y][x].setFlagged(value);
+    cells[y * width + x].setFlagged(value);
 }
 
 void Map::revealAt(const int x, const int y)
 {
-    cells[y][x].setRevealed(true);
+    cells[y * width + x].setRevealed(true);
 }
 
 void Map::revealAll()
 {
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
-            cells[y][x].setRevealed(true);
+    for (Cell &cell : cells)
+        cell.setRevealed(true);
 }
 
 void Map::revealArea(int x, int y, int radius)
@@ -517,9 +471,8 @@ void Map::revealArea(int x, int y, int radius)
 
 void Map::clearGrid()
 {
-    for (unsigned int y = 0; y < height; ++y)
-        for (unsigned int x = 0; x < width; ++x)
-            cells[y][x] = Cell();
+    for (Cell &cell : cells)
+        cell = Cell();
 
     this->bombs = 0;
 }

@@ -13,14 +13,13 @@ class Map final : public IObject
     unsigned int width, height;
     unsigned long long seed;
     unsigned int bombs;
-    // Matricea de celule este modelata ca vector de vectori deoarece accesul
-    // la o celula dupa coordonate ramane O(1), iar rearanjarea dinamica este rara
-    std::vector<std::vector<Cell>> cells;
+    std::vector<Cell> cells;
 
     void reserveCells();
     void generateBombs(const int bombs, const bool updateAdjacentBombs = false);
 
     Cell &getCell(const int x, const int y);
+    const Cell &getCell(const int x, const int y) const;
 
 public:
     // Constructori
