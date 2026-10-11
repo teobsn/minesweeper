@@ -88,3 +88,7 @@ Builds are produced with aggressive optimization flags for maximum performance:
 - `-march=native` - CPU-specific instructions (AVX2, SSE4, etc.)
 - `-flto` - Link-Time Optimization for whole-program optimization
 - `PCG with AVX2` - SIMD-accelerated random number generation
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
