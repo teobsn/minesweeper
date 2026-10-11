@@ -19,27 +19,6 @@ A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 - abstract factory for runtime theme selection
 - builder for game setup creation
 
-## Justificari / Detalii proiect POO
-
-### Varianta aleasa
-- Am ales varianta A, extinderea proiectului 2
-
-### Justificari containere STL
-
-- `std::vector<Map::cells>` este potrivit pentru harta jocului, deoarece accesul la o celula dupa coordonate trebuie sa fie rapid `O(1)`, iar structura ramane compacta in memorie.
-- `std::vector<Match>` pastreaza istoricul complet al meciurilor pentru fiecare jucator, fiind util pentru iterare secventiala si agregari peste tot istoricul; `push_back` este amortizat `O(1)`.
-- `std::unordered_map<std::string, PlayerStats>` este alegerea naturala pentru leaderboard, deoarece cautarea si inserarea jucatorilor sunt medii `O(1)`.
-- `std::vector<std::string>` pentru ordinea leaderboard-ului este util fiindca permite afisare ordonata si sortare eficienta `O(n log n)`.
-- `std::list<BasePowerUp*>` este folosita pentru istoricul power-up-urilor activate, deoarece stergerea si curatarea completa sunt `O(1)` pe nod si nu cer realocari sau mutari de elemente.
-- `std::queue<std::pair<int, int>>` este potrivita pentru algoritmul BFS de revelare a celulelor, fiind o coada FIFO cu `push`/`pop` amortizate `O(1)`.
-- `StaticQueue<Match, 10>` pastreaza ultimele 10 meciuri vizibile in UI, fara alocari dinamice suplimentare; `push`/`pop` sunt `O(1)`, iar dimensiunea este fixa la compilare.
-
-### Justificari design pattern Builder
-
-- `GameSetupBuilder` e folosit cand construim configuratia unui joc nou din input-ul meniului.
-- mentine setup-ul explicit si lasa CLI-ul si GUI-ul sa normalizeze acelasi path inainte sa creeze harta.
-
-
 ## Build
 
 Linux / macOS:
