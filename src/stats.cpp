@@ -438,8 +438,9 @@ void PlayerStats::addMatch(const Match &match)
         recentGames.pop();
     recentGames.push(match);
 
-    updateWins();
-    updateWinRate();
+    if (match.getWinState())
+        ++numberOfWins;
+    setWinRate(static_cast<float>(numberOfWins) / static_cast<float>(games.size()));
     Logger::getInstance().info("Match added to player stats: " + playerName);
 }
 
@@ -504,7 +505,7 @@ void PlayerStats::updateWinRate()
 
 unsigned int PlayerStats::getWins() const
 {
-    return (*this)['w'];
+    return static_cast<unsigned int>(numberOfWins);
 }
 
 void PlayerStats::updateWins()
@@ -515,7 +516,7 @@ void PlayerStats::updateWins()
 
 int PlayerStats::getMatchesNumber() const
 {
-    return (*this)['n'];
+    return static_cast<int>(games.size());
 }
 
 PlayerStats &PlayerStats::operator=(const PlayerStats &other)

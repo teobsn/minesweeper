@@ -141,13 +141,21 @@ public:
         data[count++] = value;
     }
 
+    void push(T &&value)
+    {
+        if (count >= Capacity)
+            throw std::overflow_error("StaticQueue este plina");
+
+        data[count++] = std::move(value);
+    }
+
     void pop()
     {
         if (count == 0)
             throw std::underflow_error("StaticQueue este goala");
 
         for (std::size_t i = 1; i < count; ++i)
-            data[i - 1] = data[i];
+            data[i - 1] = std::move(data[i]);
         --count;
     }
 
