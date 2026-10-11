@@ -20,8 +20,8 @@ endif()
 if(MSVC)
     # Force Release CRT for non-debug builds to avoid ucrtbased.dll dependency
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-    add_compile_options(/W4 /O2 /permissive- /DNDEBUG)
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64")
+    add_compile_options(/W4 /permissive- $<$<NOT:$<CONFIG:Debug>>:/O2 /DNDEBUG>)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
         add_compile_options(/arch:AVX2)
     endif()
 else()
@@ -116,6 +116,3 @@ if(BUILD_CLI)
     add_executable(minesweeper-animation-demo ${SOURCES-DEMO1})
     add_executable(minesweeper-test ${SOURCES-DEMO2})
 endif()
-
-# Enable parallel builds
-set(CMAKE_BUILD_PARALLEL_LEVEL 8)
