@@ -593,6 +593,11 @@ void Render::DrawGame()
     float startY = statsHeight + gridPadding + (availableHeight - (float)height * cellSize) / 2.0f;
 
     Color numberColors[] = {BLACK, BLUE, GREEN, RED, PURPLE, MAROON, SKYBLUE, DARKGRAY, GOLD};
+    static const char *const digitStrings[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8"};
+    const float fontScale = cellSize * 0.8f;
+    Vector2 digitMeasure = MeasureTextEx(AdwaitaMono, "8", fontScale, 0);
+    const float textOffsetX = (cellSize - digitMeasure.x) / 2.0f;
+    const float textOffsetY = (cellSize - digitMeasure.y) / 2.0f;
 
     for (unsigned int y = 0; y < height; ++y)
     {
@@ -611,11 +616,9 @@ void Render::DrawGame()
                 else
                 {
                     unsigned int adj = map.getAdjacentBombsAt(x, y);
-                    if (adj > 0)
+                    if (adj > 0 && adj <= 8)
                     {
-                        std::string adjStr = std::to_string(adj);
-                        Vector2 textSize = MeasureTextEx(AdwaitaMono, adjStr.c_str(), cellSize * 0.8f, 0);
-                        DrawTextEx(AdwaitaMono, adjStr.c_str(), {cellRect.x + (cellSize - textSize.x) / 2.0f, cellRect.y + (cellSize - textSize.y) / 2.0f}, cellSize * 0.8f, 0, numberColors[adj]);
+                        DrawTextEx(AdwaitaMono, digitStrings[adj], {cellRect.x + textOffsetX, cellRect.y + textOffsetY}, fontScale, 0, numberColors[adj]);
                     }
                 }
             }
@@ -1066,7 +1069,6 @@ void Render::DrawLeaderboard()
 
     Leaderboard::sort();
     unsigned int playerCount = Leaderboard::getPlayerCount();
-    const auto players = Leaderboard::getPlayers();
 
     if (playerCount == 0)
     {
@@ -1085,11 +1087,29 @@ void Render::DrawLeaderboard()
             minGames = 0;
         }
 
-        std::vector<PlayerStats> filteredPlayers;
-        std::copy_if(players.begin(), players.end(), std::back_inserter(filteredPlayers), [minGames](const PlayerStats &player)
-                     { return player.getMatchesNumber() >= static_cast<int>(minGames); });
+        std::vector<const PlayerStats *> filteredPlayers;
+        filteredPlayers.reserve(playerCount);
+        for (unsigned int i = 0; i < playerCount; ++i)
+        {
+            const PlayerStats *p = Leaderboard::getPlayer(i);
+            if (p && p->getMatchesNumber() >= static_cast<int>(minGames))
+                filteredPlayers.push_back(p);
+        }
 
-        const PlayerStats *bestPlayer = filteredPlayers.empty() ? nullptr : findBest<PlayerStats>(filteredPlayers);
+        const PlayerStats *bestPlayer = nullptr;
+        if (!filteredPlayers.empty())
+        {
+            auto bestIt = std::max_element(filteredPlayers.begin(), filteredPlayers.end(),
+                                           [](const PlayerStats *lhs, const PlayerStats *rhs)
+                                           {
+                                               if (lhs->getWinRate() != rhs->getWinRate())
+                                                   return lhs->getWinRate() < rhs->getWinRate();
+                                               if (lhs->getWins() != rhs->getWins())
+                                                   return lhs->getWins() < rhs->getWins();
+                                               return lhs->getPlayerName() < rhs->getPlayerName();
+                                           });
+            bestPlayer = *bestIt;
+        }
         float colWidth = (screenWidth - 2.0f * padding) / 2.0f;
 
         std::stringstream ss1;
@@ -1138,22 +1158,22 @@ void Render::DrawLeaderboard()
         }
         else
         {
-            for (const PlayerStats &player : filteredPlayers)
+            for (const PlayerStats *player : filteredPlayers)
             {
-                bool isCurrent = (player.getPlayerName() == playerName);
-                bool isBest = (bestPlayer && player.getPlayerName() == bestPlayer->getPlayerName());
+                bool isCurrent = (player->getPlayerName() == playerName);
+                bool isBest = (bestPlayer && player->getPlayerName() == bestPlayer->getPlayerName());
                 Color col = isCurrent ? theme.success : (isBest ? theme.warning : theme.text);
 
-                DrawTextEx(AdwaitaMono, player.getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
-                DrawTextEx(AdwaitaMono, std::to_string(player.getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
-                DrawTextEx(AdwaitaMono, std::to_string(player.getWins()).c_str(), {padding + nameW + gamesW, renderPosY}, 20, 0, col);
+                DrawTextEx(AdwaitaMono, player->getPlayerName().c_str(), {padding, renderPosY}, 20, 0, col);
+                DrawTextEx(AdwaitaMono, std::to_string(player->getMatchesNumber()).c_str(), {padding + nameW, renderPosY}, 20, 0, col);
+                DrawTextEx(AdwaitaMono, std::to_string(player->getWins()).c_str(), {padding + nameW + gamesW, renderPosY}, 20, 0, col);
 
                 std::stringstream rss;
-                rss << std::fixed << std::setprecision(1) << player.getWinRate() * 100.0f << "%";
+                rss << std::fixed << std::setprecision(1) << player->getWinRate() * 100.0f << "%";
                 DrawTextEx(AdwaitaMono, rss.str().c_str(), {padding + nameW + gamesW + winsW, renderPosY}, 20, 0, col);
 
                 unsigned int totalTime = 0;
-                const auto &matches = player.getMatches();
+                const auto &matches = player->getMatches();
                 for (const Match &match : matches)
                     totalTime += match.getTimePlayed().count();
                 DrawTextEx(AdwaitaMono, (std::to_string(totalTime / 1000) + "s").c_str(), {padding + nameW + gamesW + winsW + rateW, renderPosY}, 20, 0, col);
