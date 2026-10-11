@@ -10,6 +10,10 @@
 
 // External libraries
 #include "pcg/pcg32.h"
+#if (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)) && defined(__AVX2__)
+#define HAS_PCG32_8 1
+#include "pcg/pcg32_8.h"
+#endif
 
 Map::Map() : width(1), height(1), seed(0), bombs(0)
 {
@@ -266,11 +270,53 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
     unsigned int seed_init = seed >> 32;
     unsigned int seed_seq = seed & ((1ULL << 32) - 1);
 
-    // Initializam pRNG
+#if defined(HAS_PCG32_8)
+    // Initializam pRNG vectorizat pcg32_8 cu 8 fluxuri paralele (AVX2)
+    alignas(32) uint64_t initstate[8];
+    alignas(32) uint64_t initseq[8];
+    for (int k = 0; k < 8; ++k)
+    {
+        initstate[k] = (static_cast<uint64_t>(seed_init) << 32) | (seed_seq + static_cast<uint64_t>(k));
+        initseq[k] = static_cast<uint64_t>(k + 1);
+    }
+    pcg32_8 rng8(initstate, initseq);
+
+    // Generam pozitiile bombelor
+    if (bombs > 0)
+    {
+        unsigned int i = 0;
+        unsigned int targetBombs = static_cast<unsigned int>(bombs);
+        alignas(32) uint32_t randX[8];
+        alignas(32) uint32_t randY[8];
+
+        while (i < targetBombs)
+        {
+            rng8.nextUInt(randX);
+            rng8.nextUInt(randY);
+
+            for (int k = 0; k < 8 && i < targetBombs; ++k)
+            {
+                unsigned int x = randX[k] % width;
+                unsigned int y = randY[k] % height;
+                unsigned int idx = y * width + x;
+
+                if (!cells[idx].isBomb())
+                {
+                    cells[idx].setBomb(true);
+                    this->bombs++;
+                    ++i;
+
+                    if (updateAdjacentBombs)
+                        updateAdjacentBombsAround(x, y);
+                }
+            }
+        }
+    }
+#else
+    // Fallback scalar pentru ARM si platforme non-AVX2
     pcg32 rng;
     rng.seed(seed_init, seed_seq);
 
-    // Generam pozitiile bombelor
     if (bombs > 0)
     {
         unsigned int i = 0;
@@ -292,6 +338,7 @@ void Map::generateBombs(const int bombs, const bool updateAdjacentBombs)
             }
         }
     }
+#endif
     else if (bombs < 0)
     { // Remove bombs
         unsigned int i = 0;

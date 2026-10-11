@@ -24,7 +24,9 @@
  */
 
 #include "pcg32.h"
-#include <immintrin.h>
+#if defined(__AVX2__) || defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+#  include <immintrin.h>
+#endif
 #include <utility>
 
 #if defined(_MSC_VER)
@@ -134,6 +136,10 @@ struct PCG32_ALIGN(32) pcg32_8 {
      * only the first 32 mantissa bits will be filled (however, the resolution is still
      * finer than in \ref nextFloat(), which only uses 23 mantissa bits)
      */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+#endif
     std::pair<__m256d, __m256d> nextDouble() {
         /* Trick from MTGP: generate an uniformly distributed
            double precision number in [1,2) and subtract 1. */
@@ -171,6 +177,9 @@ struct PCG32_ALIGN(32) pcg32_8 {
         _mm256_store_pd(&result[0], value.first);
         _mm256_store_pd(&result[4], value.second);
     }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 private:
     PCG32_INLINE __m256i PCG32_VECTORCALL step() {
