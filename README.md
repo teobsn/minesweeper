@@ -2,6 +2,11 @@
 
 A C++ implementation of the Minesweeper game with both CLI and GUI interfaces.
 
+<p align="center">
+  <img src="./docs/readme/gui-demo.gif" alt="Minesweeper GUI Demo" width="48%" />
+  <img src="./docs/readme/cli-demo.gif" alt="Minesweeper CLI Demo" width="48%" />
+</p>
+
 ## Features
 
 - classic minesweeper gameplay with reveal, flag, chord and double-click chord
