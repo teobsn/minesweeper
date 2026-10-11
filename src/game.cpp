@@ -194,28 +194,14 @@ unsigned int Game::getPowerUpCount(const std::string &type) const
         if (!p)
             return false;
 
-        // Folosim dynamic_cast cu tratarea exceptiei std::bad_cast
-        // Folosim cast pe referinte pentru a prinde std::bad_cast in caz de esec.
-        // Este preferat fata de static_cast deoarece ne permite sa validam
-        // in siguranta la runtime ce fel de obiect derivat avem in colectie
-        // (powerUpHistory contine toate tipurile de power-upuri)
-        try {
-            if (type == "Shield") {
-                (void)dynamic_cast<ShieldPowerUp&>(*p);
-                return true;
-            } else if (type == "Scanner") {
-                (void)dynamic_cast<ScannerPowerUp&>(*p);
-                return true;
-            } else if (type == "Ultimate") {
-                (void)dynamic_cast<UltimatePowerUp&>(*p);
-                return true;
-            } else if (type == "Defuser") {
-                (void)dynamic_cast<BombDefuser&>(*p);
-                return true;
-            }
-        } catch (const std::bad_cast&) {
-            return false;
-        }
+        if (type == "Shield")
+            return dynamic_cast<ShieldPowerUp *>(p) != nullptr;
+        if (type == "Scanner")
+            return dynamic_cast<ScannerPowerUp *>(p) != nullptr;
+        if (type == "Ultimate")
+            return dynamic_cast<UltimatePowerUp *>(p) != nullptr;
+        if (type == "Defuser")
+            return dynamic_cast<BombDefuser *>(p) != nullptr;
 
         return false; }));
 }
